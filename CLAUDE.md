@@ -1,0 +1,67 @@
+# Tripinci
+
+App de gastos de viajes compartidos entre amigos y pareja.
+
+## Qué es (y qué NO es)
+
+- Permite dar de alta **viajes** y registrar **gastos** asociados a cada viaje.
+- Cada gasto tiene una **categoría** (ej.: Restaurantes, Gasolina, Alojamiento...).
+- Objetivo principal de la UI: ver de un vistazo el **total gastado** en un viaje
+  y poder **filtrar el gasto por categoría**.
+- Multiusuario: un usuario crea un viaje e **invita a otros por email**; los
+  invitados pueden añadir gastos al viaje.
+- **NO es una app de dividir cuentas tipo Splitwise.** No hay cálculo de "quién
+  debe a quién", ni balances, ni liquidaciones. No proponer esa funcionalidad.
+
+## Stack (decisiones ya tomadas, no reabrir)
+
+**Backend**
+- Python + FastAPI
+- PostgreSQL
+- SQLModel (ORM)
+- Alembic (migraciones)
+- uv (gestión de dependencias y entorno)
+- Autenticación con FastAPI-Users (registro, login, sesión, perfil)
+- Email transaccional para invitaciones: proveedor a decidir cuando toque
+  (Resend / Postmark / SendGrid / SES). El modelo de invitaciones debe
+  contemplar invitar a personas que **aún no tienen cuenta**.
+
+**Frontend**
+- Expo + React Native, con **web incluida** (React Native Web).
+- TypeScript en todo el frontend.
+- Expo Router (navegación basada en ficheros, igual en web y nativo).
+- TanStack Query para el estado del servidor.
+- NativeWind para estilos (clases tipo Tailwind en web y nativo).
+- Almacenamiento del token de sesión: expo-secure-store en iOS/Android;
+  contemplar el mecanismo equivalente en web. Diseñarlo desde el login.
+
+**Integración backend ↔ frontend**
+- FastAPI expone OpenAPI. Generar el cliente y los tipos de TypeScript a partir
+  del esquema OpenAPI (p. ej. openapi-typescript u orval), en lugar de
+  escribir tipos a mano. Mantener el frontend sincronizado con la API así.
+
+## Estructura del repo
+
+Repositorio único:
+- `/backend` — FastAPI
+- `/app` — Expo / React Native
+
+## Cómo quiero que trabajes
+
+- **Explícame las decisiones para aprender**, no solo entregues código. Me
+  interesa el porqué de cada elección, sobre todo cuando hay alternativas.
+- **Pregunta antes de asumir** cuando algo sea ambiguo, en vez de decidir por mí
+  y seguir.
+- Trabajamos por **incrementos pequeños** (rebanadas verticales de punta a
+  punta). No construyas toda la app de golpe.
+- Para incrementos con complejidad (autenticación, invitaciones, modelo de
+  datos), **propón primero un plan corto** y espera mi visto bueno antes de
+  generar o modificar ficheros. Los incrementos triviales puedes ir directo.
+- Mantén el código simple y legible; prioriza claridad sobre listeza.
+
+## Estado actual
+
+Proyecto recién iniciado. Primer incremento previsto: **esqueleto de
+conectividad** — levantar FastAPI con un endpoint de salud y una pantalla en
+Expo que lo llame y muestre la respuesta. Sin base de datos ni autenticación
+todavía.
