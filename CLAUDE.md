@@ -46,6 +46,69 @@ Repositorio único:
 - `/backend` — FastAPI
 - `/app` — Expo / React Native
 
+## Arquitectura — Clean Architecture (no negociable)
+
+Toda feature implementada en este repo respeta tres capas en backend y
+en la app. NO es opcional. Si no encajas algo, propones cambiar esta
+sección antes de saltártela.
+
+**View** — entrada/salida. Lo que el usuario ve o llama.
+- Backend: routers de FastAPI. Validan request/response y devuelven HTTP.
+- App: componentes React Native (screens y componentes UI).
+- Regla: no contiene lógica de negocio ni acceso directo a datos.
+
+**Domain** — lógica de negocio pura, agnóstica de framework.
+- Backend: servicios / use-cases en Python puro. Dependen de
+  interfaces (`Protocol`) hacia el repository, nunca de
+  implementaciones.
+- App: hooks / use-cases que orquestan repositories y exponen estado
+  al view. Tipos del dominio compartidos.
+- Regla: no importa de FastAPI, ni de React, ni de `fetch`, ni de SQL.
+
+**Repository** — acceso a datos.
+- Backend: clases que hablan con Postgres (SQLModel/SQL) u otras
+  fuentes externas (email, proveedores, etc.).
+- App: clientes que llaman a la API HTTP, `expo-secure-store` para
+  tokens, etc.
+- Regla: el domain define la interfaz; aquí vive la implementación.
+
+### Estructura de directorios
+
+**Backend (`/backend/app/`)**
+- `api/` — view: routers FastAPI
+- `domain/` — entidades, servicios e interfaces de repository
+- `repositories/` — implementaciones concretas (DB, email, …)
+- `core/` — config, db session, cross-cutting
+
+**App (`/app/src/`)**
+- `views/` — screens y componentes
+- `domain/` — hooks / use-cases y tipos
+- `repositories/` — api clients, storage
+- `lib/` — utilidades cross-cutting (p. ej. `api.ts` con la URL base)
+
+Dentro de cada capa, agrupar por feature:
+`domain/trips/`, `repositories/trips/`, `views/trips/`, etc.
+
+### Excepciones razonables
+
+Si una feature no tiene lógica de negocio (p. ej. `/health` o un
+endpoint de versión), puede vivir solo en view. No forzar capas
+vacías. El dominio aparece **en cuanto haya cualquier regla**.
+
+### Reglas de dependencia (flujo permitido)
+
+```
+view  →  domain  →  repository (interfaz)
+                         ↑
+                  repository (impl)
+```
+
+- Las flechas son las únicas direcciones permitidas.
+- `domain` nunca importa de `view` ni de implementaciones de
+  `repository`.
+- `repository` nunca importa de `view` ni de `domain.service` (sólo
+  conoce sus propias entidades y la interfaz que implementa).
+
 ## Cómo quiero que trabajes
 
 - **Explícame las decisiones para aprender**, no solo entregues código. Me
