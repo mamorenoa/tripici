@@ -1,0 +1,9 @@
+[project]
+name = "tripinci-backend"
+version = "0.1.0"
+description = "Tripinci backend — FastAPI app for shared trip expenses."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+]
