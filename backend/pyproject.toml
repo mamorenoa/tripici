@@ -4,6 +4,16 @@ version = "0.1.0"
 description = "Tripinci backend — FastAPI app for shared trip expenses."
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.18.4",
     "fastapi>=0.115",
+    "psycopg[binary]>=3.3.4",
+    "pydantic-settings>=2.14.1",
+    "sqlmodel>=0.0.38",
     "uvicorn[standard]>=0.32",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.3",
 ]

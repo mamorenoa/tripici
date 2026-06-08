@@ -80,11 +80,19 @@ sección antes de saltártela.
 - `repositories/` — implementaciones concretas (DB, email, …)
 - `core/` — config, db session, cross-cutting
 
-**App (`/app/src/`)**
-- `views/` — screens y componentes
-- `domain/` — hooks / use-cases y tipos
-- `repositories/` — api clients, storage
-- `lib/` — utilidades cross-cutting (p. ej. `api.ts` con la URL base)
+**App**
+- `/app/app/` — view: rutas de Expo Router. Cada fichero es un shell de
+  una línea que reexporta la screen real desde `src/views/`.
+- `/app/src/views/` — view: screens y componentes específicos de pantalla.
+- `/app/src/components/` — view: componentes reutilizables (aparece
+  cuando haga falta).
+- `/app/src/domain/` — hooks / use-cases y tipos.
+- `/app/src/repositories/` — api clients y storage. Incluye
+  `_generated/` con los tipos producidos por `npm run generate:api`
+  desde el OpenAPI del backend.
+- `/app/src/lib/` — utilidades cross-cutting: `api.ts` (URL base por
+  plataforma), `apiClient.ts` (wrapper de `fetch`), `queryClient.ts`
+  (instancia de TanStack Query).
 
 Dentro de cada capa, agrupar por feature:
 `domain/trips/`, `repositories/trips/`, `views/trips/`, etc.
