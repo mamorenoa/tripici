@@ -1,23 +1,37 @@
-"""Database engine and session helpers.
+"""Async database engine and session helpers.
 
-The engine is a process-wide singleton. ``get_session`` is the FastAPI
-dependency that hands a fresh SQLModel ``Session`` to each request and
-closes it when the request finishes.
+We use SQLAlchemy's async API on top of psycopg v3 (the same driver
+package we installed for sync; it supports both modes). FastAPI-Users
+requires async, and going async uniformly across the app removes the
+risk of mixing paradigms.
 """
 
-from collections.abc import Generator
+from collections.abc import AsyncIterator
 
-from sqlmodel import Session, create_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.core.config import settings
 
-engine = create_engine(
+engine = create_async_engine(
     settings.database_url,
     echo=False,
     pool_pre_ping=True,
 )
 
+# ``expire_on_commit=False`` is the SQLAlchemy + FastAPI-Users
+# recommendation for async work: it lets us keep using the same model
+# instances after a commit without triggering refresh I/O.
+async_session_maker = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
 
-def get_session() -> Generator[Session, None, None]:
-    with Session(engine) as session:
+
+async def get_session() -> AsyncIterator[AsyncSession]:
+    async with async_session_maker() as session:
         yield session

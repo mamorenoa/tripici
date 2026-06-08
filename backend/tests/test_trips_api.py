@@ -1,44 +1,52 @@
-"""Happy-path tests for the trips endpoints."""
+"""Happy-path tests for the trips endpoints (authenticated)."""
 
 from uuid import UUID
 
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
-from app.core.config import settings
+from app.domain.users.entity import User
 
 
-def test_create_trip_returns_201_and_payload(client: TestClient) -> None:
-    response = client.post("/trips", json={"name": "Italy 2026"})
+async def test_create_trip_returns_201_and_payload(
+    authed_client: AsyncClient, test_user: User
+) -> None:
+    response = await authed_client.post("/trips", json={"name": "Italy 2026"})
 
     assert response.status_code == 201
     body = response.json()
     assert body["name"] == "Italy 2026"
-    assert body["owner_id"] == str(settings.dev_owner_id)
-    # Parses as a UUID.
-    UUID(body["id"])
+    assert body["owner_id"] == str(test_user.id)
+    UUID(body["id"])  # parses as UUID
     assert "created_at" in body
 
 
-def test_list_trips_is_empty_initially(client: TestClient) -> None:
-    response = client.get("/trips")
+async def test_list_trips_is_empty_initially(authed_client: AsyncClient) -> None:
+    response = await authed_client.get("/trips")
 
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_create_then_list_returns_the_created_trips(client: TestClient) -> None:
-    client.post("/trips", json={"name": "Italy 2026"})
-    client.post("/trips", json={"name": "Greece 2026"})
+async def test_create_then_list_returns_the_created_trips(
+    authed_client: AsyncClient,
+) -> None:
+    await authed_client.post("/trips", json={"name": "Italy 2026"})
+    await authed_client.post("/trips", json={"name": "Greece 2026"})
 
-    response = client.get("/trips")
+    response = await authed_client.get("/trips")
 
     assert response.status_code == 200
     names = [t["name"] for t in response.json()]
     assert sorted(names) == ["Greece 2026", "Italy 2026"]
 
 
-def test_create_trip_rejects_empty_name(client: TestClient) -> None:
-    response = client.post("/trips", json={"name": ""})
+async def test_create_trip_rejects_empty_name(authed_client: AsyncClient) -> None:
+    response = await authed_client.post("/trips", json={"name": ""})
 
-    # Pydantic min_length=1 → 422.
     assert response.status_code == 422
+
+
+async def test_trips_requires_authentication(client: AsyncClient) -> None:
+    """Without the override, ``current_active_user`` rejects the call."""
+    response = await client.get("/trips")
+    assert response.status_code == 401

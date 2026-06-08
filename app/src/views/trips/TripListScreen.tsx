@@ -8,14 +8,31 @@ import {
   View,
 } from "react-native";
 
+import { useCurrentUser } from "../../domain/auth/useCurrentUser";
+import { useLogout } from "../../domain/auth/useLogout";
 import type { Trip } from "../../domain/trips/types";
 import { useTrips } from "../../domain/trips/useTrips";
 
 export function TripListScreen() {
+  const { data: user } = useCurrentUser();
+  const logout = useLogout();
   const { data, isLoading, error, refetch, isRefetching } = useTrips();
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>
+          {user ? `Hi, ${user.display_name}` : ""}
+        </Text>
+        <Pressable
+          onPress={() => logout.mutate()}
+          disabled={logout.isPending}
+          style={styles.logoutButton}
+        >
+          <Text style={styles.logoutText}>Logout</Text>
+        </Pressable>
+      </View>
+
       {isLoading && <ActivityIndicator />}
 
       {error && (
@@ -62,6 +79,14 @@ export function TripListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  greeting: { fontSize: 16, color: "#333", fontWeight: "500" },
+  logoutButton: { paddingVertical: 6, paddingHorizontal: 10 },
+  logoutText: { color: "#0a6b2e", fontWeight: "600" },
   empty: { color: "#666", textAlign: "center", marginTop: 32 },
   row: {
     paddingVertical: 12,

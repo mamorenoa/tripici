@@ -2,9 +2,11 @@
 
 We override ``sqlalchemy.url`` at runtime with the value from our own
 ``Settings`` so that ``alembic.ini`` doesn't need to repeat the
-connection string. ``target_metadata`` points at ``SQLModel.metadata``
-after importing every model module — that registers the tables and
-makes ``--autogenerate`` see them.
+connection string.
+
+``target_metadata`` is a list of metadatas (Alembic accepts that): one
+for SQLModel-backed tables (currently ``trip``) and one for
+SQLAlchemy-native tables (currently ``user`` via FastAPI-Users).
 """
 
 from logging.config import fileConfig
@@ -13,20 +15,27 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-# Register every SQLModel table by importing the modules that define
-# them. New entities must be imported here too.
+# Register every model by importing the modules that define them. New
+# entities must be imported here too so autogenerate sees them.
 from app.core.config import settings
 from app.domain.trips import entity as _trips_entity  # noqa: F401
+from app.domain.users.entity import Base as UsersBase  # noqa: F401
+from app.domain.users import entity as _users_entity  # noqa: F401
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Use the URL from settings (env / .env), not the placeholder in alembic.ini.
-config.set_main_option("sqlalchemy.url", settings.database_url)
+# Alembic accepts either a single MetaData or a list. We need both
+# because Trip uses SQLModel.metadata and User uses its own
+# DeclarativeBase metadata.
+target_metadata = [SQLModel.metadata, UsersBase.metadata]
 
-target_metadata = SQLModel.metadata
+# Use the URL from settings (env / .env). We strip the async driver
+# spec because Alembic uses a sync connection for migrations — psycopg
+# v3 works for both, so this is mostly to make the intent explicit.
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 
 def run_migrations_offline() -> None:

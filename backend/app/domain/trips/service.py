@@ -14,12 +14,12 @@ class TripService:
     def __init__(self, repository: TripRepository) -> None:
         self._repository = repository
 
-    def create_trip(self, *, name: str, owner_id: UUID) -> Trip:
+    async def create_trip(self, *, name: str, owner_id: UUID) -> Trip:
         # ``id`` and ``created_at`` come from the entity defaults so the
         # domain (not the DB) controls them. The repository persists
         # whatever the domain produces.
         trip = Trip(name=name, owner_id=owner_id)
-        return self._repository.add(trip)
+        return await self._repository.add(trip)
 
-    def list_trips(self, *, owner_id: UUID) -> list[Trip]:
-        return self._repository.list_for_owner(owner_id)
+    async def list_trips(self, *, owner_id: UUID) -> list[Trip]:
+        return await self._repository.list_for_owner(owner_id)

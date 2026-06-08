@@ -5,8 +5,6 @@ Loaded from environment variables, with optional overrides from a local
 ``backend/docker-compose.yml`` so the app runs out of the box.
 """
 
-from uuid import UUID
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,14 +16,20 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # SQLAlchemy-style URL. Use the psycopg (v3) dialect so we get sync.
+    # SQLAlchemy-style URL. psycopg v3 supports both sync and async with
+    # the same prefix; we use the async engine in app/core/db.py.
     database_url: str = (
         "postgresql+psycopg://tripinci:tripinci@localhost:5432/tripinci"
     )
 
-    # Placeholder until real auth lands in slice 3. All trips are owned
-    # by this user during development.
-    dev_owner_id: UUID = UUID("00000000-0000-0000-0000-000000000001")
+    # Secret used to sign / verify JWTs. The default exists ONLY so the
+    # app boots out of the box for local dev. PRODUCTION MUST OVERRIDE
+    # this via the AUTH_SECRET env var — otherwise tokens are forgeable.
+    auth_secret: str = "dev-secret-change-in-production-min-32-bytes"
+
+    # Access token lifetime. 24h is generous for local dev; we'll
+    # introduce refresh tokens if/when this hurts.
+    auth_token_lifetime_seconds: int = 60 * 60 * 24
 
     # Whitelist for CORSMiddleware. Matches the Expo dev server.
     cors_origins: list[str] = Field(

@@ -3,8 +3,9 @@
 Expo / React Native client (web + iOS + Android) following the Clean
 Architecture layout described in the root `CLAUDE.md`.
 
-Slice 2: trips MVP — list and create trips. The previous health screen
-is gone; `/health` still exists in the backend as a deployment probe.
+Current state (slice 3): trips MVP with authentication. Anonymous
+visitors land on `/login`. Once authenticated, they can list and create
+trips. The owner of every trip is the authenticated user.
 
 ## Requirements
 
@@ -15,7 +16,7 @@ is gone; `/health` still exists in the backend as a deployment probe.
 
 ```bash
 cd app
-npm install
+npm install --legacy-peer-deps   # openapi-typescript declares a TS ^5 peer
 ```
 
 ## Run
@@ -29,6 +30,16 @@ In the Expo menu:
 - `w` — web (`http://localhost:8081`)
 - `i` — iOS simulator (Xcode)
 - `a` — Android emulator (Android Studio + a running AVD)
+
+## Token storage
+
+Auth tokens live behind a tiny cross-platform abstraction in
+`src/lib/secureStorage.ts`:
+
+- **Native (iOS / Android)** — `expo-secure-store` (Keychain / Keystore).
+- **Web** — `localStorage`. ⚠️ Not actually secure against XSS;
+  acceptable for dev, must be replaced by httpOnly cookies (or a
+  hardened scheme) before going to production.
 
 ## Regenerate API types
 
@@ -55,13 +66,22 @@ committed so a fresh clone can type-check without the backend.
 
 ```
 app/
-  _layout.tsx               # QueryClientProvider + Stack navigator
-  index.tsx                 # route shell → TripListScreen
-  trips/new.tsx             # route shell → CreateTripScreen
+  _layout.tsx                       # root: QueryClientProvider + Stack
+  (auth)/
+    _layout.tsx                     # redirect to / if already authed
+    login.tsx, register.tsx         # route shells
+  (app)/
+    _layout.tsx                     # redirect to /login if not authed
+    index.tsx                       # → TripListScreen
+    trips/new.tsx                   # → CreateTripScreen
 src/
-  views/trips/              # screens
-  domain/trips/             # hooks + types (TanStack Query)
-  repositories/trips/       # API repository (HTTP)
-  repositories/_generated/  # types generated from OpenAPI
-  lib/                      # api base url, fetch wrapper, query client
+  views/{auth,trips}/               # screens
+  domain/{auth,trips}/              # hooks (TanStack Query) + types
+  repositories/{auth,trips}/        # HTTP repositories
+  repositories/_generated/api.d.ts  # generated from OpenAPI
+  lib/
+    api.ts                          # base URL by platform
+    apiClient.ts                    # fetch wrapper + Bearer header
+    queryClient.ts                  # shared QueryClient
+    secureStorage.ts                # cross-platform secure storage
 ```

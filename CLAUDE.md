@@ -132,7 +132,19 @@ view  →  domain  →  repository (interfaz)
 
 ## Estado actual
 
-Proyecto recién iniciado. Primer incremento previsto: **esqueleto de
-conectividad** — levantar FastAPI con un endpoint de salud y una pantalla en
-Expo que lo llame y muestre la respuesta. Sin base de datos ni autenticación
-todavía.
+Slices entregados:
+
+- **Slice 1** — esqueleto de conectividad (FastAPI `/health` + pantalla
+  Expo que lo llama).
+- **Slice 2** — viajes MVP. Postgres en Docker, SQLModel + Alembic,
+  capas view/domain/repository en backend y app, TanStack Query y Expo
+  Router en la app, tipos TS generados desde OpenAPI.
+- **Slice 3** — autenticación. Backend en async, FastAPI-Users con JWT
+  Bearer, tabla `user` con FK `trip.owner_id → user.id`. Frontend con
+  pantallas de login/registro, token storage cross-platform
+  (`expo-secure-store` en nativo, `localStorage` en web), rutas
+  protegidas con grupos de Expo Router.
+
+Próximo candidato: **gastos** dentro de un viaje (con categorías), o
+**invitaciones** por email a otros usuarios (requiere elegir proveedor
+de email).
