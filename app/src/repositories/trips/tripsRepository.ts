@@ -9,6 +9,9 @@ import { apiRequest } from "../../lib/apiClient";
 export const tripsRepository = {
   list: (): Promise<Trip[]> => apiRequest<Trip[]>("/trips"),
 
+  get: (tripId: string): Promise<Trip> =>
+    apiRequest<Trip>(`/trips/${tripId}`),
+
   create: (input: TripCreate): Promise<Trip> =>
     apiRequest<Trip>("/trips", { method: "POST", body: input }),
 };

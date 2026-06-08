@@ -2,12 +2,9 @@
 
 The test database (``tripinci_test``) lives in the same Postgres
 container that ``docker-compose.yml`` provisions. The schema is created
-once per pytest session via ``metadata.create_all`` for both SQLModel
-and SQLAlchemy bases (we intentionally bypass Alembic in tests).
-
-Each test starts with empty tables. We TRUNCATE in an autouse fixture
-after every test — simpler than a full async savepoint dance and fast
-enough for the test count we have.
+once per pytest session via ``metadata.create_all``; categories seed is
+inserted at the same time. We then TRUNCATE the data tables between
+tests (preserving the seed) for isolation.
 """
 
 import uuid
@@ -21,36 +18,56 @@ from sqlmodel import SQLModel
 
 from app.core.auth import current_active_user
 from app.core.db import get_session
-from app.domain.trips import entity as _trips_entity  # noqa: F401 (registers tables)
-from app.domain.users.entity import Base as UsersBase, User
+from app.domain.categories import entity as _categories_entity  # noqa: F401
+from app.domain.categories.entity import Category
+from app.domain.expenses import entity as _expenses_entity  # noqa: F401
+from app.domain.trips import entity as _trips_entity  # noqa: F401
+from app.domain.users.entity import User
 from app.main import app
 
 TEST_DATABASE_URL = (
     "postgresql+psycopg://tripinci:tripinci@localhost:5432/tripinci_test"
 )
 
+CATEGORY_SEED = [
+    ("RESTAURANTS", "Restaurants"),
+    ("GROCERIES", "Groceries"),
+    ("ACCOMMODATION", "Accommodation"),
+    ("TRANSPORT", "Transport"),
+    ("FUEL", "Fuel"),
+    ("ACTIVITIES", "Activities"),
+    ("OTHER", "Other"),
+]
+
 
 @pytest_asyncio.fixture(scope="session")
 async def engine():
     engine = create_async_engine(TEST_DATABASE_URL, pool_pre_ping=True)
     async with engine.begin() as conn:
-        await conn.run_sync(UsersBase.metadata.create_all)
         await conn.run_sync(SQLModel.metadata.create_all)
+    # Seed categories once per session (TRUNCATE preserves them — see
+    # ``reset_tables`` below).
+    async with AsyncSession(engine, expire_on_commit=False) as session:
+        for code, label in CATEGORY_SEED:
+            session.add(Category(code=code, label=label))
+        await session.commit()
     yield engine
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(UsersBase.metadata.drop_all)
     await engine.dispose()
 
 
 @pytest_asyncio.fixture(autouse=True)
 async def reset_tables(engine) -> AsyncIterator[None]:
-    """Empty every table between tests."""
+    """Empty data tables between tests; keep the ``category`` seed."""
     yield
     async with engine.begin() as conn:
-        # ``"user"`` must be quoted (reserved keyword). CASCADE handles
-        # the FK from trip.owner_id.
-        await conn.execute(text('TRUNCATE TABLE "trip", "user" RESTART IDENTITY CASCADE'))
+        await conn.execute(
+            text(
+                'TRUNCATE TABLE "expense", "trip", "user" '
+                "RESTART IDENTITY CASCADE"
+            )
+        )
 
 
 @pytest_asyncio.fixture
@@ -59,18 +76,30 @@ async def session(engine) -> AsyncIterator[AsyncSession]:
         yield session
 
 
-@pytest_asyncio.fixture
-async def test_user(session: AsyncSession) -> User:
-    """Insert a test user so trip rows can satisfy the FK."""
-    user = User(
+def _make_user(*, email: str, display_name: str) -> User:
+    return User(
         id=uuid.uuid4(),
-        email="tester@example.com",
+        email=email,
         hashed_password="not-a-real-hash",
-        display_name="Tester",
+        display_name=display_name,
         is_active=True,
         is_superuser=False,
         is_verified=False,
     )
+
+
+@pytest_asyncio.fixture
+async def test_user(session: AsyncSession) -> User:
+    user = _make_user(email="tester@example.com", display_name="Tester")
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
+@pytest_asyncio.fixture
+async def second_user(session: AsyncSession) -> User:
+    user = _make_user(email="second@example.com", display_name="Second")
     session.add(user)
     await session.commit()
     await session.refresh(user)

@@ -109,6 +109,23 @@ export interface paths {
         patch: operations["users_patch_user_users__id__patch"];
         trace?: never;
     };
+    "/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Categories */
+        get: operations["list_categories_categories_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/trips": {
         parameters: {
             query?: never;
@@ -125,6 +142,59 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trip */
+        get: operations["get_trip_trips__trip_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Expenses */
+        get: operations["list_expenses_trips__trip_id__expenses_get"];
+        put?: never;
+        /** Create Expense */
+        post: operations["create_expense_trips__trip_id__expenses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/expenses/{expense_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Expense */
+        delete: operations["delete_expense_trips__trip_id__expenses__expense_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Expense */
+        patch: operations["update_expense_trips__trip_id__expenses__expense_id__patch"];
         trace?: never;
     };
 }
@@ -162,12 +232,92 @@ export interface components {
              */
             client_secret?: string | null;
         };
+        /** Category */
+        Category: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+        };
         /** ErrorModel */
         ErrorModel: {
             /** Detail */
             detail: string | {
                 [key: string]: string;
             };
+        };
+        /** Expense */
+        Expense: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Category Code */
+            category_code: string;
+            /**
+             * Expense Date
+             * Format: date
+             */
+            expense_date?: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at?: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at?: string;
+        };
+        /**
+         * ExpenseCreate
+         * @description Payload accepted by ``POST /trips/{trip_id}/expenses``.
+         */
+        ExpenseCreate: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** Category Code */
+            category_code: string;
+            /**
+             * Expense Date
+             * Format: date
+             */
+            expense_date?: string;
+            /** Description */
+            description?: string | null;
+        };
+        /**
+         * ExpenseUpdate
+         * @description Payload accepted by ``PATCH /trips/{trip_id}/expenses/{expense_id}``.
+         *
+         *     Every field is optional. Clients send only the keys they want to
+         *     change. The service applies ``model_dump(exclude_unset=True)``.
+         */
+        ExpenseUpdate: {
+            /** Amount Cents */
+            amount_cents?: number | null;
+            /** Category Code */
+            category_code?: string | null;
+            /** Expense Date */
+            expense_date?: string | null;
+            /** Description */
+            description?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -681,6 +831,26 @@ export interface operations {
             };
         };
     };
+    list_categories_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Category"][];
+                };
+            };
+        };
+    };
     list_trips_trips_get: {
         parameters: {
             query?: never;
@@ -721,6 +891,169 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Trip"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trip_trips__trip_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Trip"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_expenses_trips__trip_id__expenses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Expense"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_expense_trips__trip_id__expenses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Expense"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_expense_trips__trip_id__expenses__expense_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_expense_trips__trip_id__expenses__expense_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Expense"];
                 };
             };
             /** @description Validation Error */

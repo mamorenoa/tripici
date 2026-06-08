@@ -144,7 +144,14 @@ Slices entregados:
   pantallas de login/registro, token storage cross-platform
   (`expo-secure-store` en nativo, `localStorage` en web), rutas
   protegidas con grupos de Expo Router.
+- **Slice 4** — gastos dentro de un viaje. Tabla `category` (seed con
+  7 categorías) + tabla `expense` con FK a trip/category/user, importe
+  en céntimos, fecha del gasto, descripción opcional. CRUD completo en
+  backend (`POST/GET/PATCH/DELETE /trips/{id}/expenses`), validación de
+  propiedad del viaje vía service (404 al cruzar usuarios, sin leak de
+  existencia). Frontend con `TripDetailScreen` (total agregado + pills
+  de filtro por categoría), `ExpenseForm` reutilizado por add/edit y
+  rutas anidadas `/trips/[id]/...`.
 
-Próximo candidato: **gastos** dentro de un viaje (con categorías), o
-**invitaciones** por email a otros usuarios (requiere elegir proveedor
-de email).
+Próximo candidato: **invitaciones por email** (requiere elegir proveedor
+transaccional) o un slice cosmético (date picker, NativeWind).

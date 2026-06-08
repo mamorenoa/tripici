@@ -10,15 +10,22 @@ Note: ``Trip`` is a SQLModel entity (different declarative base / metadata).
 Both metadatas coexist; ``alembic/env.py`` registers them as a list.
 """
 
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from fastapi_users.db import SQLAlchemyBaseUserTableUUID
+from sqlmodel import SQLModel
 
 
 class Base(DeclarativeBase):
-    """Declarative base for SQLAlchemy-native models (currently: ``User``)."""
+    """Declarative base for SQLAlchemy-native models (currently: ``User``).
 
-    pass
+    We share ``SQLModel.metadata`` so SQLModel-backed tables (e.g.,
+    ``Trip``, ``Expense``) can resolve foreign keys that point at the
+    SQLAlchemy-native ``user`` table. Without this, cross-metadata FKs
+    fail at autogenerate time with ``NoReferencedTableError``.
+    """
+
+    metadata = SQLModel.metadata
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):

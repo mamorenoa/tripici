@@ -7,6 +7,7 @@ authenticated user.
 """
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,3 +45,12 @@ async def list_trips(
     service: Annotated[TripService, Depends(get_trip_service)],
 ) -> list[Trip]:
     return await service.list_trips(owner_id=user.id)
+
+
+@router.get("/{trip_id}", response_model=Trip)
+async def get_trip(
+    trip_id: UUID,
+    user: Annotated[User, Depends(current_active_user)],
+    service: Annotated[TripService, Depends(get_trip_service)],
+) -> Trip:
+    return await service.get_for_owner(trip_id=trip_id, owner_id=user.id)

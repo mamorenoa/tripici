@@ -23,6 +23,9 @@ class SQLModelTripRepository:
         await self._session.refresh(trip)
         return trip
 
+    async def get_by_id(self, trip_id: UUID) -> Trip | None:
+        return await self._session.get(Trip, trip_id)
+
     async def list_for_owner(self, owner_id: UUID) -> list[Trip]:
         statement = (
             select(Trip)

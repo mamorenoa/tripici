@@ -28,6 +28,16 @@ export default function AppLayout() {
         name="trips/new"
         options={{ title: "New trip", presentation: "modal" }}
       />
+      {/* Title is set dynamically inside TripDetailScreen via <Stack.Screen options=... /> */}
+      <Stack.Screen name="trips/[id]/index" options={{ title: "Trip" }} />
+      <Stack.Screen
+        name="trips/[id]/expenses/new"
+        options={{ title: "New expense", presentation: "modal" }}
+      />
+      <Stack.Screen
+        name="trips/[id]/expenses/[expenseId]/edit"
+        options={{ title: "Edit expense" }}
+      />
     </Stack>
   );
 }

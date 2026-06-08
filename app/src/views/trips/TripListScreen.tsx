@@ -54,14 +54,16 @@ export function TripListScreen() {
           data={data}
           keyExtractor={(t, index) => t.id ?? String(index)}
           renderItem={({ item }: { item: Trip }) => (
-            <View style={styles.row}>
-              <Text style={styles.tripName}>{item.name}</Text>
-              {item.created_at && (
-                <Text style={styles.tripDate}>
-                  {new Date(item.created_at).toLocaleDateString()}
-                </Text>
-              )}
-            </View>
+            <Link href={`/trips/${item.id}`} asChild>
+              <Pressable style={styles.row}>
+                <Text style={styles.tripName}>{item.name}</Text>
+                {item.created_at && (
+                  <Text style={styles.tripDate}>
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </Text>
+                )}
+              </Pressable>
+            </Link>
           )}
           refreshing={isRefetching}
           onRefresh={() => refetch()}

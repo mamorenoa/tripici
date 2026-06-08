@@ -18,6 +18,8 @@ from sqlmodel import SQLModel
 # Register every model by importing the modules that define them. New
 # entities must be imported here too so autogenerate sees them.
 from app.core.config import settings
+from app.domain.categories import entity as _categories_entity  # noqa: F401
+from app.domain.expenses import entity as _expenses_entity  # noqa: F401
 from app.domain.trips import entity as _trips_entity  # noqa: F401
 from app.domain.users.entity import Base as UsersBase  # noqa: F401
 from app.domain.users import entity as _users_entity  # noqa: F401
@@ -27,10 +29,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Alembic accepts either a single MetaData or a list. We need both
-# because Trip uses SQLModel.metadata and User uses its own
-# DeclarativeBase metadata.
-target_metadata = [SQLModel.metadata, UsersBase.metadata]
+# All entities share ``SQLModel.metadata``: SQLModel models register
+# there by default, and ``UsersBase`` was wired to point its metadata
+# at the same object so cross-metadata FKs (e.g. expense.user_id) work.
+target_metadata = SQLModel.metadata
 
 # Use the URL from settings (env / .env). We strip the async driver
 # spec because Alembic uses a sync connection for migrations — psycopg

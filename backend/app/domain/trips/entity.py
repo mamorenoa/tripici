@@ -21,7 +21,7 @@ class Trip(TripBase, table=True):
     """A shared trip created by a user. Persisted in the ``trip`` table."""
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    owner_id: UUID = Field(index=True)
+    owner_id: UUID = Field(foreign_key="user.id", index=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         index=True,
