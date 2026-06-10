@@ -152,6 +152,15 @@ Slices entregados:
   existencia). Frontend con `TripDetailScreen` (total agregado + pills
   de filtro por categoría), `ExpenseForm` reutilizado por add/edit y
   rutas anidadas `/trips/[id]/...`.
+- **Slice 5** — invitaciones por link compartible (sin email
+  transaccional todavía). Tablas `trip_membership` y `trip_invitation`
+  (token reutilizable, expiración 7d, revocable). Autorización
+  membership-aware en TripService y ExpenseService — cualquier miembro
+  CRUD-ea gastos del viaje. Frontend con `TripMembersScreen` (genera
+  link, copia al clipboard) y `AcceptInvitationScreen`. Login/register
+  honran `?redirect=` para que el flow del usuario sin sesión que
+  abre un link funcione sin perder el contexto.
 
-Próximo candidato: **invitaciones por email** (requiere elegir proveedor
-transaccional) o un slice cosmético (date picker, NativeWind).
+Próximo candidato: **invitaciones por email** (reaprovecha
+`trip_invitation` con un campo `email`; requiere elegir proveedor
+transaccional) o slice cosmético (NativeWind, date picker decente).

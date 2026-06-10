@@ -35,8 +35,20 @@ export function TripDetailScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Dynamic title — Expo Router merges these options with the parent Stack. */}
-      <Stack.Screen options={{ title: trip?.name ?? "Trip" }} />
+      {/* Dynamic title + "Members" action in the header. Expo Router
+          merges these options with the parent Stack. */}
+      <Stack.Screen
+        options={{
+          title: trip?.name ?? "Trip",
+          headerRight: () => (
+            <Link href={`/trips/${tripId}/members`} asChild>
+              <Pressable style={styles.membersAction}>
+                <Text style={styles.membersActionText}>Members</Text>
+              </Pressable>
+            </Link>
+          ),
+        }}
+      />
 
       <View style={styles.header}>
         <Text style={styles.totalLabel}>
@@ -175,4 +187,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   fabText: { color: "#fff", fontWeight: "600" },
+  membersAction: { marginRight: 12, paddingHorizontal: 8, paddingVertical: 6 },
+  membersActionText: { color: "#0a6b2e", fontWeight: "600" },
 });

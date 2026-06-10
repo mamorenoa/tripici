@@ -17,6 +17,9 @@ from app.domain.expenses.entity import Expense, ExpenseCreate, ExpenseUpdate
 from app.domain.expenses.service import ExpenseService
 from app.domain.users.entity import User
 from app.repositories.expenses.sqlmodel_repository import SQLModelExpenseRepository
+from app.repositories.memberships.sqlmodel_repository import (
+    SQLModelMembershipRepository,
+)
 from app.repositories.trips.sqlmodel_repository import SQLModelTripRepository
 
 router = APIRouter(prefix="/trips/{trip_id}/expenses", tags=["expenses"])
@@ -29,6 +32,7 @@ def get_expense_service(
     return ExpenseService(
         expense_repository=SQLModelExpenseRepository(session),
         trip_repository=SQLModelTripRepository(session),
+        membership_repository=SQLModelMembershipRepository(session),
     )
 
 

@@ -12,7 +12,14 @@ type RegisterInput = {
 
 /**
  * Registers a new user, then immediately logs in to obtain the token.
- * Side-effects on success: token stored, current-user query invalidated.
+ * Side-effects on success: token stored, current-user query primed
+ * with the freshly-registered user.
+ *
+ * We populate the cache directly via ``setQueryData`` instead of
+ * invalidating: if we only invalidate, the next render that depends
+ * on ``useCurrentUser`` may briefly see the stale ``null`` and route
+ * decisions (e.g., redirecting back to /login from a protected route)
+ * fire before the refetch settles.
  */
 export function useRegister() {
   const queryClient = useQueryClient();
@@ -21,7 +28,7 @@ export function useRegister() {
       // FastAPI-Users `BaseUserCreate` exposes the admin flags as
       // nullable in the OpenAPI schema; we just pass null and let the
       // server choose the defaults.
-      await authRepository.register({
+      const user = await authRepository.register({
         email: input.email,
         password: input.password,
         display_name: input.display_name,
@@ -34,10 +41,10 @@ export function useRegister() {
         input.password,
       );
       await secureStorage.setItem(AUTH_TOKEN_KEY, access_token);
+      // Prime the cache so the immediately-following navigation sees
+      // the authenticated user. No race against an async refetch.
+      queryClient.setQueryData(currentUserQueryKey, user);
       return access_token;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: currentUserQueryKey });
     },
   });
 }

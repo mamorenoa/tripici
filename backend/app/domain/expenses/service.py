@@ -1,15 +1,17 @@
 """Expense use cases.
 
-The service is framework-agnostic. It enforces the rule that only the
-trip's owner can read or write its expenses by consulting the
-``TripRepository`` before each operation. When invitations land, the
-check evolves into "owner OR collaborator", a localized change here.
+The service is framework-agnostic. It enforces that only the trip's
+owner OR a collaborator can read or write its expenses — consulting
+both ``TripRepository`` and ``MembershipRepository`` before each
+operation.
 """
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from app.domain.expenses.entity import Expense, ExpenseCreate, ExpenseUpdate
 from app.domain.expenses.ports import ExpenseRepository
+from app.domain.memberships.ports import MembershipRepository
 from app.domain.trips.entity import Trip
 from app.domain.trips.exceptions import TripNotFound
 from app.domain.trips.ports import TripRepository
@@ -28,17 +30,22 @@ class ExpenseService:
         self,
         expense_repository: ExpenseRepository,
         trip_repository: TripRepository,
+        membership_repository: MembershipRepository,
     ) -> None:
         self._expenses = expense_repository
         self._trips = trip_repository
+        self._memberships = membership_repository
 
     async def _authorize_trip(self, trip_id: UUID, user_id: UUID) -> Trip:
-        # 404 for both "doesn't exist" and "not yours" — don't leak the
-        # existence of someone else's trip.
+        # 404 for "not exists" and for "you're neither owner nor member".
         trip = await self._trips.get_by_id(trip_id)
-        if trip is None or trip.owner_id != user_id:
+        if trip is None:
             raise TripNotFound(trip_id)
-        return trip
+        if trip.owner_id == user_id:
+            return trip
+        if await self._memberships.exists(trip_id=trip_id, user_id=user_id):
+            return trip
+        raise TripNotFound(trip_id)
 
     async def create(
         self, *, trip_id: UUID, user_id: UUID, payload: ExpenseCreate
@@ -69,12 +76,8 @@ class ExpenseService:
         expense = await self._expenses.get_by_id(expense_id)
         if expense is None or expense.trip_id != trip_id:
             raise ExpenseNotFound(expense_id)
-        # Merge only the fields the client actually sent.
         for key, value in patch.model_dump(exclude_unset=True).items():
             setattr(expense, key, value)
-        # Refresh the audit timestamp.
-        from datetime import datetime, timezone
-
         expense.updated_at = datetime.now(timezone.utc)
         return await self._expenses.update(expense)
 

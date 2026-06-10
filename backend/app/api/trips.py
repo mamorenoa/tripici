@@ -1,10 +1,4 @@
-"""HTTP endpoints for the trips feature.
-
-This is the View layer: it converts HTTP into domain calls and back. It
-wires the concrete ``SQLModelTripRepository`` into the ``TripService``
-via FastAPI dependencies and resolves the trip owner from the currently
-authenticated user.
-"""
+"""HTTP endpoints for the trips feature."""
 
 from typing import Annotated
 from uuid import UUID
@@ -17,6 +11,9 @@ from app.core.db import get_session
 from app.domain.trips.entity import Trip, TripCreate
 from app.domain.trips.service import TripService
 from app.domain.users.entity import User
+from app.repositories.memberships.sqlmodel_repository import (
+    SQLModelMembershipRepository,
+)
 from app.repositories.trips.sqlmodel_repository import SQLModelTripRepository
 
 router = APIRouter(prefix="/trips", tags=["trips"])
@@ -25,9 +22,11 @@ router = APIRouter(prefix="/trips", tags=["trips"])
 def get_trip_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> TripService:
-    """Wire the trips service with a SQLModel-backed repository."""
-    repository = SQLModelTripRepository(session)
-    return TripService(repository)
+    """Wire the trips service with its repository dependencies."""
+    return TripService(
+        repository=SQLModelTripRepository(session),
+        memberships=SQLModelMembershipRepository(session),
+    )
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=Trip)
@@ -44,7 +43,7 @@ async def list_trips(
     user: Annotated[User, Depends(current_active_user)],
     service: Annotated[TripService, Depends(get_trip_service)],
 ) -> list[Trip]:
-    return await service.list_trips(owner_id=user.id)
+    return await service.list_trips(user_id=user.id)
 
 
 @router.get("/{trip_id}", response_model=Trip)
@@ -53,4 +52,4 @@ async def get_trip(
     user: Annotated[User, Depends(current_active_user)],
     service: Annotated[TripService, Depends(get_trip_service)],
 ) -> Trip:
-    return await service.get_for_owner(trip_id=trip_id, owner_id=user.id)
+    return await service.get_for_member(trip_id=trip_id, user_id=user.id)

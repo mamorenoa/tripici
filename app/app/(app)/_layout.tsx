@@ -1,13 +1,15 @@
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useCurrentUser } from "../../src/domain/auth/useCurrentUser";
 
 // Gate for authenticated routes. While we're checking auth, show a
-// spinner. If there's no user, send the user to /login. Otherwise,
-// render the Stack with the actual screens.
+// spinner. If there's no user, send the user to /login — passing the
+// intended path as ``redirect`` so the auth screens can come back to
+// the right place after sign-in (needed for the invite-link flow).
 export default function AppLayout() {
   const { data: user, isLoading } = useCurrentUser();
+  const pathname = usePathname();
 
   if (isLoading) {
     return (
@@ -18,7 +20,8 @@ export default function AppLayout() {
   }
 
   if (!user) {
-    return <Redirect href="/login" />;
+    const target = `/login?redirect=${encodeURIComponent(pathname)}`;
+    return <Redirect href={target} />;
   }
 
   return (
@@ -28,7 +31,7 @@ export default function AppLayout() {
         name="trips/new"
         options={{ title: "New trip", presentation: "modal" }}
       />
-      {/* Title is set dynamically inside TripDetailScreen via <Stack.Screen options=... /> */}
+      {/* Title set dynamically inside TripDetailScreen via <Stack.Screen options=... /> */}
       <Stack.Screen name="trips/[id]/index" options={{ title: "Trip" }} />
       <Stack.Screen
         name="trips/[id]/expenses/new"
@@ -37,6 +40,14 @@ export default function AppLayout() {
       <Stack.Screen
         name="trips/[id]/expenses/[expenseId]/edit"
         options={{ title: "Edit expense" }}
+      />
+      <Stack.Screen
+        name="trips/[id]/members"
+        options={{ title: "Members" }}
+      />
+      <Stack.Screen
+        name="invite/[token]"
+        options={{ title: "Invitation" }}
       />
     </Stack>
   );

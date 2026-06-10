@@ -181,3 +181,41 @@ async def test_other_users_trip_returns_404(
 async def test_unknown_trip_returns_404(authed_client: AsyncClient) -> None:
     response = await authed_client.get(f"/trips/{uuid4()}/expenses")
     assert response.status_code == 404
+
+
+async def test_collaborator_can_crud_expenses(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    """A member (not the owner) has full CRUD on the trip's expenses."""
+    from app.domain.memberships.entity import TripMembership
+
+    trip = await _insert_trip(session, owner_id=test_user.id, name="Italy 2026")
+    session.add(TripMembership(trip_id=trip.id, user_id=second_user.id))
+    await session.commit()
+
+    as_user(second_user)
+    # Create
+    created = await client.post(
+        f"/trips/{trip.id}/expenses",
+        json={
+            "amount_cents": 1500,
+            "category_code": "RESTAURANTS",
+            "expense_date": "2026-06-10",
+        },
+    )
+    assert created.status_code == 201, created.text
+    expense_id = created.json()["id"]
+
+    # List + update + delete
+    assert (await client.get(f"/trips/{trip.id}/expenses")).status_code == 200
+    upd = await client.patch(
+        f"/trips/{trip.id}/expenses/{expense_id}",
+        json={"amount_cents": 2000},
+    )
+    assert upd.status_code == 200 and upd.json()["amount_cents"] == 2000
+    delete = await client.delete(f"/trips/{trip.id}/expenses/{expense_id}")
+    assert delete.status_code == 204

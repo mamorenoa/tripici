@@ -64,7 +64,8 @@ async def reset_tables(engine) -> AsyncIterator[None]:
     async with engine.begin() as conn:
         await conn.execute(
             text(
-                'TRUNCATE TABLE "expense", "trip", "user" '
+                'TRUNCATE TABLE "trip_invitation", "trip_membership", '
+                '"expense", "trip", "user" '
                 "RESTART IDENTITY CASCADE"
             )
         )
@@ -104,6 +105,25 @@ async def second_user(session: AsyncSession) -> User:
     await session.commit()
     await session.refresh(user)
     return user
+
+
+import pytest  # noqa: E402  (kept next to the related fixtures)
+
+
+@pytest.fixture
+def as_user():
+    """Switch the ``current_active_user`` dependency override mid-test.
+
+    Used together with the ``client`` fixture for flows where one user
+    creates a resource and another consumes it (e.g., invitations). The
+    ``client`` fixture clears every override in teardown, so this
+    helper doesn't need its own cleanup.
+    """
+
+    def switch(user: User) -> None:
+        app.dependency_overrides[current_active_user] = lambda: user
+
+    return switch
 
 
 @pytest_asyncio.fixture

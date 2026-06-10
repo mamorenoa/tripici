@@ -89,3 +89,30 @@ async def test_get_unknown_trip_returns_404(authed_client: AsyncClient) -> None:
 
     response = await authed_client.get(f"/trips/{uuid4()}")
     assert response.status_code == 404
+
+
+async def test_member_sees_shared_trip_in_list(
+    client: AsyncClient,
+    session,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    """A collaborator's GET /trips includes trips they don't own."""
+    from app.domain.memberships.entity import TripMembership
+    from app.domain.trips.entity import Trip
+
+    # test_user owns 1 trip, second_user is added as collaborator.
+    trip = Trip(name="Greece 2026", owner_id=test_user.id)
+    session.add(trip)
+    await session.commit()
+    await session.refresh(trip)
+    session.add(TripMembership(trip_id=trip.id, user_id=second_user.id))
+    await session.commit()
+
+    as_user(second_user)
+    listed = await client.get("/trips")
+
+    assert listed.status_code == 200
+    names = [t["name"] for t in listed.json()]
+    assert "Greece 2026" in names

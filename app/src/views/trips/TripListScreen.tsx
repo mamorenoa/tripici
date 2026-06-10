@@ -53,18 +53,27 @@ export function TripListScreen() {
         <FlatList
           data={data}
           keyExtractor={(t, index) => t.id ?? String(index)}
-          renderItem={({ item }: { item: Trip }) => (
-            <Link href={`/trips/${item.id}`} asChild>
-              <Pressable style={styles.row}>
-                <Text style={styles.tripName}>{item.name}</Text>
-                {item.created_at && (
-                  <Text style={styles.tripDate}>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </Text>
-                )}
-              </Pressable>
-            </Link>
-          )}
+          renderItem={({ item }: { item: Trip }) => {
+            const isShared =
+              !!user && !!item.owner_id && item.owner_id !== user.id;
+            return (
+              <Link href={`/trips/${item.id}`} asChild>
+                <Pressable style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.tripName}>{item.name}</Text>
+                    {item.created_at && (
+                      <Text style={styles.tripDate}>
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </Text>
+                    )}
+                  </View>
+                  {isShared ? (
+                    <Text style={styles.sharedBadge}>Shared</Text>
+                  ) : null}
+                </Pressable>
+              </Link>
+            );
+          }}
           refreshing={isRefetching}
           onRefresh={() => refetch()}
         />
@@ -91,9 +100,22 @@ const styles = StyleSheet.create({
   logoutText: { color: "#0a6b2e", fontWeight: "600" },
   empty: { color: "#666", textAlign: "center", marginTop: 32 },
   row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#ddd",
+  },
+  sharedBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: "#eef5f0",
+    color: "#0a6b2e",
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: "600",
+    overflow: "hidden",
   },
   tripName: { fontSize: 16 },
   tripDate: { fontSize: 12, color: "#666" },

@@ -1,4 +1,4 @@
-import { Link, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -13,6 +13,10 @@ import { useLogin } from "../../domain/auth/useLogin";
 
 export function LoginScreen() {
   const router = useRouter();
+  // ``redirect`` is set by ``(app)/_layout.tsx`` when an unauthenticated
+  // user lands on a protected route (e.g., an invitation link). After a
+  // successful login we send them back where they wanted to go.
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const mutation = useLogin();
@@ -24,7 +28,10 @@ export function LoginScreen() {
     if (!canSubmit) return;
     try {
       await mutation.mutateAsync({ email: email.trim(), password });
-      router.replace("/");
+      const target = typeof redirect === "string" && redirect.length > 0
+        ? redirect
+        : "/";
+      router.replace(target);
     } catch {
       // Error surfaced below via mutation.error.
     }
@@ -74,7 +81,14 @@ export function LoginScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>No account yet?</Text>
-        <Link href="/register" style={styles.link}>
+        <Link
+          href={
+            typeof redirect === "string" && redirect.length > 0
+              ? `/register?redirect=${encodeURIComponent(redirect)}`
+              : "/register"
+          }
+          style={styles.link}
+        >
           Create one
         </Link>
       </View>

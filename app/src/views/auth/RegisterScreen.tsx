@@ -1,4 +1,4 @@
-import { Link, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -9,20 +9,41 @@ import {
   View,
 } from "react-native";
 
+import { useAcceptInvitation } from "../../domain/invitations/useAcceptInvitation";
 import { useRegister } from "../../domain/auth/useRegister";
+
+/**
+ * Extract an invitation token from a `/invite/<token>` redirect path.
+ * Returns ``null`` for anything that isn't an invite link, so the
+ * caller can fall back to a plain redirect.
+ */
+function extractInviteToken(redirect: unknown): string | null {
+  if (typeof redirect !== "string") return null;
+  const prefix = "/invite/";
+  if (!redirect.startsWith(prefix)) return null;
+  const rest = redirect.slice(prefix.length);
+  // Token charset is base64url; stop at the first non-token character.
+  const token = rest.split(/[/?#]/)[0];
+  return token.length > 0 ? token : null;
+}
 
 export function RegisterScreen() {
   const router = useRouter();
+  // See `LoginScreen` — used to send the user back to the intended URL
+  // after a successful signup (e.g., an invite link).
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const mutation = useRegister();
+  const acceptMutation = useAcceptInvitation();
 
   const canSubmit =
     displayName.trim().length > 0 &&
     email.trim().length > 0 &&
     password.length >= 8 &&
-    !mutation.isPending;
+    !mutation.isPending &&
+    !acceptMutation.isPending;
 
   async function onSubmit() {
     if (!canSubmit) return;
@@ -32,7 +53,29 @@ export function RegisterScreen() {
         password,
         display_name: displayName.trim(),
       });
-      router.replace("/");
+
+      // If the registration was triggered by an invite link, the user
+      // clearly meant to join the trip — auto-accept the token here and
+      // jump straight to the trip detail. Skipping the intermediate
+      // preview/Join screen matches the user's intent and avoids the
+      // race we'd otherwise hit while the new session settles.
+      const inviteToken = extractInviteToken(redirect);
+      if (inviteToken) {
+        try {
+          const trip = await acceptMutation.mutateAsync(inviteToken);
+          router.replace(`/trips/${trip.id}`);
+          return;
+        } catch {
+          // Invitation expired / revoked / unknown: fall through to a
+          // plain redirect so the user sees the "no longer valid"
+          // screen rendered by AcceptInvitationScreen.
+        }
+      }
+
+      const target = typeof redirect === "string" && redirect.length > 0
+        ? redirect
+        : "/";
+      router.replace(target);
     } catch {
       // Error surfaced below via mutation.error.
     }
@@ -92,7 +135,14 @@ export function RegisterScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account?</Text>
-        <Link href="/login" style={styles.link}>
+        <Link
+          href={
+            typeof redirect === "string" && redirect.length > 0
+              ? `/login?redirect=${encodeURIComponent(redirect)}`
+              : "/login"
+          }
+          style={styles.link}
+        >
           Sign in
         </Link>
       </View>

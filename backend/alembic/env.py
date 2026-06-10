@@ -20,6 +20,8 @@ from sqlmodel import SQLModel
 from app.core.config import settings
 from app.domain.categories import entity as _categories_entity  # noqa: F401
 from app.domain.expenses import entity as _expenses_entity  # noqa: F401
+from app.domain.invitations import entity as _invitations_entity  # noqa: F401
+from app.domain.memberships import entity as _memberships_entity  # noqa: F401
 from app.domain.trips import entity as _trips_entity  # noqa: F401
 from app.domain.users.entity import Base as UsersBase  # noqa: F401
 from app.domain.users import entity as _users_entity  # noqa: F401
