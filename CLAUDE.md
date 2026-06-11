@@ -160,7 +160,17 @@ Slices entregados:
   link, copia al clipboard) y `AcceptInvitationScreen`. Login/register
   honran `?redirect=` para que el flow del usuario sin sesión que
   abre un link funcione sin perder el contexto.
+- **Slice 6** — refresh cosmético. NativeWind 4 + Tailwind 3 con
+  tokens semánticos (brand emerald, ink primary/secondary/muted,
+  background stone-50, danger rose, shadow-card). Fuente Inter
+  cargada con `expo-font` + splash. Set de primitives reutilizables
+  en `src/components/` (Button, Card, Input, DateInput, Badge, Pill,
+  Avatar, EmptyState, Icon). `DateInput` plat-specific (HTML `<input
+  type="date">` en web, `@react-native-community/datetimepicker` en
+  nativo). Iconos Feather de `@expo/vector-icons`. Todas las screens
+  refactorizadas. Cero cambios funcionales.
 
 Próximo candidato: **invitaciones por email** (reaprovecha
 `trip_invitation` con un campo `email`; requiere elegir proveedor
-transaccional) o slice cosmético (NativeWind, date picker decente).
+transaccional) o **modo oscuro** ahora que los tokens están
+centralizados.

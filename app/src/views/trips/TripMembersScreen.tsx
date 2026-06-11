@@ -4,12 +4,15 @@ import {
   ActivityIndicator,
   FlatList,
   Platform,
-  Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
 
+import { Avatar } from "../../components/Avatar";
+import { Badge } from "../../components/Badge";
+import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
+import { EmptyState } from "../../components/EmptyState";
 import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useCreateInvitation } from "../../domain/invitations/useCreateInvitation";
 import { useInvitations } from "../../domain/invitations/useInvitations";
@@ -25,7 +28,9 @@ export function TripMembersScreen() {
   const { data: trip } = useTrip(tripId);
   const { data: members = [], isLoading: membersLoading } = useMembers(tripId);
 
-  const isOwner = !!currentUser && !!trip && currentUser.id === trip.owner_id;
+  const isOwner =
+    !!currentUser && !!trip && currentUser.id === trip.owner_id;
+
   const { data: invitations = [], isLoading: invitesLoading } = useInvitations(
     tripId,
     isOwner,
@@ -33,15 +38,12 @@ export function TripMembersScreen() {
   const createMutation = useCreateInvitation(tripId);
   const revokeMutation = useRevokeInvitation(tripId);
 
-  // The plan UX shows a single active link at a time: generating
-  // revokes the previous, revoking just clears it.
   const activeInvite = invitations[0];
   const activeUrl = activeInvite ? buildInviteUrl(activeInvite.token) : null;
 
   async function copyToClipboard(url: string) {
     await Clipboard.setStringAsync(url);
     if (Platform.OS === "web" && globalThis.window) {
-      // Lightweight feedback on web — Alert.alert is unreliable in RN-Web.
       globalThis.window.alert("Invite link copied to clipboard.");
     }
   }
@@ -61,141 +63,99 @@ export function TripMembersScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-background">
       <Stack.Screen options={{ title: trip?.name ?? "Members" }} />
 
-      <Text style={styles.section}>Members</Text>
-      {membersLoading ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList
-          data={members}
-          keyExtractor={(m, i) => m.user_id ?? String(i)}
-          renderItem={({ item }: { item: TripMember }) => (
-            <View style={styles.memberRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.memberName}>{item.display_name}</Text>
-                <Text style={styles.memberEmail}>{item.email}</Text>
-              </View>
-              {item.is_owner ? (
-                <Text style={styles.ownerBadge}>Owner</Text>
-              ) : null}
+      <FlatList
+        ListHeaderComponent={
+          <Text className="text-xs uppercase tracking-wide text-ink-muted mb-2 mt-4 px-4">
+            Members
+          </Text>
+        }
+        data={members}
+        keyExtractor={(m, i) => m.user_id ?? String(i)}
+        contentContainerClassName="pb-6"
+        ListEmptyComponent={
+          membersLoading ? (
+            <View className="py-10 items-center">
+              <ActivityIndicator />
             </View>
-          )}
-          scrollEnabled={false}
-        />
-      )}
-
-      {isOwner ? (
-        <View style={styles.inviteSection}>
-          <Text style={styles.section}>Invite link</Text>
-          {invitesLoading ? (
-            <ActivityIndicator />
-          ) : activeInvite && activeUrl ? (
-            <>
-              <Text style={styles.link} numberOfLines={1}>
-                {activeUrl}
-              </Text>
-              <Text style={styles.linkMeta}>
-                Expires{" "}
-                {new Date(activeInvite.expires_at).toLocaleDateString()}
-              </Text>
-              <View style={styles.buttonRow}>
-                <Pressable
-                  onPress={() => copyToClipboard(activeUrl)}
-                  style={styles.buttonPrimary}
-                >
-                  <Text style={styles.buttonText}>Copy link</Text>
-                </Pressable>
-                <Pressable
-                  onPress={revokeLink}
-                  disabled={revokeMutation.isPending}
-                  style={styles.buttonSecondary}
-                >
-                  <Text style={styles.buttonSecondaryText}>Revoke</Text>
-                </Pressable>
+          ) : null
+        }
+        renderItem={({ item }: { item: TripMember }) => (
+          <View className="px-4 pb-2">
+            <Card className="flex-row items-center gap-3">
+              <Avatar name={item.display_name} />
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-ink-primary">
+                  {item.display_name}
+                </Text>
+                <Text className="text-xs text-ink-muted">{item.email}</Text>
               </View>
-            </>
-          ) : (
-            <Text style={styles.empty}>No active invite link.</Text>
-          )}
-          <Pressable
-            onPress={generateLink}
-            disabled={
-              createMutation.isPending || revokeMutation.isPending
-            }
-            style={[
-              styles.buttonPrimary,
-              styles.buttonStretched,
-              (createMutation.isPending || revokeMutation.isPending) &&
-                styles.buttonDisabled,
-            ]}
-          >
-            {createMutation.isPending ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>
-                {activeInvite ? "Generate new link" : "Generate invite link"}
+              {item.is_owner ? <Badge variant="brand">Owner</Badge> : null}
+            </Card>
+          </View>
+        )}
+        ListFooterComponent={
+          isOwner ? (
+            <View className="px-4 mt-4 gap-3">
+              <Text className="text-xs uppercase tracking-wide text-ink-muted">
+                Invite link
               </Text>
-            )}
-          </Pressable>
-        </View>
-      ) : null}
+              <Card className="gap-3">
+                {invitesLoading ? (
+                  <ActivityIndicator />
+                ) : activeInvite && activeUrl ? (
+                  <>
+                    <Text
+                      className="text-sm text-ink-secondary"
+                      numberOfLines={1}
+                      style={{ fontFamily: "monospace" }}
+                    >
+                      {activeUrl}
+                    </Text>
+                    <Text className="text-xs text-ink-muted">
+                      Expires{" "}
+                      {new Date(activeInvite.expires_at).toLocaleDateString()}
+                    </Text>
+                    <View className="flex-row gap-2">
+                      <Button
+                        size="sm"
+                        onPress={() => copyToClipboard(activeUrl)}
+                      >
+                        Copy link
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onPress={revokeLink}
+                        disabled={revokeMutation.isPending}
+                      >
+                        Revoke
+                      </Button>
+                    </View>
+                  </>
+                ) : (
+                  <EmptyState
+                    title="No active invite link"
+                    description="Generate one to share with someone."
+                  />
+                )}
+                <Button
+                  size="lg"
+                  onPress={generateLink}
+                  disabled={
+                    createMutation.isPending || revokeMutation.isPending
+                  }
+                  isLoading={createMutation.isPending}
+                >
+                  {activeInvite ? "Generate new link" : "Generate invite link"}
+                </Button>
+              </Card>
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  section: { fontSize: 18, fontWeight: "600", marginTop: 8 },
-  memberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#ddd",
-    gap: 8,
-  },
-  memberName: { fontSize: 16 },
-  memberEmail: { fontSize: 12, color: "#666" },
-  ownerBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#0a6b2e",
-    color: "#fff",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: "600",
-    overflow: "hidden",
-  },
-  inviteSection: {
-    marginTop: 16,
-    padding: 16,
-    backgroundColor: "#f6f6f6",
-    borderRadius: 8,
-    gap: 8,
-  },
-  link: { fontFamily: "monospace", fontSize: 13 },
-  linkMeta: { fontSize: 12, color: "#666" },
-  buttonRow: { flexDirection: "row", gap: 8 },
-  buttonPrimary: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: "#0a6b2e",
-  },
-  buttonStretched: { marginTop: 12, paddingVertical: 14 },
-  buttonSecondary: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#b00020",
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#fff", fontWeight: "600" },
-  buttonSecondaryText: { color: "#b00020", fontWeight: "600" },
-  empty: { color: "#666" },
-});

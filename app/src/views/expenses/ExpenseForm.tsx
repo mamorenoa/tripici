@@ -1,14 +1,10 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
+import { Button } from "../../components/Button";
+import { DateInput } from "../../components/DateInput";
+import { Input } from "../../components/Input";
+import { Pill } from "../../components/Pill";
 import { useCategories } from "../../domain/categories/useCategories";
 import type { Expense, ExpenseCreate } from "../../domain/expenses/types";
 import { parseEurosToCents } from "../../lib/money";
@@ -22,7 +18,6 @@ type Props = {
 };
 
 function todayIso(): string {
-  // Local timezone, formatted YYYY-MM-DD.
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -36,7 +31,7 @@ export function ExpenseForm({
   error,
   onSubmit,
 }: Props) {
-  const { data: categories = [], isLoading: catsLoading } = useCategories();
+  const { data: categories = [] } = useCategories();
 
   const [amount, setAmount] = useState(
     initialValue ? (initialValue.amount_cents / 100).toFixed(2) : "",
@@ -65,118 +60,71 @@ export function ExpenseForm({
       amount_cents: amountCents,
       category_code: categoryCode,
       expense_date: date,
-      description: trimmedDescription.length > 0 ? trimmedDescription : null,
+      description:
+        trimmedDescription.length > 0 ? trimmedDescription : null,
     });
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.label}>Amount (EUR)</Text>
-      <TextInput
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="px-4 py-4 gap-4"
+      keyboardShouldPersistTaps="handled"
+    >
+      <Input
+        label="Amount (EUR)"
         value={amount}
         onChangeText={setAmount}
         keyboardType="decimal-pad"
         placeholder="0.00"
-        style={styles.input}
         editable={!submitting}
       />
 
-      <Text style={styles.label}>Category</Text>
-      {catsLoading ? (
-        <ActivityIndicator />
-      ) : (
-        <View style={styles.pillRow}>
-          {categories.map((c) => {
-            const active = c.code === categoryCode;
-            return (
-              <Pressable
-                key={c.code}
-                onPress={() => setCategoryCode(c.code)}
-                disabled={submitting}
-                style={[styles.pill, active && styles.pillActive]}
-              >
-                <Text style={active ? styles.pillTextActive : styles.pillText}>
-                  {c.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+      <View className="gap-2">
+        <Text className="text-sm text-ink-secondary font-medium">Category</Text>
+        <View className="flex-row flex-wrap gap-2">
+          {categories.map((c) => (
+            <Pill
+              key={c.code}
+              label={c.label}
+              active={c.code === categoryCode}
+              onPress={() => setCategoryCode(c.code)}
+              disabled={submitting}
+            />
+          ))}
         </View>
-      )}
+      </View>
 
-      <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-      <TextInput
+      <DateInput
+        label="Date"
         value={date}
-        onChangeText={setDate}
-        placeholder="YYYY-MM-DD"
-        autoCapitalize="none"
-        style={[
-          styles.input,
-          date.length > 0 && !dateValid && styles.inputError,
-        ]}
+        onChange={setDate}
         editable={!submitting}
       />
 
-      <Text style={styles.label}>Description (optional)</Text>
-      <TextInput
+      <Input
+        label="Description (optional)"
         value={description}
         onChangeText={setDescription}
         placeholder="e.g. Pizza"
-        style={styles.input}
         editable={!submitting}
       />
 
       {error ? (
-        <Text style={styles.error}>
+        <Text className="text-sm text-danger-500">
           Could not save: {String((error as Error).message ?? error)}
         </Text>
       ) : null}
 
-      <Pressable
+      <Button
+        size="lg"
         onPress={handleSubmit}
         disabled={!canSubmit}
-        style={[styles.button, !canSubmit && styles.buttonDisabled]}
+        isLoading={submitting}
+        className="mt-2"
       >
-        {submitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Save</Text>
-        )}
-      </Pressable>
+        Save
+      </Button>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16, gap: 4, paddingBottom: 32 },
-  label: { fontSize: 14, color: "#444", marginTop: 12, marginBottom: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  inputError: { borderColor: "#b00020" },
-  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  pill: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    backgroundColor: "#eee",
-  },
-  pillActive: { backgroundColor: "#0a6b2e" },
-  pillText: { color: "#333" },
-  pillTextActive: { color: "#fff", fontWeight: "600" },
-  button: {
-    backgroundColor: "#0a6b2e",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#fff", fontWeight: "600" },
-  error: { color: "#b00020", fontSize: 14, marginTop: 12 },
-});

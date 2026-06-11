@@ -1,12 +1,45 @@
+import "../global.css";
+
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  useFonts,
+} from "@expo-google-fonts/inter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 
 import { queryClient } from "../src/lib/queryClient";
 
-// Root layout. Provides the shared TanStack QueryClient and mounts the
-// two top-level Expo Router groups. The actual gating between
-// authenticated/anonymous flows lives inside each group's _layout.
+// Keep the native splash visible until the fonts are loaded so the
+// first painted screen already uses Inter, not the system fallback.
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* preventAutoHide is best-effort; ignore failures (e.g. on web). */
+});
+
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    // Splash is still visible; rendering null avoids painting a
+    // system-font flash behind it.
+    return null;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>

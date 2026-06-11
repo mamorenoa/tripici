@@ -1,21 +1,16 @@
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Text, View } from "react-native";
 
+import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
+import { Input } from "../../components/Input";
 import { useLogin } from "../../domain/auth/useLogin";
 
 export function LoginScreen() {
   const router = useRouter();
-  // ``redirect`` is set by ``(app)/_layout.tsx`` when an unauthenticated
-  // user lands on a protected route (e.g., an invitation link). After a
-  // successful login we send them back where they wanted to go.
+  // Honoured after a successful login so deep links (e.g. invite URLs)
+  // resume at the intended path.
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,66 +23,71 @@ export function LoginScreen() {
     if (!canSubmit) return;
     try {
       await mutation.mutateAsync({ email: email.trim(), password });
-      const target = typeof redirect === "string" && redirect.length > 0
-        ? redirect
-        : "/";
+      const target =
+        typeof redirect === "string" && redirect.length > 0 ? redirect : "/";
       router.replace(target);
     } catch {
-      // Error surfaced below via mutation.error.
+      // Surfaced below via mutation.error.
     }
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
+    <View className="flex-1 bg-background justify-center px-4">
+      <View className="gap-2 items-center mb-6">
+        <Text className="text-3xl font-bold text-ink-primary">Tripinci</Text>
+        <Text className="text-sm text-ink-secondary">
+          Track shared trip expenses with your people.
+        </Text>
+      </View>
 
-      <Text style={styles.label}>Email</Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        autoComplete="email"
-        autoFocus
-        style={styles.input}
-        editable={!mutation.isPending}
-      />
+      <Card className="gap-4">
+        <Text className="text-xl font-semibold text-ink-primary">Sign in</Text>
 
-      <Text style={styles.label}>Password</Text>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoComplete="password"
-        style={styles.input}
-        editable={!mutation.isPending}
-      />
+        <Input
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
+          autoFocus
+          editable={!mutation.isPending}
+        />
 
-      {mutation.isError && (
-        <Text style={styles.error}>Invalid email or password.</Text>
-      )}
+        <Input
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="password"
+          editable={!mutation.isPending}
+        />
 
-      <Pressable
-        onPress={onSubmit}
-        disabled={!canSubmit}
-        style={[styles.button, !canSubmit && styles.buttonDisabled]}
-      >
-        {mutation.isPending ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign in</Text>
-        )}
-      </Pressable>
+        {mutation.isError ? (
+          <Text className="text-sm text-danger-500">
+            Invalid email or password.
+          </Text>
+        ) : null}
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>No account yet?</Text>
+        <Button
+          onPress={onSubmit}
+          disabled={!canSubmit}
+          isLoading={mutation.isPending}
+          size="lg"
+        >
+          Sign in
+        </Button>
+      </Card>
+
+      <View className="flex-row gap-1.5 justify-center mt-6">
+        <Text className="text-ink-secondary">No account yet?</Text>
         <Link
           href={
             typeof redirect === "string" && redirect.length > 0
               ? `/register?redirect=${encodeURIComponent(redirect)}`
               : "/register"
           }
-          style={styles.link}
+          className="text-brand-600 font-semibold"
         >
           Create one
         </Link>
@@ -95,29 +95,3 @@ export function LoginScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 10 },
-  title: { fontSize: 24, fontWeight: "600", marginBottom: 8 },
-  label: { fontSize: 14, color: "#444", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: "#0a6b2e",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#fff", fontWeight: "600" },
-  error: { color: "#b00020", fontSize: 14 },
-  footer: { flexDirection: "row", gap: 6, justifyContent: "center", marginTop: 12 },
-  footerText: { color: "#666" },
-  link: { color: "#0a6b2e", fontWeight: "600" },
-});

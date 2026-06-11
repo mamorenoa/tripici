@@ -1,36 +1,24 @@
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
+import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
+import { Input } from "../../components/Input";
 import { useAcceptInvitation } from "../../domain/invitations/useAcceptInvitation";
 import { useRegister } from "../../domain/auth/useRegister";
 
-/**
- * Extract an invitation token from a `/invite/<token>` redirect path.
- * Returns ``null`` for anything that isn't an invite link, so the
- * caller can fall back to a plain redirect.
- */
 function extractInviteToken(redirect: unknown): string | null {
   if (typeof redirect !== "string") return null;
   const prefix = "/invite/";
   if (!redirect.startsWith(prefix)) return null;
   const rest = redirect.slice(prefix.length);
-  // Token charset is base64url; stop at the first non-token character.
   const token = rest.split(/[/?#]/)[0];
   return token.length > 0 ? token : null;
 }
 
 export function RegisterScreen() {
   const router = useRouter();
-  // See `LoginScreen` — used to send the user back to the intended URL
-  // after a successful signup (e.g., an invite link).
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,11 +42,9 @@ export function RegisterScreen() {
         display_name: displayName.trim(),
       });
 
-      // If the registration was triggered by an invite link, the user
-      // clearly meant to join the trip — auto-accept the token here and
-      // jump straight to the trip detail. Skipping the intermediate
-      // preview/Join screen matches the user's intent and avoids the
-      // race we'd otherwise hit while the new session settles.
+      // If the signup was triggered by an invite link, auto-accept the
+      // token and jump straight to the trip — the user clearly meant
+      // to join. See slice 5 plan for the rationale.
       const inviteToken = extractInviteToken(redirect);
       if (inviteToken) {
         try {
@@ -66,112 +52,93 @@ export function RegisterScreen() {
           router.replace(`/trips/${trip.id}`);
           return;
         } catch {
-          // Invitation expired / revoked / unknown: fall through to a
-          // plain redirect so the user sees the "no longer valid"
-          // screen rendered by AcceptInvitationScreen.
+          // Invite invalid: fall through to the regular redirect so the
+          // user sees the "no longer valid" screen.
         }
       }
 
-      const target = typeof redirect === "string" && redirect.length > 0
-        ? redirect
-        : "/";
+      const target =
+        typeof redirect === "string" && redirect.length > 0 ? redirect : "/";
       router.replace(target);
     } catch {
-      // Error surfaced below via mutation.error.
+      // Surfaced below via mutation.error.
     }
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create account</Text>
-
-      <Text style={styles.label}>Display name</Text>
-      <TextInput
-        value={displayName}
-        onChangeText={setDisplayName}
-        autoFocus
-        style={styles.input}
-        editable={!mutation.isPending}
-      />
-
-      <Text style={styles.label}>Email</Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        autoComplete="email"
-        style={styles.input}
-        editable={!mutation.isPending}
-      />
-
-      <Text style={styles.label}>Password (min 8)</Text>
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoComplete="new-password"
-        style={styles.input}
-        editable={!mutation.isPending}
-      />
-
-      {mutation.isError && (
-        <Text style={styles.error}>
-          Could not create account. The email may already be in use.
+    <ScrollView
+      contentContainerClassName="flex-grow bg-background justify-center px-4 py-6"
+      keyboardShouldPersistTaps="handled"
+    >
+      <View className="gap-2 items-center mb-6">
+        <Text className="text-3xl font-bold text-ink-primary">Tripinci</Text>
+        <Text className="text-sm text-ink-secondary">
+          Create your account to start tracking trips.
         </Text>
-      )}
+      </View>
 
-      <Pressable
-        onPress={onSubmit}
-        disabled={!canSubmit}
-        style={[styles.button, !canSubmit && styles.buttonDisabled]}
-      >
-        {mutation.isPending ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign up</Text>
-        )}
-      </Pressable>
+      <Card className="gap-4">
+        <Text className="text-xl font-semibold text-ink-primary">
+          Create account
+        </Text>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account?</Text>
+        <Input
+          label="Display name"
+          value={displayName}
+          onChangeText={setDisplayName}
+          autoFocus
+          editable={!mutation.isPending}
+        />
+
+        <Input
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          autoComplete="email"
+          editable={!mutation.isPending}
+        />
+
+        <Input
+          label="Password"
+          helperText="At least 8 characters."
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="new-password"
+          editable={!mutation.isPending}
+        />
+
+        {mutation.isError ? (
+          <Text className="text-sm text-danger-500">
+            Could not create account. The email may already be in use.
+          </Text>
+        ) : null}
+
+        <Button
+          onPress={onSubmit}
+          disabled={!canSubmit}
+          isLoading={mutation.isPending || acceptMutation.isPending}
+          size="lg"
+        >
+          Sign up
+        </Button>
+      </Card>
+
+      <View className="flex-row gap-1.5 justify-center mt-6">
+        <Text className="text-ink-secondary">Already have an account?</Text>
         <Link
           href={
             typeof redirect === "string" && redirect.length > 0
               ? `/login?redirect=${encodeURIComponent(redirect)}`
               : "/login"
           }
-          style={styles.link}
+          className="text-brand-600 font-semibold"
         >
           Sign in
         </Link>
       </View>
-    </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 10 },
-  title: { fontSize: 24, fontWeight: "600", marginBottom: 8 },
-  label: { fontSize: 14, color: "#444", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: "#0a6b2e",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#fff", fontWeight: "600" },
-  error: { color: "#b00020", fontSize: 14 },
-  footer: { flexDirection: "row", gap: 6, justifyContent: "center", marginTop: 12 },
-  footerText: { color: "#666" },
-  link: { color: "#0a6b2e", fontWeight: "600" },
-});

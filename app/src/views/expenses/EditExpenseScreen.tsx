@@ -1,12 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
+import { Button } from "../../components/Button";
+import { Icon } from "../../components/Icon";
 import type { ExpenseCreate } from "../../domain/expenses/types";
 import { useDeleteExpense } from "../../domain/expenses/useDeleteExpense";
 import { useExpenses } from "../../domain/expenses/useExpenses";
@@ -23,13 +19,11 @@ export function EditExpenseScreen() {
   const updateMutation = useUpdateExpense(tripId);
   const deleteMutation = useDeleteExpense(tripId);
 
-  // Re-uses the list cache. If the user deep-linked here without ever
-  // visiting the detail screen, the list is fetched on mount.
   const expense = expenses?.find((e) => e.id === expenseId);
 
   if (isLoading || !expense) {
     return (
-      <View style={styles.loading}>
+      <View className="flex-1 bg-background items-center justify-center">
         <ActivityIndicator />
       </View>
     );
@@ -40,7 +34,7 @@ export function EditExpenseScreen() {
       await updateMutation.mutateAsync({ id: expenseId, patch: input });
       router.back();
     } catch {
-      // Error surfaced via the form's ``error`` prop.
+      // Surfaced inside ExpenseForm via the `error` prop.
     }
   }
 
@@ -49,13 +43,13 @@ export function EditExpenseScreen() {
       await deleteMutation.mutateAsync(expenseId);
       router.back();
     } catch {
-      // Best-effort. Caller may try again.
+      // Best-effort.
     }
   }
 
   return (
-    <View style={styles.container}>
-      <View style={{ flex: 1 }}>
+    <View className="flex-1 bg-background">
+      <View className="flex-1">
         <ExpenseForm
           initialValue={expense}
           submitting={updateMutation.isPending}
@@ -63,29 +57,15 @@ export function EditExpenseScreen() {
           onSubmit={handleSave}
         />
       </View>
-      <Pressable
-        onPress={handleDelete}
-        disabled={deleteMutation.isPending}
-        style={styles.deleteButton}
-      >
-        {deleteMutation.isPending ? (
-          <ActivityIndicator color="#b00020" />
-        ) : (
-          <Text style={styles.deleteText}>Delete expense</Text>
-        )}
-      </Pressable>
+      <View className="px-4 py-3 border-t border-border bg-surface">
+        <Button
+          variant="danger"
+          onPress={handleDelete}
+          isLoading={deleteMutation.isPending}
+        >
+          <Icon name="trash-2" size={18} color="#e11d48" />
+        </Button>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  loading: { flex: 1, alignItems: "center", justifyContent: "center" },
-  deleteButton: {
-    paddingVertical: 14,
-    alignItems: "center",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#eee",
-  },
-  deleteText: { color: "#b00020", fontWeight: "600" },
-});

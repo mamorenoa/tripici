@@ -5,11 +5,14 @@ import {
   FlatList,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
 
+import { Card } from "../../components/Card";
+import { EmptyState } from "../../components/EmptyState";
+import { Icon } from "../../components/Icon";
+import { Pill } from "../../components/Pill";
 import { useCategories } from "../../domain/categories/useCategories";
 import type { Expense } from "../../domain/expenses/types";
 import { useExpenses } from "../../domain/expenses/useExpenses";
@@ -19,8 +22,7 @@ import { formatEuros } from "../../lib/money";
 export function TripDetailScreen() {
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
-  const { data: expenses = [], isLoading, error, refetch, isRefetching } =
-    useExpenses(tripId);
+  const { data: expenses = [], isLoading, error } = useExpenses(tripId);
   const { data: categories = [] } = useCategories();
   const [filter, setFilter] = useState<string | null>(null);
 
@@ -28,165 +30,120 @@ export function TripDetailScreen() {
     ? expenses.filter((e) => e.category_code === filter)
     : expenses;
   const total = visible.reduce((sum, e) => sum + e.amount_cents, 0);
-
-  function categoryLabel(code: string): string {
-    return categories.find((c) => c.code === code)?.label ?? code;
-  }
+  const categoryLabel = (code: string) =>
+    categories.find((c) => c.code === code)?.label ?? code;
 
   return (
-    <View style={styles.container}>
-      {/* Dynamic title + "Members" action in the header. Expo Router
-          merges these options with the parent Stack. */}
+    <View className="flex-1 bg-background">
       <Stack.Screen
         options={{
           title: trip?.name ?? "Trip",
           headerRight: () => (
             <Link href={`/trips/${tripId}/members`} asChild>
-              <Pressable style={styles.membersAction}>
-                <Text style={styles.membersActionText}>Members</Text>
+              <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
+                <Icon name="users" size={18} color="#059669" />
+                <Text className="text-brand-600 font-semibold">Members</Text>
               </Pressable>
             </Link>
           ),
         }}
       />
 
-      <View style={styles.header}>
-        <Text style={styles.totalLabel}>
+      {/* Total summary */}
+      <View className="px-4 pt-4 pb-3 gap-1">
+        <Text className="text-sm text-ink-secondary">
           {filter ? `Total · ${categoryLabel(filter)}` : "Total"}
         </Text>
-        <Text style={styles.total}>{formatEuros(total)}</Text>
+        <Text className="text-4xl font-bold text-brand-600">
+          {formatEuros(total)}
+        </Text>
       </View>
 
+      {/* Category pills */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.pillsScroll}
-        contentContainerStyle={styles.pillRow}
+        contentContainerClassName="px-4 py-2 gap-2 items-center"
+        className="flex-grow-0 flex-shrink-0"
       >
-        {/* Explicit "no filter" option — easier to reach than re-tapping
-            the active pill, and reads better on screen. */}
-        <Pressable
+        <Pill
+          label="All"
+          active={filter === null}
           onPress={() => setFilter(null)}
-          style={[styles.pill, filter === null && styles.pillActive]}
-        >
-          <Text
-            style={filter === null ? styles.pillTextActive : styles.pillText}
-          >
-            All
-          </Text>
-        </Pressable>
-        {categories.map((c) => {
-          const active = filter === c.code;
-          return (
-            <Pressable
-              key={c.code}
-              onPress={() => setFilter(c.code)}
-              style={[styles.pill, active && styles.pillActive]}
-            >
-              <Text style={active ? styles.pillTextActive : styles.pillText}>
-                {c.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+        />
+        {categories.map((c) => (
+          <Pill
+            key={c.code}
+            label={c.label}
+            active={filter === c.code}
+            onPress={() => setFilter(c.code)}
+          />
+        ))}
       </ScrollView>
 
-      {isLoading && <ActivityIndicator />}
-
-      {error && (
-        <Text style={styles.errorText}>
-          Could not load expenses: {String(error.message ?? error)}
-        </Text>
+      {/* Expense list */}
+      {isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator />
+        </View>
+      ) : error ? (
+        <View className="px-4 pt-2">
+          <Card className="bg-danger-50">
+            <Text className="text-danger-500 font-semibold">
+              Could not load expenses
+            </Text>
+            <Text className="text-ink-secondary text-sm mt-1">
+              {String(error.message ?? error)}
+            </Text>
+          </Card>
+        </View>
+      ) : visible.length === 0 ? (
+        <EmptyState
+          icon="plus"
+          title={
+            filter ? "No expenses in this category" : "No expenses yet"
+          }
+          description={
+            filter
+              ? "Pick another category or add one below."
+              : "Tap the + button to log your first expense."
+          }
+        />
+      ) : (
+        <FlatList
+          data={visible}
+          keyExtractor={(e, i) => e.id ?? String(i)}
+          contentContainerClassName="px-4 pt-2 pb-24 gap-2"
+          renderItem={({ item }: { item: Expense }) => (
+            <Link href={`/trips/${tripId}/expenses/${item.id}/edit`} asChild>
+              <Pressable>
+                <Card className="flex-row items-center gap-3">
+                  <View className="flex-1">
+                    <Text
+                      className="text-base text-ink-primary"
+                      numberOfLines={1}
+                    >
+                      {item.description ?? categoryLabel(item.category_code)}
+                    </Text>
+                    <Text className="text-xs text-ink-muted mt-0.5">
+                      {categoryLabel(item.category_code)} · {item.expense_date}
+                    </Text>
+                  </View>
+                  <Text className="text-base font-semibold text-ink-primary">
+                    {formatEuros(item.amount_cents)}
+                  </Text>
+                </Card>
+              </Pressable>
+            </Link>
+          )}
+        />
       )}
-
-      {!isLoading && visible.length === 0 && !error && (
-        <Text style={styles.empty}>
-          {filter
-            ? "No expenses in this category yet."
-            : "No expenses yet. Tap \"New expense\" to add one."}
-        </Text>
-      )}
-
-      <FlatList
-        data={visible}
-        keyExtractor={(e, i) => e.id ?? String(i)}
-        renderItem={({ item }: { item: Expense }) => (
-          <Link
-            href={`/trips/${tripId}/expenses/${item.id}/edit`}
-            asChild
-          >
-            <Pressable style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.expenseDesc} numberOfLines={1}>
-                  {item.description ?? categoryLabel(item.category_code)}
-                </Text>
-                <Text style={styles.expenseMeta}>
-                  {categoryLabel(item.category_code)} · {item.expense_date}
-                </Text>
-              </View>
-              <Text style={styles.expenseAmount}>
-                {formatEuros(item.amount_cents)}
-              </Text>
-            </Pressable>
-          </Link>
-        )}
-        refreshing={isRefetching}
-        onRefresh={() => refetch()}
-      />
 
       <Link href={`/trips/${tripId}/expenses/new`} asChild>
-        <Pressable style={styles.fab}>
-          <Text style={styles.fabText}>+ New expense</Text>
+        <Pressable className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-brand-600 items-center justify-center shadow-card active:bg-brand-700">
+          <Icon name="plus" size={26} color="#ffffff" />
         </Pressable>
       </Link>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  header: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  totalLabel: { fontSize: 14, color: "#666" },
-  total: { fontSize: 28, fontWeight: "700", color: "#0a6b2e" },
-  // ``flexGrow: 0`` keeps the horizontal scroll from inheriting the
-  // column's remaining vertical space; without it, the ScrollView grows
-  // to fill the parent and ``alignItems: stretch`` (the default) blows
-  // up each pill's height.
-  pillsScroll: { flexGrow: 0, flexShrink: 0 },
-  pillRow: {
-    gap: 8,
-    paddingRight: 16,
-    alignItems: "center",
-  },
-  pill: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    backgroundColor: "#eee",
-  },
-  pillActive: { backgroundColor: "#0a6b2e" },
-  pillText: { color: "#333" },
-  pillTextActive: { color: "#fff", fontWeight: "600" },
-  empty: { color: "#666", textAlign: "center", marginTop: 24 },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#ddd",
-  },
-  expenseDesc: { fontSize: 16 },
-  expenseMeta: { fontSize: 12, color: "#666" },
-  expenseAmount: { fontSize: 16, fontWeight: "600" },
-  errorText: { color: "#b00020", marginTop: 12 },
-  fab: {
-    backgroundColor: "#0a6b2e",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  fabText: { color: "#fff", fontWeight: "600" },
-  membersAction: { marginRight: 12, paddingHorizontal: 8, paddingVertical: 6 },
-  membersActionText: { color: "#0a6b2e", fontWeight: "600" },
-});
