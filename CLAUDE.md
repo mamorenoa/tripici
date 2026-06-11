@@ -169,8 +169,20 @@ Slices entregados:
   type="date">` en web, `@react-native-community/datetimepicker` en
   nativo). Iconos Feather de `@expo/vector-icons`. Todas las screens
   refactorizadas. Cero cambios funcionales.
+- **Slice 7** — deploy público. Backend dockerizado (multi-stage uv
+  → uvicorn) en **Fly.io** con Postgres unmanaged en `mad`. Web
+  estática (`expo export -p web`) en **Cloudflare Pages**. CI/CD vía
+  GitHub Actions: `backend.yml` (pytest + flyctl deploy en push a
+  main) y `frontend.yml` (type-check guard; CF Pages despliega solo).
+  `release_command` corre Alembic antes de promocionar. Config
+  ajustado para normalizar el URL de Postgres (`postgres://` →
+  `postgresql+psycopg://`) y leer `CORS_ORIGINS` como CSV con
+  `NoDecode`. Estructura PRE (branch `develop`, app `-pre`)
+  documentada en `DEPLOY.md` pero no desplegada todavía.
+  URLs: `https://tripinci-api.fly.dev` + `https://tripinci.pages.dev`.
+  Coste: $0/mes a hobby scale.
 
-Próximo candidato: **invitaciones por email** (reaprovecha
+Próximo candidato: **dominio custom** (Cloudflare Registrar +
+apuntar DNS), **invitaciones por email** (reaprovecha
 `trip_invitation` con un campo `email`; requiere elegir proveedor
-transaccional) o **modo oscuro** ahora que los tokens están
-centralizados.
+transaccional), **modo oscuro**, o **EAS Build** para iOS/Android.

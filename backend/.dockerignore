@@ -1,0 +1,28 @@
+# Local-only stuff the runtime image never needs.
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Tests aren't shipped to production.
+tests/
+
+# Compose stack for local dev. Production runs on Fly.
+docker-compose.yml
+docker/
+
+# Local config and secrets.
+.env
+.env.*
+
+# Editor / OS scratch.
+.DS_Store
+.idea/
+.vscode/
+
+# uv / pip caches.
+.uv-cache/
+
+# Git metadata (the build doesn't need history).
+.git/
+.gitignore

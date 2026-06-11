@@ -1,0 +1,40 @@
+name: frontend
+
+# The actual deploy of the web build is done by Cloudflare Pages via
+# its own GitHub integration (push to ``main`` → CF builds & ships).
+# This workflow only runs as a guard: if the type-check fails, the PR
+# can't be merged (via branch protection's required checks). It runs
+# nothing on the deploy itself.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/frontend.yml"
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/frontend.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.0"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install deps
+        # openapi-typescript declares a peer on TS ^5; we're on TS 6.
+        # Same caveat documented across previous slices.
+        run: npm install --legacy-peer-deps
+
+      - name: Type-check
+        run: npx tsc --noEmit
