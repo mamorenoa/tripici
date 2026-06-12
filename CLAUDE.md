@@ -190,7 +190,16 @@ Slices entregados:
   dominio: `MemberNotFound` y `CannotRemoveOwner`. Sin migración
   (no hay cambios de esquema).
 
-Próximo candidato: **dominio custom** (Cloudflare Registrar +
-apuntar DNS), **invitaciones por email** (reaprovecha
-`trip_invitation` con un campo `email`; requiere elegir proveedor
-transaccional), **modo oscuro**, o **EAS Build** para iOS/Android.
+- **Slice 9** — estadísticas por viaje. Endpoint `GET /trips/{id}/stats`
+  devuelve `{total_cents, by_category, by_member, by_date}` con porcentajes
+  calculados en Python. Tres queries SQL nativas (GROUP BY) en
+  `SQLModelStatsRepository`. `StatsService` reutiliza el patrón
+  `_authorize_trip` de `ExpenseService` (404 para outsiders). Frontend con
+  `TripStatsScreen`: barras horizontales por categoría y persona, barras
+  verticales por día. Botón "Stats" en el header de `TripDetailScreen`.
+  Sin librería de charts (todo con `View` nativas). Empty state si no hay gastos.
+  4 nuevos tests backend.
+
+Próximo candidato: **estadísticas globales** (total de todos los viajes por
+categoría, histórico entre viajes), **monetización** (Stripe one-time + paywall
+sobre stats), **invitaciones por email**, **modo oscuro**, o **EAS Build**.

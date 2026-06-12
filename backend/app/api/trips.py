@@ -8,12 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import current_active_user
 from app.core.db import get_session
+from app.domain.stats.entity import TripStats
+from app.domain.stats.service import StatsService
 from app.domain.trips.entity import Trip, TripCreate
 from app.domain.trips.service import TripService
 from app.domain.users.entity import User
 from app.repositories.memberships.sqlmodel_repository import (
     SQLModelMembershipRepository,
 )
+from app.repositories.stats.sqlmodel_repository import SQLModelStatsRepository
 from app.repositories.trips.sqlmodel_repository import SQLModelTripRepository
 
 router = APIRouter(prefix="/trips", tags=["trips"])
@@ -53,3 +56,16 @@ async def get_trip(
     service: Annotated[TripService, Depends(get_trip_service)],
 ) -> Trip:
     return await service.get_for_member(trip_id=trip_id, user_id=user.id)
+
+
+@router.get("/{trip_id}/stats", response_model=TripStats)
+async def get_trip_stats(
+    trip_id: UUID,
+    user: Annotated[User, Depends(current_active_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> TripStats:
+    return await StatsService(
+        stats_repo=SQLModelStatsRepository(session),
+        trip_repo=SQLModelTripRepository(session),
+        membership_repo=SQLModelMembershipRepository(session),
+    ).get_trip_stats(trip_id=trip_id, user_id=user.id)

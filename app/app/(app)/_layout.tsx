@@ -46,6 +46,10 @@ export default function AppLayout() {
         options={{ title: "Members" }}
       />
       <Stack.Screen
+        name="trips/[id]/stats"
+        options={{ title: "Stats" }}
+      />
+      <Stack.Screen
         name="invite/[token]"
         options={{ title: "Invitation" }}
       />

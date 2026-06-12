@@ -39,12 +39,22 @@ export function TripDetailScreen() {
         options={{
           title: trip?.name ?? "Trip",
           headerRight: () => (
-            <Link href={`/trips/${tripId}/members`} asChild>
-              <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
-                <Icon name="users" size={18} color="#059669" />
-                <Text className="text-brand-600 font-semibold">Members</Text>
-              </Pressable>
-            </Link>
+            <View className="flex-row items-center">
+              <Link href={`/trips/${tripId}/stats`} asChild>
+                <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
+                  <Icon name="bar-chart-2" size={18} color="#059669" />
+                  <Text className="text-brand-600 font-semibold text-sm">
+                    Stats
+                  </Text>
+                </Pressable>
+              </Link>
+              <Link href={`/trips/${tripId}/members`} asChild>
+                <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
+                  <Icon name="users" size={18} color="#059669" />
+                  <Text className="text-brand-600 font-semibold">Members</Text>
+                </Pressable>
+              </Link>
+            </View>
           ),
         }}
       />
