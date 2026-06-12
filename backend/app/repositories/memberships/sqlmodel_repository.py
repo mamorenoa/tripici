@@ -35,6 +35,19 @@ class SQLModelMembershipRepository:
         result = await self._session.execute(statement)
         return list(result.scalars().all())
 
+    async def delete(self, *, trip_id: UUID, user_id: UUID) -> bool:
+        statement = select(TripMembership).where(
+            TripMembership.trip_id == trip_id,
+            TripMembership.user_id == user_id,
+        )
+        result = await self._session.execute(statement)
+        membership = result.scalar_one_or_none()
+        if membership is None:
+            return False
+        await self._session.delete(membership)
+        await self._session.commit()
+        return True
+
     async def list_members(self, trip_id: UUID) -> list[TripMemberRead]:
         # Owner first (joined_at = trip.created_at), then collaborators
         # in joined_at order.

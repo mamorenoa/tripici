@@ -17,3 +17,8 @@ class MembershipRepository(Protocol):
         """Return collaborators + the owner of the trip, joined with the
         ``user`` table. The implementation does the join in SQL."""
         ...
+
+    async def delete(self, *, trip_id: UUID, user_id: UUID) -> bool:
+        """Remove a collaborator from the trip. Returns True if a row was
+        deleted, False if the user was not a member."""
+        ...

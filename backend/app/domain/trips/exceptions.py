@@ -14,3 +14,11 @@ class TripNotFound(Exception):
     def __init__(self, trip_id: UUID) -> None:
         super().__init__(f"Trip {trip_id} not found")
         self.trip_id = trip_id
+
+
+class MemberNotFound(Exception):
+    """The user is not a collaborator on this trip."""
+
+
+class CannotRemoveOwner(Exception):
+    """The trip owner cannot be removed from their own trip."""

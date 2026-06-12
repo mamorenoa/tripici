@@ -2,6 +2,7 @@ import * as Clipboard from "expo-clipboard";
 import { Stack, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Platform,
   Text,
@@ -17,7 +18,7 @@ import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useCreateInvitation } from "../../domain/invitations/useCreateInvitation";
 import { useInvitations } from "../../domain/invitations/useInvitations";
 import { useRevokeInvitation } from "../../domain/invitations/useRevokeInvitation";
-import { useMembers } from "../../domain/members/useMembers";
+import { useMembers, useRemoveMember } from "../../domain/members/useMembers";
 import type { TripMember } from "../../domain/members/types";
 import { useTrip } from "../../domain/trips/useTrip";
 import { buildInviteUrl } from "../../lib/inviteLink";
@@ -37,6 +38,7 @@ export function TripMembersScreen() {
   );
   const createMutation = useCreateInvitation(tripId);
   const revokeMutation = useRevokeInvitation(tripId);
+  const removeMember = useRemoveMember(tripId);
 
   const activeInvite = invitations[0];
   const activeUrl = activeInvite ? buildInviteUrl(activeInvite.token) : null;
@@ -59,6 +61,30 @@ export function TripMembersScreen() {
   async function revokeLink() {
     if (activeInvite) {
       await revokeMutation.mutateAsync(activeInvite.id);
+    }
+  }
+
+  function confirmRemove(member: TripMember) {
+    const name = member.display_name || member.email;
+    if (Platform.OS === "web") {
+      if (
+        globalThis.window?.confirm(`Remove ${name} from this trip?`)
+      ) {
+        removeMember.mutate(member.user_id);
+      }
+    } else {
+      Alert.alert(
+        "Remove member",
+        `Remove ${name} from this trip?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Remove",
+            style: "destructive",
+            onPress: () => removeMember.mutate(member.user_id),
+          },
+        ],
+      );
     }
   }
 
@@ -92,7 +118,18 @@ export function TripMembersScreen() {
                 </Text>
                 <Text className="text-xs text-ink-muted">{item.email}</Text>
               </View>
-              {item.is_owner ? <Badge variant="brand">Owner</Badge> : null}
+              {item.is_owner ? (
+                <Badge variant="brand">Owner</Badge>
+              ) : isOwner ? (
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onPress={() => confirmRemove(item)}
+                  disabled={removeMember.isPending}
+                >
+                  Remove
+                </Button>
+              ) : null}
             </Card>
           </View>
         )}

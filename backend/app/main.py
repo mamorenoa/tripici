@@ -24,7 +24,7 @@ from app.api import (
 from app.core.config import settings
 from app.domain.expenses.service import ExpenseNotFound
 from app.domain.invitations.exceptions import InvitationInvalid
-from app.domain.trips.exceptions import TripNotFound
+from app.domain.trips.exceptions import CannotRemoveOwner, MemberNotFound, TripNotFound
 
 app = FastAPI(title="Tripinci API")
 
@@ -64,3 +64,15 @@ async def _invitation_invalid_handler(
     # 404 (not 410) — keeps the API surface uniform with the other
     # "doesn't exist or not yours" responses.
     return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+@app.exception_handler(MemberNotFound)
+async def _member_not_found_handler(_: Request, exc: MemberNotFound) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": "Member not found"})
+
+
+@app.exception_handler(CannotRemoveOwner)
+async def _cannot_remove_owner_handler(
+    _: Request, exc: CannotRemoveOwner
+) -> JSONResponse:
+    return JSONResponse(status_code=400, content={"detail": "Cannot remove the trip owner"})

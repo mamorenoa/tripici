@@ -1,8 +1,9 @@
-"""HTTP endpoint for listing trip members.
+"""HTTP endpoints for trip members.
 
 Anyone with access to the trip (owner OR collaborator) can list its
-members. Authorization is delegated to ``TripService.get_for_member``,
-which raises ``TripNotFound`` for outsiders.
+members. Only the owner can remove a collaborator.
+Authorization is delegated to TripService which raises TripNotFound
+for outsiders (no existence leak).
 """
 
 from typing import Annotated
@@ -39,3 +40,19 @@ async def list_members(
         trip_id=trip_id, user_id=user.id
     )
     return await memberships.list_members(trip_id)
+
+
+@router.delete("/{user_id}", status_code=204)
+async def remove_member(
+    trip_id: UUID,
+    user_id: UUID,
+    user: Annotated[User, Depends(current_active_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> None:
+    memberships = SQLModelMembershipRepository(session)
+    trips = SQLModelTripRepository(session)
+    await TripService(repository=trips, memberships=memberships).remove_member(
+        trip_id=trip_id,
+        requester_id=user.id,
+        target_user_id=user_id,
+    )

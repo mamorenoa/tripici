@@ -69,3 +69,79 @@ async def test_outsider_cannot_list_members(
 
     response = await client.get(f"/trips/{trip.id}/members")
     assert response.status_code == 404
+
+
+async def _add_member(session, *, trip_id, user_id) -> TripMembership:
+    m = TripMembership(trip_id=trip_id, user_id=user_id)
+    session.add(m)
+    await session.commit()
+    return m
+
+
+async def test_owner_can_remove_member(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    await _add_member(session, trip_id=trip.id, user_id=second_user.id)
+    as_user(test_user)
+
+    response = await client.delete(f"/trips/{trip.id}/members/{second_user.id}")
+
+    assert response.status_code == 204
+    # Member should no longer appear in the list.
+    list_resp = await client.get(f"/trips/{trip.id}/members")
+    emails = [m["email"] for m in list_resp.json()]
+    assert "second@example.com" not in emails
+
+
+async def test_owner_cannot_remove_themselves(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    as_user,
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    as_user(test_user)
+
+    response = await client.delete(f"/trips/{trip.id}/members/{test_user.id}")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Cannot remove the trip owner"
+
+
+async def test_remove_non_existent_member_returns_404(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    # second_user never joined.
+    as_user(test_user)
+
+    response = await client.delete(f"/trips/{trip.id}/members/{second_user.id}")
+
+    assert response.status_code == 404
+
+
+async def test_non_owner_cannot_remove_member(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    await _add_member(session, trip_id=trip.id, user_id=second_user.id)
+    # second_user tries to remove test_user (the owner).
+    as_user(second_user)
+
+    response = await client.delete(f"/trips/{trip.id}/members/{test_user.id}")
+
+    # Non-owner gets 404 (no leak of existence).
+    assert response.status_code == 404

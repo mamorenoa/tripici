@@ -181,6 +181,14 @@ Slices entregados:
   documentada en `DEPLOY.md` pero no desplegada todavía.
   URLs: `https://tripinci-api.fly.dev` + `https://tripinci.pages.dev`.
   Coste: $0/mes a hobby scale.
+- **Slice 8** — expulsión de miembros. El owner puede eliminar a
+  cualquier colaborador desde `TripMembersScreen` (botón "Remove" +
+  diálogo de confirmación; sólo visible para el owner y en filas de
+  no-owners). `DELETE /trips/{id}/members/{user_id}`: sólo el owner
+  puede llamarlo, 400 si intenta eliminarse a sí mismo, 404 si el
+  usuario no es miembro, 204 en éxito. Dos nuevas excepciones de
+  dominio: `MemberNotFound` y `CannotRemoveOwner`. Sin migración
+  (no hay cambios de esquema).
 
 Próximo candidato: **dominio custom** (Cloudflare Registrar +
 apuntar DNS), **invitaciones por email** (reaprovecha
