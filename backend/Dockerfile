@@ -47,11 +47,12 @@ USER app
 
 EXPOSE 8000
 
-# Two workers fit comfortably in the 256MB VM and use both vCPU cycles.
+# Single worker: 256MB shared-cpu-1x isn't enough for two uvicorn
+# processes (~64MB RSS each) once Python imports are factored in.
 # `--forwarded-allow-ips='*'` so uvicorn trusts the proxy's
 # X-Forwarded-Proto / X-Forwarded-For headers (Fly terminates TLS).
 CMD ["uvicorn", "app.main:app", \
      "--host", "0.0.0.0", \
      "--port", "8000", \
-     "--workers", "2", \
+     "--workers", "1", \
      "--forwarded-allow-ips=*"]
