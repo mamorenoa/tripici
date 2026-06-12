@@ -11,6 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { Platform } from "react-native";
 
 import { queryClient } from "../src/lib/queryClient";
 
@@ -21,20 +22,24 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
+  const isWeb = Platform.OS === "web";
+
+  // On web, Inter is loaded via CSS @font-face in global.css (Google Fonts
+  // CDN). useFonts is native-only: Expo's web export puts font assets at
+  // `assets/node_modules/…` which wrangler excludes during deploy.
+  const [fontsLoaded, fontError] = useFonts(
+    isWeb
+      ? {}
+      : { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold }
+  );
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if (isWeb || fontsLoaded || fontError) {
       SplashScreen.hideAsync().catch(() => {});
     }
-  }, [fontsLoaded, fontError]);
+  }, [isWeb, fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) {
+  if (!isWeb && !fontsLoaded && !fontError) {
     return null;
   }
 

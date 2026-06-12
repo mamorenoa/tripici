@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Web font loading via Google Fonts CDN.
+ *
+ * Expo's `expo export --platform web` places @expo-google-fonts assets at
+ * `assets/node_modules/...`, but wrangler pages deploy excludes any path
+ * containing `node_modules` when uploading. The fonts are never uploaded and
+ * the browser fails to decode the 404 HTML it receives instead of a TTF.
+ *
+ * Fix: load Inter from Google Fonts CDN on web and register @font-face
+ * aliases that match the names NativeWind's Tailwind config expects
+ * (Inter_400Regular etc.), so no changes to tailwind.config.js are needed.
+ *
+ * On native these rules are ignored; useFonts() in _layout.tsx handles it.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Inter_400Regular';
+  font-weight: 400;
+  src: local('Inter'), local('Inter-Regular');
+}
+@font-face {
+  font-family: 'Inter_500Medium';
+  font-weight: 500;
+  src: local('Inter Medium'), local('Inter-Medium'), local('Inter');
+}
+@font-face {
+  font-family: 'Inter_600SemiBold';
+  font-weight: 600;
+  src: local('Inter SemiBold'), local('Inter-SemiBold'), local('Inter');
+}
+@font-face {
+  font-family: 'Inter_700Bold';
+  font-weight: 700;
+  src: local('Inter Bold'), local('Inter-Bold'), local('Inter');
+}
