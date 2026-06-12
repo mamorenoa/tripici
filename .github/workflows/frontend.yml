@@ -16,6 +16,7 @@ on:
     paths:
       - "app/**"
       - ".github/workflows/frontend.yml"
+  workflow_dispatch:
 
 jobs:
   verify:
