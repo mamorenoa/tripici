@@ -63,6 +63,19 @@ jobs:
         env:
           EXPO_PUBLIC_API_URL: https://tripinci-api.fly.dev
 
+      - name: Fix asset paths for wrangler
+        # wrangler pages deploy silently skips any file whose path contains
+        # the segment "node_modules". Expo exports icon fonts and other
+        # assets to dist/assets/node_modules/…, so they never reach CF Pages.
+        # Rename the directory and patch every reference in the JS bundle.
+        run: |
+          mv dist/assets/node_modules dist/assets/pkg
+          find dist/_expo/static/js -name "*.js" \
+            -exec sed -i 's|assets/node_modules|assets/pkg|g' {} +
+          find dist/_expo/static/css -name "*.css" \
+            -exec sed -i 's|assets/node_modules|assets/pkg|g' {} +
+          sed -i 's|assets/node_modules|assets/pkg|g' dist/index.html
+
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy dist --project-name tripinci
         env:
