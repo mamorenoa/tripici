@@ -5,7 +5,15 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.stats.entity import CategoryStat, DateStat, MemberStat, TripStats
+from app.domain.stats.entity import (
+    CategoryStat,
+    DateStat,
+    GlobalStats,
+    MemberStat,
+    MonthStat,
+    TripStat,
+    TripStats,
+)
 
 
 def _pct(part: int, total: int) -> float:
@@ -95,5 +103,125 @@ class SQLModelStatsRepository:
                 """
             ),
             {"trip_id": trip_id},
+        )
+        return result.fetchall()
+
+    # ── Global (cross-trip) aggregations ─────────────────────────────
+
+    _USER_TRIPS_CTE = """
+        WITH user_trips AS (
+            SELECT id AS trip_id FROM trip WHERE owner_id = :user_id
+            UNION
+            SELECT trip_id FROM trip_membership WHERE user_id = :user_id
+        )
+    """
+
+    async def aggregate_for_user(
+        self, user_id: UUID, category_code: str | None = None
+    ) -> GlobalStats:
+        cat_filter = "AND e.category_code = :category_code" if category_code else ""
+        params: dict = {"user_id": user_id}
+        if category_code:
+            params["category_code"] = category_code
+
+        by_category_rows = await self._global_by_category(user_id)
+        gross_total = sum(r.total_cents for r in by_category_rows)
+
+        total_row = await self._global_total(user_id, cat_filter, params)
+        filtered_total = total_row or 0
+
+        by_trip_rows = await self._global_by_trip(cat_filter, params)
+        by_month_rows = await self._global_by_month(cat_filter, params)
+
+        return GlobalStats(
+            total_cents=filtered_total,
+            by_category=[
+                CategoryStat(
+                    category_code=r.category_code,
+                    label=r.label,
+                    total_cents=r.total_cents,
+                    pct=_pct(r.total_cents, gross_total),
+                )
+                for r in by_category_rows
+            ],
+            by_trip=[
+                TripStat(
+                    trip_id=r.trip_id,
+                    trip_name=r.trip_name,
+                    total_cents=r.total_cents,
+                )
+                for r in by_trip_rows
+            ],
+            by_month=[
+                MonthStat(month=r.month, total_cents=r.total_cents)
+                for r in by_month_rows
+            ],
+        )
+
+    async def _global_by_category(self, user_id: UUID):
+        result = await self._session.execute(
+            text(
+                self._USER_TRIPS_CTE + """
+                SELECT e.category_code, c.label, SUM(e.amount_cents) AS total_cents
+                FROM expense e
+                JOIN category c ON c.code = e.category_code
+                JOIN user_trips ut ON ut.trip_id = e.trip_id
+                GROUP BY e.category_code, c.label
+                ORDER BY total_cents DESC
+                """
+            ),
+            {"user_id": user_id},
+        )
+        return result.fetchall()
+
+    async def _global_total(
+        self, user_id: UUID, cat_filter: str, params: dict
+    ) -> int:
+        result = await self._session.execute(
+            text(
+                self._USER_TRIPS_CTE + f"""
+                SELECT COALESCE(SUM(e.amount_cents), 0) AS total_cents
+                FROM expense e
+                JOIN user_trips ut ON ut.trip_id = e.trip_id
+                {cat_filter}
+                """
+            ),
+            params,
+        )
+        row = result.fetchone()
+        return row.total_cents if row else 0
+
+    async def _global_by_trip(self, cat_filter: str, params: dict):
+        result = await self._session.execute(
+            text(
+                self._USER_TRIPS_CTE + f"""
+                SELECT t.id AS trip_id, t.name AS trip_name,
+                       SUM(e.amount_cents) AS total_cents
+                FROM expense e
+                JOIN trip t ON t.id = e.trip_id
+                JOIN user_trips ut ON ut.trip_id = e.trip_id
+                {cat_filter}
+                GROUP BY t.id, t.name
+                ORDER BY total_cents DESC
+                """
+            ),
+            params,
+        )
+        return result.fetchall()
+
+    async def _global_by_month(self, cat_filter: str, params: dict):
+        result = await self._session.execute(
+            text(
+                self._USER_TRIPS_CTE + f"""
+                SELECT TO_CHAR(e.expense_date, 'YYYY-MM') AS month,
+                       SUM(e.amount_cents) AS total_cents
+                FROM expense e
+                JOIN user_trips ut ON ut.trip_id = e.trip_id
+                {cat_filter}
+                GROUP BY month
+                ORDER BY month ASC
+                """
+            ),
+            params,
         )
         return result.fetchall()

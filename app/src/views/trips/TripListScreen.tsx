@@ -32,14 +32,22 @@ export function TripListScreen() {
             {user?.display_name ?? ""}
           </Text>
         </View>
-        <Button
-          variant="ghost"
-          size="sm"
-          onPress={() => logout.mutate()}
-          disabled={logout.isPending}
-        >
-          <Icon name="log-out" size={18} color="#059669" />
-        </Button>
+        <View className="flex-row items-center gap-1">
+          <Link href="/stats" asChild>
+            <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
+              <Icon name="bar-chart-2" size={18} color="#059669" />
+              <Text className="text-brand-600 font-semibold text-sm">Stats</Text>
+            </Pressable>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => logout.mutate()}
+            disabled={logout.isPending}
+          >
+            <Icon name="log-out" size={18} color="#059669" />
+          </Button>
+        </View>
       </View>
 
       {isLoading ? (

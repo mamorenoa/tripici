@@ -200,6 +200,13 @@ Slices entregados:
   Sin librería de charts (todo con `View` nativas). Empty state si no hay gastos.
   4 nuevos tests backend.
 
-Próximo candidato: **estadísticas globales** (total de todos los viajes por
-categoría, histórico entre viajes), **monetización** (Stripe one-time + paywall
-sobre stats), **invitaciones por email**, **modo oscuro**, o **EAS Build**.
+- **Slice 10** — estadísticas globales. Endpoint `GET /stats?category_code=` (opcional)
+  agrega gastos de todos los viajes del usuario (propios + de miembro). `by_category`
+  siempre sin filtrar (alimenta las pills); `total_cents`, `by_trip` y `by_month`
+  responden al filtro. `GlobalStatsScreen` accesible desde el header de la lista de
+  viajes: total con subtítulo dinámico, pills de categoría, panel "By category" (oculto
+  si hay filtro), "By trip", "By month". El filtro viaja al servidor como query param;
+  TanStack Query cachea cada combinación. 5 nuevos tests backend.
+
+Próximo candidato: **monetización** (Stripe one-time + paywall sobre stats globales),
+**invitaciones por email**, **modo oscuro**, o **EAS Build**.

@@ -19,6 +19,7 @@ from app.api import (
     health,
     invitations,
     members,
+    stats,
     trips,
 )
 from app.core.config import settings
@@ -43,6 +44,7 @@ app.include_router(trips.router)
 app.include_router(expenses.router)
 app.include_router(invitations.router)
 app.include_router(members.router)
+app.include_router(stats.router)
 
 
 @app.exception_handler(TripNotFound)

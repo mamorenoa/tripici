@@ -34,3 +34,21 @@ class TripStats(SQLModel):
     by_category: list[CategoryStat]
     by_member: list[MemberStat]
     by_date: list[DateStat]
+
+
+class TripStat(SQLModel):
+    trip_id: UUID
+    trip_name: str
+    total_cents: int
+
+
+class MonthStat(SQLModel):
+    month: str  # "YYYY-MM"
+    total_cents: int
+
+
+class GlobalStats(SQLModel):
+    total_cents: int
+    by_category: list[CategoryStat]  # always unfiltered — drives the filter pills
+    by_trip: list[TripStat]          # filtered when category_code is provided
+    by_month: list[MonthStat]        # filtered when category_code is provided

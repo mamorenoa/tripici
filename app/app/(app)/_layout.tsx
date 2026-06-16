@@ -27,6 +27,7 @@ export default function AppLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: "Tripinci" }} />
+      <Stack.Screen name="stats" options={{ title: "All trips" }} />
       <Stack.Screen
         name="trips/new"
         options={{ title: "New trip", presentation: "modal" }}
