@@ -18,7 +18,9 @@ export type IconName =
   | "compass"
   | "calendar"
   | "mail"
-  | "bar-chart-2";
+  | "bar-chart-2"
+  | "eye"
+  | "eye-off";
 
 type Props = {
   name: IconName;

@@ -142,12 +142,17 @@ class SQLModelStatsRepository:
 
     async def global_trip_totals(
         self, user_id: UUID, category_code: str | None
-    ) -> list[tuple[UUID, str, int]]:
+    ) -> list[tuple[UUID, str, int, int]]:
+        # ``days`` comes from a correlated subquery over ALL the trip's
+        # expenses, so the trip's span is independent of the category
+        # filter applied to the (filtered) total.
         result = await self._session.execute(
             text(
                 self._USER_TRIPS_CTE + f"""
                 SELECT t.id AS trip_id, t.name AS trip_name,
-                       SUM(e.amount_cents) AS total_cents
+                       SUM(e.amount_cents) AS total_cents,
+                       (SELECT MAX(x.expense_date) - MIN(x.expense_date) + 1
+                        FROM expense x WHERE x.trip_id = t.id) AS days
                 FROM expense e
                 JOIN trip t ON t.id = e.trip_id
                 JOIN user_trips ut ON ut.trip_id = e.trip_id
@@ -158,7 +163,10 @@ class SQLModelStatsRepository:
             ),
             self._params(user_id, category_code),
         )
-        return [(r.trip_id, r.trip_name, r.total_cents) for r in result.fetchall()]
+        return [
+            (r.trip_id, r.trip_name, r.total_cents, r.days)
+            for r in result.fetchall()
+        ]
 
     async def global_month_totals(
         self, user_id: UUID, category_code: str | None

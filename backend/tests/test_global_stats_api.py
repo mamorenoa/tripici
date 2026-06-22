@@ -202,6 +202,31 @@ async def test_global_personal_total_honors_category_filter(
     assert data["personal_total_cents"] == 1000  # FUEL excluded
 
 
+async def test_global_stats_by_trip_days_and_daily(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    as_user,
+) -> None:
+    """by_trip carries the trip span (days) and the rounded price/day."""
+    trip = await _trip(session, owner_id=test_user.id, name="Italy")
+    # 6000 over 3 days (1-jun..3-jun) → days=3, daily=2000.
+    await _expense(session, trip_id=trip.id, user_id=test_user.id,
+                   amount_cents=4000, category_code="RESTAURANTS",
+                   expense_date=date(2026, 6, 1))
+    await _expense(session, trip_id=trip.id, user_id=test_user.id,
+                   amount_cents=2000, category_code="FUEL",
+                   expense_date=date(2026, 6, 3))
+    as_user(test_user)
+
+    data = (await client.get("/stats")).json()
+
+    italy = next(t for t in data["by_trip"] if t["trip_name"] == "Italy")
+    assert italy["total_cents"] == 6000
+    assert italy["days"] == 3
+    assert italy["daily_cents"] == 2000
+
+
 async def test_global_stats_empty(
     client: AsyncClient,
     session: AsyncSession,

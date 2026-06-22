@@ -52,20 +52,58 @@ function CategorySection({ rows }: { rows: CategoryStat[] }) {
 
 // ── Section: by trip ─────────────────────────────────────────────
 
+type SortKey = "total" | "daily";
+type SortDir = "desc" | "asc";
+
+function metric(r: TripStat, key: SortKey): number {
+  return key === "total" ? r.total_cents : r.daily_cents;
+}
+
 function TripSection({
   rows,
-  totalCents,
+  sortKey,
+  sortDir,
+  onSortKey,
+  onToggleDir,
 }: {
   rows: TripStat[];
-  totalCents: number;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  onSortKey: (k: SortKey) => void;
+  onToggleDir: () => void;
 }) {
+  const sorted = [...rows].sort((a, b) => {
+    const diff = metric(a, sortKey) - metric(b, sortKey);
+    return sortDir === "desc" ? -diff : diff;
+  });
+  const max = Math.max(...sorted.map((r) => metric(r, sortKey)), 1);
+
   return (
     <Card className="gap-3">
-      <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        By trip
-      </Text>
-      {rows.map((r) => {
-        const pct = totalCents > 0 ? (r.total_cents / totalCents) * 100 : 0;
+      <View className="flex-row items-center justify-between">
+        <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
+          By trip
+        </Text>
+        <View className="flex-row items-center gap-2">
+          <Pill
+            label="Total"
+            active={sortKey === "total"}
+            onPress={() => onSortKey("total")}
+          />
+          <Pill
+            label="€/day"
+            active={sortKey === "daily"}
+            onPress={() => onSortKey("daily")}
+          />
+          <Pill
+            label={sortDir === "desc" ? "↓ High" : "↑ Low"}
+            active={false}
+            onPress={onToggleDir}
+          />
+        </View>
+      </View>
+      {sorted.map((r) => {
+        const pct = (metric(r, sortKey) / max) * 100;
         return (
           <View key={r.trip_id} className="gap-1">
             <View className="flex-row justify-between items-center">
@@ -76,7 +114,12 @@ function TripSection({
                 {formatEuros(r.total_cents)}
               </Text>
             </View>
-            <HBar pct={pct} />
+            <View className="flex-row items-center gap-2">
+              <HBar pct={pct} />
+              <Text className="text-xs text-ink-muted">
+                {formatEuros(r.daily_cents)}/day
+              </Text>
+            </View>
           </View>
         );
       })}
@@ -120,6 +163,8 @@ export function GlobalStatsScreen() {
   const [activeFilter, setActiveFilter] = useState<string | undefined>(
     undefined
   );
+  const [sortKey, setSortKey] = useState<SortKey>("total");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const { data: stats, isLoading, error } = useGlobalStats(activeFilter);
 
   const activeLabel = activeFilter
@@ -196,7 +241,15 @@ export function GlobalStatsScreen() {
 
           {/* By trip */}
           {stats.by_trip.length > 0 && (
-            <TripSection rows={stats.by_trip} totalCents={stats.total_cents} />
+            <TripSection
+              rows={stats.by_trip}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSortKey={setSortKey}
+              onToggleDir={() =>
+                setSortDir((d) => (d === "desc" ? "asc" : "desc"))
+              }
+            />
           )}
 
           {/* By month — only shown when more than one month */}

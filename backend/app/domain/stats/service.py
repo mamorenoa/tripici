@@ -163,8 +163,14 @@ class StatsService:
                 for code, label, t in category_rows
             ],
             by_trip=[
-                TripStat(trip_id=tid, trip_name=name, total_cents=t)
-                for tid, name, t in trip_rows
+                TripStat(
+                    trip_id=tid,
+                    trip_name=name,
+                    total_cents=t,
+                    days=days,
+                    daily_cents=round(t / days) if days else t,
+                )
+                for tid, name, t, days in trip_rows
             ],
             by_month=[
                 MonthStat(month=month, total_cents=t) for month, t in month_rows

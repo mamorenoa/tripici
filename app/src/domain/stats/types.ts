@@ -28,6 +28,8 @@ export type TripStat = {
   trip_id: string;
   trip_name: string;
   total_cents: number;
+  days: number; // trip span: last expense date − first + 1 (>= 1)
+  daily_cents: number; // total_cents / days, rounded
 };
 
 export type MonthStat = {

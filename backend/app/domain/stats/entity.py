@@ -40,6 +40,8 @@ class TripStat(SQLModel):
     trip_id: UUID
     trip_name: str
     total_cents: int
+    days: int          # trip span: last expense date − first + 1 (>= 1)
+    daily_cents: int   # total_cents / days, rounded
 
 
 class MonthStat(SQLModel):

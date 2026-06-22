@@ -48,8 +48,9 @@ class StatsRepository(Protocol):
 
     async def global_trip_totals(
         self, user_id: UUID, category_code: str | None
-    ) -> list[tuple[UUID, str, int]]:
-        """``(trip_id, trip_name, total_cents)`` desc."""
+    ) -> list[tuple[UUID, str, int, int]]:
+        """``(trip_id, trip_name, total_cents, days)`` desc. ``days`` is the
+        full-trip span (ignores the category filter)."""
         ...
 
     async def global_month_totals(

@@ -111,6 +111,17 @@ function DateSection({ rows }: { rows: DateStat[] }) {
   );
 }
 
+// ── Helpers ───────────────────────────────────────────────────────
+
+/** Trip span in days: last expense date − first + 1 (inclusive). The
+ * dates come sorted ascending from the backend (`by_date`). */
+function tripDays(dates: DateStat[]): number {
+  if (dates.length === 0) return 1;
+  const first = new Date(dates[0].date).getTime();
+  const last = new Date(dates[dates.length - 1].date).getTime();
+  return Math.max(1, Math.round((last - first) / 86_400_000) + 1);
+}
+
 // ── Screen ────────────────────────────────────────────────────────
 
 export function TripStatsScreen() {
@@ -147,6 +158,15 @@ export function TripStatsScreen() {
             <Text className="text-4xl font-bold text-brand-600">
               {formatEuros(stats.total_cents)}
             </Text>
+            {(() => {
+              const days = tripDays(stats.by_date);
+              return (
+                <Text className="text-sm text-ink-muted">
+                  {formatEuros(Math.round(stats.total_cents / days))}/day ·{" "}
+                  {days} {days === 1 ? "day" : "days"}
+                </Text>
+              );
+            })()}
           </View>
 
           {stats.by_category.length > 0 && (
