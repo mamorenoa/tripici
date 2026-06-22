@@ -161,6 +161,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trips/{trip_id}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trip Stats */
+        get: operations["get_trip_stats_trips__trip_id__stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/trips/{trip_id}/expenses": {
         parameters: {
             query?: never;
@@ -283,6 +300,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trips/{trip_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Member */
+        delete: operations["remove_member_trips__trip_id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Global Stats */
+        get: operations["get_global_stats_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -325,6 +376,27 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** CategoryStat */
+        CategoryStat: {
+            /** Category Code */
+            category_code: string;
+            /** Label */
+            label: string;
+            /** Total Cents */
+            total_cents: number;
+            /** Pct */
+            pct: number;
+        };
+        /** DateStat */
+        DateStat: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Total Cents */
+            total_cents: number;
+        };
         /** ErrorModel */
         ErrorModel: {
             /** Detail */
@@ -345,6 +417,8 @@ export interface components {
             expense_date?: string;
             /** Description */
             description?: string | null;
+            /** Paid By User Id */
+            paid_by_user_id?: string | null;
             /**
              * Id
              * Format: uuid
@@ -387,6 +461,8 @@ export interface components {
             expense_date?: string;
             /** Description */
             description?: string | null;
+            /** Paid By User Id */
+            paid_by_user_id?: string | null;
         };
         /**
          * ExpenseUpdate
@@ -404,6 +480,21 @@ export interface components {
             expense_date?: string | null;
             /** Description */
             description?: string | null;
+            /** Paid By User Id */
+            paid_by_user_id?: string | null;
+        };
+        /** GlobalStats */
+        GlobalStats: {
+            /** Total Cents */
+            total_cents: number;
+            /** Personal Total Cents */
+            personal_total_cents: number;
+            /** By Category */
+            by_category: components["schemas"]["CategoryStat"][];
+            /** By Trip */
+            by_trip: components["schemas"]["TripStat"][];
+            /** By Month */
+            by_month: components["schemas"]["MonthStat"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -468,6 +559,27 @@ export interface components {
             /** Revoked At */
             revoked_at: string | null;
         };
+        /** MemberStat */
+        MemberStat: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Total Cents */
+            total_cents: number;
+            /** Pct */
+            pct: number;
+        };
+        /** MonthStat */
+        MonthStat: {
+            /** Month */
+            month: string;
+            /** Total Cents */
+            total_cents: number;
+        };
         /**
          * Trip
          * @description A shared trip created by a user. Persisted in the ``trip`` table.
@@ -524,6 +636,29 @@ export interface components {
             joined_at: string;
             /** Is Owner */
             is_owner: boolean;
+        };
+        /** TripStat */
+        TripStat: {
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /** Trip Name */
+            trip_name: string;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** TripStats */
+        TripStats: {
+            /** Total Cents */
+            total_cents: number;
+            /** By Category */
+            by_category: components["schemas"]["CategoryStat"][];
+            /** By Member */
+            by_member: components["schemas"]["MemberStat"][];
+            /** By Date */
+            by_date: components["schemas"]["DateStat"][];
         };
         /** UserCreate */
         UserCreate: {
@@ -1105,6 +1240,37 @@ export interface operations {
             };
         };
     };
+    get_trip_stats_trips__trip_id__stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_expenses_trips__trip_id__expenses_get: {
         parameters: {
             query?: never;
@@ -1411,6 +1577,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TripMemberRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_member_trips__trip_id__members__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_global_stats_stats_get: {
+        parameters: {
+            query?: {
+                category_code?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlobalStats"];
                 };
             };
             /** @description Validation Error */

@@ -16,6 +16,7 @@ import { Pill } from "../../components/Pill";
 import { useCategories } from "../../domain/categories/useCategories";
 import type { Expense } from "../../domain/expenses/types";
 import { useExpenses } from "../../domain/expenses/useExpenses";
+import { useMembers } from "../../domain/members/useMembers";
 import { useTrip } from "../../domain/trips/useTrip";
 import { formatEuros } from "../../lib/money";
 
@@ -24,6 +25,7 @@ export function TripDetailScreen() {
   const { data: trip } = useTrip(tripId);
   const { data: expenses = [], isLoading, error } = useExpenses(tripId);
   const { data: categories = [] } = useCategories();
+  const { data: members = [] } = useMembers(tripId);
   const [filter, setFilter] = useState<string | null>(null);
 
   const visible = filter
@@ -32,6 +34,11 @@ export function TripDetailScreen() {
   const total = visible.reduce((sum, e) => sum + e.amount_cents, 0);
   const categoryLabel = (code: string) =>
     categories.find((c) => c.code === code)?.label ?? code;
+  // null payer == a common expense, split across members in the stats.
+  const payerLabel = (userId: string | null | undefined) =>
+    userId == null
+      ? "Common"
+      : members.find((m) => m.user_id === userId)?.display_name ?? "—";
 
   return (
     <View className="flex-1 bg-background">
@@ -137,6 +144,8 @@ export function TripDetailScreen() {
                     </Text>
                     <Text className="text-xs text-ink-muted mt-0.5">
                       {categoryLabel(item.category_code)} · {item.expense_date}
+                      {" · "}
+                      {payerLabel(item.paid_by_user_id)}
                     </Text>
                   </View>
                   <Text className="text-base font-semibold text-ink-primary">

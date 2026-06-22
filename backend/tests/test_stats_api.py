@@ -19,6 +19,9 @@ async def _create_trip(session: AsyncSession, *, owner_id, name="Italy 2026") ->
     return trip
 
 
+_CREATOR = object()  # sentinel: attribute the expense to its creator
+
+
 async def _add_expense(
     session: AsyncSession,
     *,
@@ -27,13 +30,18 @@ async def _add_expense(
     amount_cents: int,
     category_code: str,
     expense_date: date | None = None,
+    paid_by=_CREATOR,
 ) -> Expense:
+    # By default the expense is attributed to its creator (mirrors the
+    # migration backfill). Pass ``paid_by=None`` for a common expense or
+    # an explicit user id to attribute it to someone else.
     expense = Expense(
         trip_id=trip_id,
         created_by_user_id=user_id,
         amount_cents=amount_cents,
         category_code=category_code,
         expense_date=expense_date or date(2026, 6, 1),
+        paid_by_user_id=user_id if paid_by is _CREATOR else paid_by,
     )
     session.add(expense)
     await session.commit()
@@ -130,6 +138,64 @@ async def test_stats_404_for_non_member(
     response = await client.get(f"/trips/{trip.id}/stats")
 
     assert response.status_code == 404
+
+
+async def test_stats_common_expense_split_across_members(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    """A common expense is divided equally among the trip's members in
+    the per-member view; the trip total stays whole."""
+    trip = await _create_trip(session, owner_id=test_user.id)
+    session.add(TripMembership(trip_id=trip.id, user_id=second_user.id))
+    await session.commit()
+    # 1000 attributed to the owner + 600 common (split 300/300).
+    await _add_expense(
+        session, trip_id=trip.id, user_id=test_user.id,
+        amount_cents=1000, category_code="RESTAURANTS",
+    )
+    await _add_expense(
+        session, trip_id=trip.id, user_id=test_user.id,
+        amount_cents=600, category_code="OTHER", paid_by=None,
+    )
+    as_user(test_user)
+
+    data = (await client.get(f"/trips/{trip.id}/stats")).json()
+
+    assert data["total_cents"] == 1600
+    by_member = {m["display_name"]: m["total_cents"] for m in data["by_member"]}
+    assert by_member["Tester"] == 1300  # 1000 + 300
+    assert by_member["Second"] == 300   # 0 + 300
+    # The split keeps the per-member totals summing to the trip total.
+    assert sum(by_member.values()) == 1600
+
+
+async def test_stats_common_split_distributes_remainder_cents(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    """An indivisible common pot still sums back to the total (no cents
+    lost): 101 across 2 members → 51 + 50."""
+    trip = await _create_trip(session, owner_id=test_user.id)
+    session.add(TripMembership(trip_id=trip.id, user_id=second_user.id))
+    await session.commit()
+    await _add_expense(
+        session, trip_id=trip.id, user_id=test_user.id,
+        amount_cents=101, category_code="OTHER", paid_by=None,
+    )
+    as_user(test_user)
+
+    data = (await client.get(f"/trips/{trip.id}/stats")).json()
+
+    totals = sorted(m["total_cents"] for m in data["by_member"])
+    assert totals == [50, 51]
+    assert sum(totals) == 101
 
 
 async def test_stats_accessible_by_collaborator(

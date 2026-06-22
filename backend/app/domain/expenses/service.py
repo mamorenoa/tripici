@@ -25,6 +25,18 @@ class ExpenseNotFound(Exception):
         self.expense_id = expense_id
 
 
+class PayerNotMember(Exception):
+    """``paid_by_user_id`` points to someone who isn't a trip member.
+
+    Unlike "trip not found", we can be explicit here (400): the caller
+    already proved access to the trip, so there's no existence to leak.
+    """
+
+    def __init__(self, user_id: UUID) -> None:
+        super().__init__(f"User {user_id} is not a member of this trip")
+        self.user_id = user_id
+
+
 class ExpenseService:
     def __init__(
         self,
@@ -47,10 +59,19 @@ class ExpenseService:
             return trip
         raise TripNotFound(trip_id)
 
+    async def _is_member(self, trip: Trip, user_id: UUID) -> bool:
+        if trip.owner_id == user_id:
+            return True
+        return await self._memberships.exists(trip_id=trip.id, user_id=user_id)
+
     async def create(
         self, *, trip_id: UUID, user_id: UUID, payload: ExpenseCreate
     ) -> Expense:
-        await self._authorize_trip(trip_id, user_id)
+        trip = await self._authorize_trip(trip_id, user_id)
+        if payload.paid_by_user_id is not None and not await self._is_member(
+            trip, payload.paid_by_user_id
+        ):
+            raise PayerNotMember(payload.paid_by_user_id)
         expense = Expense(
             **payload.model_dump(),
             trip_id=trip_id,
@@ -72,11 +93,15 @@ class ExpenseService:
         user_id: UUID,
         patch: ExpenseUpdate,
     ) -> Expense:
-        await self._authorize_trip(trip_id, user_id)
+        trip = await self._authorize_trip(trip_id, user_id)
         expense = await self._expenses.get_by_id(expense_id)
         if expense is None or expense.trip_id != trip_id:
             raise ExpenseNotFound(expense_id)
-        for key, value in patch.model_dump(exclude_unset=True).items():
+        changes = patch.model_dump(exclude_unset=True)
+        new_payer = changes.get("paid_by_user_id")
+        if new_payer is not None and not await self._is_member(trip, new_payer):
+            raise PayerNotMember(new_payer)
+        for key, value in changes.items():
             setattr(expense, key, value)
         expense.updated_at = datetime.now(timezone.utc)
         return await self._expenses.update(expense)

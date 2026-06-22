@@ -183,6 +183,101 @@ async def test_unknown_trip_returns_404(authed_client: AsyncClient) -> None:
     assert response.status_code == 404
 
 
+async def test_create_expense_defaults_to_no_payer(
+    authed_client: AsyncClient,
+) -> None:
+    """Omitting ``paid_by_user_id`` creates a common expense (null)."""
+    trip_id = await _create_trip_via_api(authed_client)
+
+    response = await authed_client.post(
+        f"/trips/{trip_id}/expenses",
+        json={
+            "amount_cents": 1000,
+            "category_code": "OTHER",
+            "expense_date": "2026-06-10",
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    assert response.json()["paid_by_user_id"] is None
+
+
+async def test_create_expense_attributed_to_another_member(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    """The owner can log an expense paid by another member."""
+    from app.domain.memberships.entity import TripMembership
+
+    trip = await _insert_trip(session, owner_id=test_user.id, name="Italy 2026")
+    session.add(TripMembership(trip_id=trip.id, user_id=second_user.id))
+    await session.commit()
+    as_user(test_user)
+
+    response = await client.post(
+        f"/trips/{trip.id}/expenses",
+        json={
+            "amount_cents": 1000,
+            "category_code": "OTHER",
+            "expense_date": "2026-06-10",
+            "paid_by_user_id": str(second_user.id),
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert body["paid_by_user_id"] == str(second_user.id)
+    # created_by stays the actual author (audit), distinct from the payer.
+    assert body["created_by_user_id"] == str(test_user.id)
+
+
+async def test_create_expense_payer_not_member_returns_400(
+    authed_client: AsyncClient, second_user: User
+) -> None:
+    """Attributing to a non-member is a 400 (the trip itself is accessible)."""
+    trip_id = await _create_trip_via_api(authed_client)
+
+    response = await authed_client.post(
+        f"/trips/{trip_id}/expenses",
+        json={
+            "amount_cents": 1000,
+            "category_code": "OTHER",
+            "expense_date": "2026-06-10",
+            "paid_by_user_id": str(second_user.id),
+        },
+    )
+
+    assert response.status_code == 400, response.text
+
+
+async def test_update_expense_to_common(authed_client: AsyncClient, test_user: User) -> None:
+    """Sending ``paid_by_user_id: null`` turns an expense common."""
+    trip_id = await _create_trip_via_api(authed_client)
+    created = (
+        await authed_client.post(
+            f"/trips/{trip_id}/expenses",
+            json={
+                "amount_cents": 1000,
+                "category_code": "OTHER",
+                "expense_date": "2026-06-10",
+                "paid_by_user_id": str(test_user.id),
+            },
+        )
+    ).json()
+    assert created["paid_by_user_id"] == str(test_user.id)
+
+    response = await authed_client.patch(
+        f"/trips/{trip_id}/expenses/{created['id']}",
+        json={"paid_by_user_id": None},
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["paid_by_user_id"] is None
+
+
 async def test_collaborator_can_crud_expenses(
     client: AsyncClient,
     session: AsyncSession,

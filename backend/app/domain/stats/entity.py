@@ -49,6 +49,11 @@ class MonthStat(SQLModel):
 
 class GlobalStats(SQLModel):
     total_cents: int
+    # What the current user spent personally across all their trips:
+    # expenses attributed to them + their share of each trip's common
+    # expenses (common total ÷ that trip's member count). Honors the
+    # category filter, like ``total_cents``.
+    personal_total_cents: int
     by_category: list[CategoryStat]  # always unfiltered — drives the filter pills
     by_trip: list[TripStat]          # filtered when category_code is provided
     by_month: list[MonthStat]        # filtered when category_code is provided

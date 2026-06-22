@@ -37,6 +37,7 @@ export type MonthStat = {
 
 export type GlobalStats = {
   total_cents: number;
+  personal_total_cents: number; // your attributed spend + your share of common
   by_category: CategoryStat[]; // always unfiltered — drives the filter pills
   by_trip: TripStat[];         // filtered when category_code is provided
   by_month: MonthStat[];       // filtered when category_code is provided

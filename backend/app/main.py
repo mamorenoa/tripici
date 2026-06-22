@@ -23,7 +23,7 @@ from app.api import (
     trips,
 )
 from app.core.config import settings
-from app.domain.expenses.service import ExpenseNotFound
+from app.domain.expenses.service import ExpenseNotFound, PayerNotMember
 from app.domain.invitations.exceptions import InvitationInvalid
 from app.domain.trips.exceptions import CannotRemoveOwner, MemberNotFound, TripNotFound
 
@@ -57,6 +57,16 @@ async def _expense_not_found_handler(
     _: Request, exc: ExpenseNotFound
 ) -> JSONResponse:
     return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+@app.exception_handler(PayerNotMember)
+async def _payer_not_member_handler(
+    _: Request, exc: PayerNotMember
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": "Payer is not a member of this trip"},
+    )
 
 
 @app.exception_handler(InvitationInvalid)

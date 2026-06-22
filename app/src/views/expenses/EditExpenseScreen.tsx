@@ -51,6 +51,7 @@ export function EditExpenseScreen() {
     <View className="flex-1 bg-background">
       <View className="flex-1">
         <ExpenseForm
+          tripId={tripId}
           initialValue={expense}
           submitting={updateMutation.isPending}
           error={updateMutation.error ?? undefined}

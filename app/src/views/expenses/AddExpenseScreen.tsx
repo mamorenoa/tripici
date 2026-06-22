@@ -20,6 +20,7 @@ export function AddExpenseScreen() {
 
   return (
     <ExpenseForm
+      tripId={tripId}
       submitting={mutation.isPending}
       error={mutation.error ?? undefined}
       onSubmit={handleSubmit}

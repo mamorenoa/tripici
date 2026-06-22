@@ -157,6 +157,12 @@ export function GlobalStatsScreen() {
             <Text className="text-4xl font-bold text-brand-600">
               {formatEuros(stats.total_cents)}
             </Text>
+            <Text className="text-sm text-ink-muted">
+              Your share: {formatEuros(stats.personal_total_cents)}
+              <Text className="text-ink-muted">
+                {" "}· attributed to you + your part of common expenses
+              </Text>
+            </Text>
           </View>
 
           {/* Category filter pills — always unfiltered */}

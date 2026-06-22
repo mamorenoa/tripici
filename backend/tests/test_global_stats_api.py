@@ -19,6 +19,9 @@ async def _trip(session: AsyncSession, *, owner_id, name="Trip") -> Trip:
     return t
 
 
+_CREATOR = object()  # sentinel: attribute the expense to its creator
+
+
 async def _expense(
     session: AsyncSession,
     *,
@@ -27,6 +30,7 @@ async def _expense(
     amount_cents: int,
     category_code: str,
     expense_date: date = date(2026, 6, 1),
+    paid_by=_CREATOR,
 ) -> None:
     session.add(
         Expense(
@@ -35,6 +39,7 @@ async def _expense(
             amount_cents=amount_cents,
             category_code=category_code,
             expense_date=expense_date,
+            paid_by_user_id=user_id if paid_by is _CREATOR else paid_by,
         )
     )
     await session.commit()
@@ -149,6 +154,54 @@ async def test_global_stats_includes_member_trips(
     assert any(t["trip_name"] == "Shared" for t in data["by_trip"])
 
 
+async def test_global_personal_total_attributed_and_common(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    second_user: User,
+    as_user,
+) -> None:
+    """personal_total = expenses attributed to me + my share of each
+    trip's common pot (common ÷ member count)."""
+    trip = await _trip(session, owner_id=test_user.id, name="Italy")
+    session.add(TripMembership(trip_id=trip.id, user_id=second_user.id))
+    await session.commit()
+    # 1000 attributed to me, 500 attributed to second, 600 common.
+    await _expense(session, trip_id=trip.id, user_id=test_user.id,
+                   amount_cents=1000, category_code="RESTAURANTS")
+    await _expense(session, trip_id=trip.id, user_id=second_user.id,
+                   amount_cents=500, category_code="FUEL",
+                   paid_by=second_user.id)
+    await _expense(session, trip_id=trip.id, user_id=test_user.id,
+                   amount_cents=600, category_code="OTHER", paid_by=None)
+    as_user(test_user)
+
+    data = (await client.get("/stats")).json()
+
+    assert data["total_cents"] == 2100  # whole trip
+    # my share: 1000 + 600/2 = 1300
+    assert data["personal_total_cents"] == 1300
+
+
+async def test_global_personal_total_honors_category_filter(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user: User,
+    as_user,
+) -> None:
+    trip = await _trip(session, owner_id=test_user.id, name="Italy")
+    await _expense(session, trip_id=trip.id, user_id=test_user.id,
+                   amount_cents=1000, category_code="RESTAURANTS")
+    await _expense(session, trip_id=trip.id, user_id=test_user.id,
+                   amount_cents=400, category_code="FUEL")
+    as_user(test_user)
+
+    data = (await client.get("/stats?category_code=RESTAURANTS")).json()
+
+    assert data["total_cents"] == 1000
+    assert data["personal_total_cents"] == 1000  # FUEL excluded
+
+
 async def test_global_stats_empty(
     client: AsyncClient,
     session: AsyncSession,
@@ -162,6 +215,7 @@ async def test_global_stats_empty(
     assert resp.status_code == 200
     data = resp.json()
     assert data["total_cents"] == 0
+    assert data["personal_total_cents"] == 0
     assert data["by_category"] == []
     assert data["by_trip"] == []
     assert data["by_month"] == []

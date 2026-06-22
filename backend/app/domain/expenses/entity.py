@@ -31,11 +31,18 @@ class ExpenseBase(SQLModel):
     category_code: str = Field(max_length=40, foreign_key="category.code")
     expense_date: date = Field(default_factory=_today)
     description: str | None = Field(default=None, max_length=200)
+    # Who the expense is attributed to. ``None`` == a "common" expense,
+    # split across all trip members in the per-member stats. When set it
+    # must be a member of the trip (validated in the service). This is
+    # NOT the same as ``created_by_user_id``: I can log an expense paid
+    # by someone else.
+    paid_by_user_id: UUID | None = Field(default=None, foreign_key="user.id")
 
 
 class Expense(ExpenseBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     trip_id: UUID = Field(foreign_key="trip.id", index=True)
+    # Audit only: the authenticated user who created the record.
     created_by_user_id: UUID = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=_now)
     updated_at: datetime = Field(default_factory=_now)
@@ -58,3 +65,7 @@ class ExpenseUpdate(SQLModel):
     category_code: str | None = Field(default=None, max_length=40)
     expense_date: date | None = None
     description: str | None = Field(default=None, max_length=200)
+    # Optional. Sending ``null`` explicitly converts the expense to a
+    # "common" one; omitting the key leaves the attribution untouched
+    # (the service applies ``model_dump(exclude_unset=True)``).
+    paid_by_user_id: UUID | None = None

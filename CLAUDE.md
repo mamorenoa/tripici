@@ -208,5 +208,23 @@ Slices entregados:
   si hay filtro), "By trip", "By month". El filtro viaja al servidor como query param;
   TanStack Query cachea cada combinación. 5 nuevos tests backend.
 
+- **Slice 11** — gastos comunes y atribuibles. Nueva columna
+  `expense.paid_by_user_id` (nullable, FK a `user.id`): `NULL` = gasto
+  **común** (de la cuenta compartida), con valor = atribuido a ese
+  miembro (puede ser otro, no quien lo registra). `created_by_user_id`
+  queda solo como auditoría. Migración con backfill
+  `paid_by = created_by` para no alterar el histórico. `ExpenseService`
+  valida que el pagador sea miembro del viaje (excepción `PayerNotMember`
+  → 400). **Refactor de stats**: `StatsRepository` pasa a devolver
+  agregados crudos y `StatsService` (dominio) calcula los % y el
+  reparto. En `TripStats.by_member` el común se reparte a partes iguales
+  entre los miembros (céntimos sobrantes a los primeros; la suma cuadra
+  con el total). `GlobalStats` gana `personal_total_cents` = lo que has
+  gastado tú (atribuido a ti + tu parte del común de cada viaje, según
+  su nº de miembros), respetando el filtro de categoría. Frontend:
+  selector "Paid by" en `ExpenseForm` (Common + miembros, default = tú),
+  etiqueta del pagador en la lista de `TripDetailScreen` y "Your share"
+  en `GlobalStatsScreen`. 7 nuevos tests backend.
+
 Próximo candidato: **monetización** (Stripe one-time + paywall sobre stats globales),
 **invitaciones por email**, **modo oscuro**, o **EAS Build**.

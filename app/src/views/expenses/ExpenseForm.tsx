@@ -5,17 +5,27 @@ import { Button } from "../../components/Button";
 import { DateInput } from "../../components/DateInput";
 import { Input } from "../../components/Input";
 import { Pill } from "../../components/Pill";
+import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useCategories } from "../../domain/categories/useCategories";
 import type { Expense, ExpenseCreate } from "../../domain/expenses/types";
+import { useMembers } from "../../domain/members/useMembers";
 import { parseEurosToCents } from "../../lib/money";
 
 type Props = {
+  /** The trip this expense belongs to — used to load the member list
+   * for the "Paid by" selector. */
+  tripId: string;
   /** When provided, the form acts as "edit" with pre-filled values. */
   initialValue?: Expense;
   submitting: boolean;
   error?: unknown;
   onSubmit: (input: ExpenseCreate) => void;
 };
+
+// Sentinel for the "Common" option (an expense attributed to nobody in
+// particular — split across members in the stats). Distinct from a
+// member's user id.
+const COMMON = "__common__";
 
 function todayIso(): string {
   const d = new Date();
@@ -26,12 +36,15 @@ function todayIso(): string {
 }
 
 export function ExpenseForm({
+  tripId,
   initialValue,
   submitting,
   error,
   onSubmit,
 }: Props) {
   const { data: categories = [] } = useCategories();
+  const { data: members = [] } = useMembers(tripId);
+  const { data: currentUser } = useCurrentUser();
 
   const [amount, setAmount] = useState(
     initialValue ? (initialValue.amount_cents / 100).toFixed(2) : "",
@@ -43,6 +56,16 @@ export function ExpenseForm({
   const [description, setDescription] = useState(
     initialValue?.description ?? "",
   );
+  // `undefined` = the user hasn't touched the selector yet. For a new
+  // expense we then default to the current user; for edit we honor the
+  // stored value (null → Common). Either way the selection is one of a
+  // member's user id or COMMON.
+  const [paidBy, setPaidBy] = useState<string | undefined>(() => {
+    if (!initialValue) return undefined;
+    return initialValue.paid_by_user_id ?? COMMON;
+  });
+  const effectivePaidBy =
+    paidBy ?? (currentUser ? currentUser.id : COMMON);
 
   const amountCents = parseEurosToCents(amount);
   const dateValid = /^\d{4}-\d{2}-\d{2}$/.test(date);
@@ -62,6 +85,7 @@ export function ExpenseForm({
       expense_date: date,
       description:
         trimmedDescription.length > 0 ? trimmedDescription : null,
+      paid_by_user_id: effectivePaidBy === COMMON ? null : effectivePaidBy,
     });
   }
 
@@ -89,6 +113,31 @@ export function ExpenseForm({
               label={c.label}
               active={c.code === categoryCode}
               onPress={() => setCategoryCode(c.code)}
+              disabled={submitting}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View className="gap-2">
+        <Text className="text-sm text-ink-secondary font-medium">Paid by</Text>
+        <View className="flex-row flex-wrap gap-2">
+          <Pill
+            label="Common"
+            active={effectivePaidBy === COMMON}
+            onPress={() => setPaidBy(COMMON)}
+            disabled={submitting}
+          />
+          {members.map((m) => (
+            <Pill
+              key={m.user_id}
+              label={
+                currentUser && m.user_id === currentUser.id
+                  ? `${m.display_name} (you)`
+                  : m.display_name
+              }
+              active={effectivePaidBy === m.user_id}
+              onPress={() => setPaidBy(m.user_id)}
               disabled={submitting}
             />
           ))}
