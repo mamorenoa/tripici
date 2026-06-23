@@ -47,6 +47,14 @@ export function TripDetailScreen() {
           title: trip?.name ?? "Trip",
           headerRight: () => (
             <View className="flex-row items-center">
+              <Link href={`/trips/${tripId}/settle`} asChild>
+                <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
+                  <Icon name="divide" size={18} color="#059669" />
+                  <Text className="text-brand-600 font-semibold text-sm">
+                    Settle
+                  </Text>
+                </Pressable>
+              </Link>
               <Link href={`/trips/${tripId}/stats`} asChild>
                 <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                   <Icon name="bar-chart-2" size={18} color="#059669" />

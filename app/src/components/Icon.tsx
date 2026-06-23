@@ -20,7 +20,8 @@ export type IconName =
   | "mail"
   | "bar-chart-2"
   | "eye"
-  | "eye-off";
+  | "eye-off"
+  | "divide";
 
 type Props = {
   name: IconName;
