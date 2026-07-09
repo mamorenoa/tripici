@@ -64,8 +64,8 @@ async def reset_tables(engine) -> AsyncIterator[None]:
     async with engine.begin() as conn:
         await conn.execute(
             text(
-                'TRUNCATE TABLE "trip_invitation", "trip_membership", '
-                '"expense", "trip", "user" '
+                'TRUNCATE TABLE "settlement_payment", "trip_invitation", '
+                '"trip_membership", "expense", "plan", "trip", "user" '
                 "RESTART IDENTITY CASCADE"
             )
         )

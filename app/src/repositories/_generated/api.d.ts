@@ -178,6 +178,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trips/{trip_id}/settlement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trip Settlement */
+        get: operations["get_trip_settlement_trips__trip_id__settlement_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/settlement/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Settlement Payment */
+        post: operations["record_settlement_payment_trips__trip_id__settlement_payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/settlement/payments/{payment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Settlement Payment */
+        delete: operations["delete_settlement_payment_trips__trip_id__settlement_payments__payment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/trips/{trip_id}/expenses": {
         parameters: {
             query?: never;
@@ -315,6 +366,42 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Plans */
+        get: operations["list_plans_trips__trip_id__plans_get"];
+        put?: never;
+        /** Create Plan */
+        post: operations["create_plan_trips__trip_id__plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Plan */
+        delete: operations["delete_plan_trips__trip_id__plans__plan_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Plan */
+        patch: operations["update_plan_trips__trip_id__plans__plan_id__patch"];
         trace?: never;
     };
     "/stats": {
@@ -559,6 +646,18 @@ export interface components {
             /** Revoked At */
             revoked_at: string | null;
         };
+        /** MemberBalance */
+        MemberBalance: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Balance Cents */
+            balance_cents: number;
+        };
         /** MemberStat */
         MemberStat: {
             /**
@@ -579,6 +678,187 @@ export interface components {
             month: string;
             /** Total Cents */
             total_cents: number;
+        };
+        /**
+         * PaymentRead
+         * @description A recorded reimbursement, with names resolved for display.
+         */
+        PaymentRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * From User Id
+             * Format: uuid
+             */
+            from_user_id: string;
+            /** From Name */
+            from_name: string;
+            /**
+             * To User Id
+             * Format: uuid
+             */
+            to_user_id: string;
+            /** To Name */
+            to_name: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** Plan */
+        Plan: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Duration */
+            duration?: string | null;
+            /** Cost Cents */
+            cost_cents?: number | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at?: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at?: string;
+        };
+        /**
+         * PlanCreate
+         * @description Payload accepted by ``POST /trips/{trip_id}/plans``.
+         */
+        PlanCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Duration */
+            duration?: string | null;
+            /** Cost Cents */
+            cost_cents?: number | null;
+        };
+        /**
+         * PlanUpdate
+         * @description Payload accepted by ``PATCH /trips/{trip_id}/plans/{plan_id}``.
+         *
+         *     Every field is optional. Clients send only the keys they want to
+         *     change; the service applies ``model_dump(exclude_unset=True)``.
+         */
+        PlanUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Duration */
+            duration?: string | null;
+            /** Cost Cents */
+            cost_cents?: number | null;
+        };
+        /**
+         * Settlement
+         * @description A single suggested transfer: ``from`` pays ``to``.
+         */
+        Settlement: {
+            /**
+             * From User Id
+             * Format: uuid
+             */
+            from_user_id: string;
+            /** From Name */
+            from_name: string;
+            /**
+             * To User Id
+             * Format: uuid
+             */
+            to_user_id: string;
+            /** To Name */
+            to_name: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** SettlementPayment */
+        SettlementPayment: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /**
+             * From User Id
+             * Format: uuid
+             */
+            from_user_id: string;
+            /**
+             * To User Id
+             * Format: uuid
+             */
+            to_user_id: string;
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at?: string;
+        };
+        /**
+         * SettlementPaymentCreate
+         * @description Payload for ``POST /trips/{id}/settlement/payments``.
+         */
+        SettlementPaymentCreate: {
+            /**
+             * From User Id
+             * Format: uuid
+             */
+            from_user_id: string;
+            /**
+             * To User Id
+             * Format: uuid
+             */
+            to_user_id: string;
+            /** Amount Cents */
+            amount_cents: number;
         };
         /**
          * Trip
@@ -637,6 +917,15 @@ export interface components {
             /** Is Owner */
             is_owner: boolean;
         };
+        /** TripSettlement */
+        TripSettlement: {
+            /** Balances */
+            balances: components["schemas"]["MemberBalance"][];
+            /** Settlements */
+            settlements: components["schemas"]["Settlement"][];
+            /** Payments */
+            payments: components["schemas"]["PaymentRead"][];
+        };
         /** TripStat */
         TripStat: {
             /**
@@ -648,6 +937,10 @@ export interface components {
             trip_name: string;
             /** Total Cents */
             total_cents: number;
+            /** Days */
+            days: number;
+            /** Daily Cents */
+            daily_cents: number;
         };
         /** TripStats */
         TripStats: {
@@ -1271,6 +1564,102 @@ export interface operations {
             };
         };
     };
+    get_trip_settlement_trips__trip_id__settlement_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripSettlement"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_settlement_payment_trips__trip_id__settlement_payments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettlementPaymentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettlementPayment"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_settlement_payment_trips__trip_id__settlement_payments__payment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_expenses_trips__trip_id__expenses_get: {
         parameters: {
             query?: never;
@@ -1608,6 +1997,138 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_plans_trips__trip_id__plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plan"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_plan_trips__trip_id__plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_plan_trips__trip_id__plans__plan_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_plan_trips__trip_id__plans__plan_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Plan"];
+                };
             };
             /** @description Validation Error */
             422: {

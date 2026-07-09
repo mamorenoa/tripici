@@ -19,12 +19,18 @@ from app.api import (
     health,
     invitations,
     members,
+    plans,
     stats,
     trips,
 )
 from app.core.config import settings
 from app.domain.expenses.service import ExpenseNotFound, PayerNotMember
 from app.domain.invitations.exceptions import InvitationInvalid
+from app.domain.plans.service import PlanNotFound
+from app.domain.settlements.exceptions import (
+    SettlementPaymentInvalid,
+    SettlementPaymentNotFound,
+)
 from app.domain.trips.exceptions import CannotRemoveOwner, MemberNotFound, TripNotFound
 
 app = FastAPI(title="Tripinci API")
@@ -44,6 +50,7 @@ app.include_router(trips.router)
 app.include_router(expenses.router)
 app.include_router(invitations.router)
 app.include_router(members.router)
+app.include_router(plans.router)
 app.include_router(stats.router)
 
 
@@ -59,6 +66,11 @@ async def _expense_not_found_handler(
     return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 
+@app.exception_handler(PlanNotFound)
+async def _plan_not_found_handler(_: Request, exc: PlanNotFound) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
 @app.exception_handler(PayerNotMember)
 async def _payer_not_member_handler(
     _: Request, exc: PayerNotMember
@@ -67,6 +79,23 @@ async def _payer_not_member_handler(
         status_code=400,
         content={"detail": "Payer is not a member of this trip"},
     )
+
+
+@app.exception_handler(SettlementPaymentInvalid)
+async def _settlement_payment_invalid_handler(
+    _: Request, exc: SettlementPaymentInvalid
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": "Invalid settlement payment"},
+    )
+
+
+@app.exception_handler(SettlementPaymentNotFound)
+async def _settlement_payment_not_found_handler(
+    _: Request, exc: SettlementPaymentNotFound
+) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": "Payment not found"})
 
 
 @app.exception_handler(InvitationInvalid)

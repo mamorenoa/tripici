@@ -18,9 +18,11 @@ function isoFromDate(d: Date): string {
 }
 
 function dateFromIso(value: string): Date {
-  // Treat as local-noon to avoid timezone roll-over.
+  // Treat as local-noon to avoid timezone roll-over. Empty/invalid input
+  // (optional date fields) seeds the native picker with today.
   const [y, m, d] = value.split("-").map(Number);
-  return new Date(y, (m ?? 1) - 1, d ?? 1, 12, 0, 0);
+  if (!y || !m || !d) return new Date();
+  return new Date(y, m - 1, d, 12, 0, 0);
 }
 
 /**

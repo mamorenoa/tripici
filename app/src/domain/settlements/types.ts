@@ -13,7 +13,23 @@ export type Settlement = {
   amount_cents: number;
 };
 
+export type PaymentRead = {
+  id: string;
+  from_user_id: string;
+  from_name: string;
+  to_user_id: string;
+  to_name: string;
+  amount_cents: number;
+};
+
+export type SettlementPaymentCreate = {
+  from_user_id: string;
+  to_user_id: string;
+  amount_cents: number;
+};
+
 export type TripSettlement = {
   balances: MemberBalance[];
-  settlements: Settlement[];
+  settlements: Settlement[]; // remaining suggested transfers
+  payments: PaymentRead[]; // reimbursements already recorded
 };

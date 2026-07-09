@@ -1,17 +1,35 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "../../components/Avatar";
+import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import type {
   MemberBalance,
+  PaymentRead,
   Settlement,
 } from "../../domain/settlements/types";
-import { useTripSettlement } from "../../domain/settlements/useTripSettlement";
+import {
+  useDeletePayment,
+  useRecordPayment,
+  useTripSettlement,
+} from "../../domain/settlements/useTripSettlement";
 import { useTrip } from "../../domain/trips/useTrip";
 import { formatEuros } from "../../lib/money";
+
+/** Cross-platform confirmation (web uses window.confirm; native uses Alert). */
+function confirm(message: string, onConfirm: () => void) {
+  if (Platform.OS === "web") {
+    if (globalThis.window?.confirm(message)) onConfirm();
+  } else {
+    Alert.alert("Confirm", message, [
+      { text: "Cancel", style: "cancel" },
+      { text: "OK", onPress: onConfirm },
+    ]);
+  }
+}
 
 // ── Section: balances ─────────────────────────────────────────────
 
@@ -57,14 +75,18 @@ function BalancesSection({
   );
 }
 
-// ── Section: who owes whom ────────────────────────────────────────
+// ── Section: who owes whom (with Settle button) ───────────────────
 
 function SettlementsSection({
   rows,
   currentUserId,
+  onSettle,
+  busy,
 }: {
   rows: Settlement[];
   currentUserId?: string;
+  onSettle: (s: Settlement) => void;
+  busy: boolean;
 }) {
   return (
     <Card className="gap-3">
@@ -91,9 +113,50 @@ function SettlementsSection({
             <Text className="text-sm font-semibold text-ink-primary">
               {formatEuros(r.amount_cents)}
             </Text>
+            <Button size="sm" onPress={() => onSettle(r)} disabled={busy}>
+              Settle
+            </Button>
           </View>
         );
       })}
+    </Card>
+  );
+}
+
+// ── Section: recorded payments (with Undo) ────────────────────────
+
+function PaymentsSection({
+  rows,
+  onUndo,
+  busy,
+}: {
+  rows: PaymentRead[];
+  onUndo: (p: PaymentRead) => void;
+  busy: boolean;
+}) {
+  return (
+    <Card className="gap-3">
+      <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
+        Recorded payments
+      </Text>
+      {rows.map((p) => (
+        <View key={p.id} className="flex-row items-center gap-2">
+          <Text className="flex-1 text-sm text-ink-secondary">
+            {p.from_name} → {p.to_name}
+          </Text>
+          <Text className="text-sm font-semibold text-ink-primary">
+            {formatEuros(p.amount_cents)}
+          </Text>
+          <Button
+            size="sm"
+            variant="danger"
+            onPress={() => onUndo(p)}
+            disabled={busy}
+          >
+            Undo
+          </Button>
+        </View>
+      ))}
     </Card>
   );
 }
@@ -105,8 +168,36 @@ export function TripSettleScreen() {
   const { data: trip } = useTrip(tripId);
   const { data: currentUser } = useCurrentUser();
   const { data, isLoading, error } = useTripSettlement(tripId);
+  const recordPayment = useRecordPayment(tripId);
+  const deletePayment = useDeletePayment(tripId);
 
-  const settled = !data || data.settlements.length === 0;
+  const busy = recordPayment.isPending || deletePayment.isPending;
+
+  function handleSettle(s: Settlement) {
+    confirm(
+      `Mark ${s.from_name} → ${s.to_name} ${formatEuros(
+        s.amount_cents,
+      )} as paid?`,
+      () =>
+        recordPayment.mutate({
+          from_user_id: s.from_user_id,
+          to_user_id: s.to_user_id,
+          amount_cents: s.amount_cents,
+        }),
+    );
+  }
+
+  function handleUndo(p: PaymentRead) {
+    confirm(
+      `Undo the ${formatEuros(p.amount_cents)} payment from ${
+        p.from_name
+      } to ${p.to_name}?`,
+      () => deletePayment.mutate(p.id),
+    );
+  }
+
+  const hasSettlements = !!data && data.settlements.length > 0;
+  const hasPayments = !!data && data.payments.length > 0;
 
   return (
     <View className="flex-1 bg-background">
@@ -126,7 +217,7 @@ export function TripSettleScreen() {
             Could not load the settlement.
           </Text>
         </View>
-      ) : settled ? (
+      ) : !hasSettlements && !hasPayments ? (
         <View className="flex-1 items-center justify-center px-6">
           <EmptyState
             icon="check"
@@ -136,14 +227,34 @@ export function TripSettleScreen() {
         </View>
       ) : (
         <ScrollView contentContainerClassName="px-4 py-4 gap-4 pb-10">
-          <BalancesSection
-            rows={data.balances}
-            currentUserId={currentUser?.id}
-          />
-          <SettlementsSection
-            rows={data.settlements}
-            currentUserId={currentUser?.id}
-          />
+          {hasSettlements ? (
+            <>
+              <BalancesSection
+                rows={data.balances}
+                currentUserId={currentUser?.id}
+              />
+              <SettlementsSection
+                rows={data.settlements}
+                currentUserId={currentUser?.id}
+                onSettle={handleSettle}
+                busy={busy}
+              />
+            </>
+          ) : (
+            <Card>
+              <Text className="text-sm text-ink-secondary text-center">
+                🎉 Everything is settled.
+              </Text>
+            </Card>
+          )}
+
+          {hasPayments ? (
+            <PaymentsSection
+              rows={data.payments}
+              onUndo={handleUndo}
+              busy={busy}
+            />
+          ) : null}
         </ScrollView>
       )}
     </View>

@@ -164,3 +164,112 @@ async def test_settlement_404_for_non_member(
     response = await client.get(f"/trips/{trip.id}/settlement")
 
     assert response.status_code == 404
+
+
+# ── Recording / undoing payments ─────────────────────────────────────
+
+
+async def test_record_payment_settles_debt(
+    client: AsyncClient, session: AsyncSession, test_user, second_user, as_user
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    await _add_member(session, trip_id=trip.id, user_id=second_user.id)
+    await _add_expense(session, trip_id=trip.id, user_id=test_user.id, amount_cents=10000)
+    as_user(test_user)
+
+    # Second reimburses Tester the 50 € they owed.
+    resp = await client.post(
+        f"/trips/{trip.id}/settlement/payments",
+        json={
+            "from_user_id": str(second_user.id),
+            "to_user_id": str(test_user.id),
+            "amount_cents": 5000,
+        },
+    )
+    assert resp.status_code == 201, resp.text
+
+    data = (await client.get(f"/trips/{trip.id}/settlement")).json()
+    assert data["settlements"] == []  # debt cleared
+    assert all(b["balance_cents"] == 0 for b in data["balances"])
+    assert len(data["payments"]) == 1
+    assert data["payments"][0]["amount_cents"] == 5000
+    assert data["payments"][0]["from_name"] == "Second"
+    assert data["payments"][0]["to_name"] == "Tester"
+
+
+async def test_undo_payment_restores_debt(
+    client: AsyncClient, session: AsyncSession, test_user, second_user, as_user
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    await _add_member(session, trip_id=trip.id, user_id=second_user.id)
+    await _add_expense(session, trip_id=trip.id, user_id=test_user.id, amount_cents=10000)
+    as_user(test_user)
+
+    created = (
+        await client.post(
+            f"/trips/{trip.id}/settlement/payments",
+            json={
+                "from_user_id": str(second_user.id),
+                "to_user_id": str(test_user.id),
+                "amount_cents": 5000,
+            },
+        )
+    ).json()
+
+    undo = await client.delete(
+        f"/trips/{trip.id}/settlement/payments/{created['id']}"
+    )
+    assert undo.status_code == 204
+
+    data = (await client.get(f"/trips/{trip.id}/settlement")).json()
+    assert data["payments"] == []
+    assert len(data["settlements"]) == 1
+    assert data["settlements"][0]["amount_cents"] == 5000
+
+
+async def test_record_payment_rejects_non_member(
+    client: AsyncClient, session: AsyncSession, test_user, second_user, as_user
+) -> None:
+    third = await _make_user(session, name="Third")  # not a member
+    trip = await _create_trip(session, owner_id=test_user.id)
+    await _add_member(session, trip_id=trip.id, user_id=second_user.id)
+    as_user(test_user)
+
+    resp = await client.post(
+        f"/trips/{trip.id}/settlement/payments",
+        json={
+            "from_user_id": str(test_user.id),
+            "to_user_id": str(third.id),
+            "amount_cents": 5000,
+        },
+    )
+    assert resp.status_code == 400
+
+
+async def test_record_payment_rejects_same_user(
+    client: AsyncClient, session: AsyncSession, test_user, as_user
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    as_user(test_user)
+
+    resp = await client.post(
+        f"/trips/{trip.id}/settlement/payments",
+        json={
+            "from_user_id": str(test_user.id),
+            "to_user_id": str(test_user.id),
+            "amount_cents": 5000,
+        },
+    )
+    assert resp.status_code == 400
+
+
+async def test_delete_missing_payment_404(
+    client: AsyncClient, session: AsyncSession, test_user, as_user
+) -> None:
+    trip = await _create_trip(session, owner_id=test_user.id)
+    as_user(test_user)
+
+    resp = await client.delete(
+        f"/trips/{trip.id}/settlement/payments/{uuid.uuid4()}"
+    )
+    assert resp.status_code == 404
