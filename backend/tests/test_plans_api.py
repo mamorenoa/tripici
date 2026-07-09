@@ -164,6 +164,223 @@ async def test_unknown_plan_returns_404(authed_client: AsyncClient) -> None:
     assert response.status_code == 404
 
 
+async def _list_expenses(client: AsyncClient, trip_id: str) -> list[dict]:
+    resp = await client.get(f"/trips/{trip_id}/expenses")
+    assert resp.status_code == 200
+    return resp.json()
+
+
+async def test_plan_cost_mirrors_into_common_expense(
+    authed_client: AsyncClient,
+) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+
+    plan = (
+        await authed_client.post(
+            f"/trips/{trip_id}/plans",
+            json={
+                "name": "Teleférico",
+                "description": "Subida al pico",
+                "start_date": "2026-06-12",
+                "cost_cents": 3000,
+                "count_as_expense": True,
+                "expense_category_code": "ACTIVITIES",
+            },
+        )
+    ).json()
+
+    expenses = await _list_expenses(authed_client, trip_id)
+    assert len(expenses) == 1
+    e = expenses[0]
+    assert e["amount_cents"] == 3000
+    assert e["category_code"] == "ACTIVITIES"
+    assert e["paid_by_user_id"] is None  # common
+    assert e["expense_date"] == "2026-06-12"
+    assert e["description"] == "Teleférico"
+    assert e["plan_id"] == plan["id"]
+
+
+async def test_plan_without_cost_does_not_create_expense(
+    authed_client: AsyncClient,
+) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    await authed_client.post(
+        f"/trips/{trip_id}/plans",
+        json={
+            "name": "Idea",
+            "description": "Sin coste",
+            "count_as_expense": True,
+            "expense_category_code": "ACTIVITIES",
+        },
+    )
+    assert await _list_expenses(authed_client, trip_id) == []
+
+
+async def test_updating_plan_cost_syncs_expense(
+    authed_client: AsyncClient,
+) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = (
+        await authed_client.post(
+            f"/trips/{trip_id}/plans",
+            json={
+                "name": "Cena",
+                "description": "Restaurante",
+                "cost_cents": 4000,
+                "count_as_expense": True,
+                "expense_category_code": "RESTAURANTS",
+            },
+        )
+    ).json()
+
+    await authed_client.patch(
+        f"/trips/{trip_id}/plans/{plan['id']}", json={"cost_cents": 5500}
+    )
+
+    expenses = await _list_expenses(authed_client, trip_id)
+    assert len(expenses) == 1
+    assert expenses[0]["amount_cents"] == 5500
+
+
+async def test_unchecking_count_as_expense_removes_expense(
+    authed_client: AsyncClient,
+) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = (
+        await authed_client.post(
+            f"/trips/{trip_id}/plans",
+            json={
+                "name": "Museo",
+                "description": "Entrada",
+                "cost_cents": 1500,
+                "count_as_expense": True,
+                "expense_category_code": "ACTIVITIES",
+            },
+        )
+    ).json()
+    assert len(await _list_expenses(authed_client, trip_id)) == 1
+
+    await authed_client.patch(
+        f"/trips/{trip_id}/plans/{plan['id']}",
+        json={"count_as_expense": False},
+    )
+    assert await _list_expenses(authed_client, trip_id) == []
+
+
+async def test_deleting_plan_removes_derived_expense(
+    authed_client: AsyncClient,
+) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = (
+        await authed_client.post(
+            f"/trips/{trip_id}/plans",
+            json={
+                "name": "Tour",
+                "description": "Guiado",
+                "cost_cents": 2000,
+                "count_as_expense": True,
+                "expense_category_code": "ACTIVITIES",
+            },
+        )
+    ).json()
+    assert len(await _list_expenses(authed_client, trip_id)) == 1
+
+    await authed_client.delete(f"/trips/{trip_id}/plans/{plan['id']}")
+    assert await _list_expenses(authed_client, trip_id) == []
+
+
+async def _create_plan(client: AsyncClient, trip_id: str, name: str = "P") -> dict:
+    return (
+        await client.post(
+            f"/trips/{trip_id}/plans",
+            json={"name": name, "description": "d"},
+        )
+    ).json()
+
+
+async def test_add_and_list_plan_links(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = await _create_plan(authed_client, trip_id)
+
+    resp = await authed_client.post(
+        f"/trips/{trip_id}/plans/{plan['id']}/links",
+        json={
+            "url": "https://drive.google.com/folder/abc",
+            "label": "Docs",
+        },
+    )
+    assert resp.status_code == 201, resp.text
+    assert resp.json()["url"] == "https://drive.google.com/folder/abc"
+
+    plans = (await authed_client.get(f"/trips/{trip_id}/plans")).json()
+    links = plans[0]["links"]
+    assert len(links) == 1
+    assert links[0]["label"] == "Docs"
+    assert links[0]["url"] == "https://drive.google.com/folder/abc"
+
+
+async def test_add_link_rejects_non_url(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = await _create_plan(authed_client, trip_id)
+
+    resp = await authed_client.post(
+        f"/trips/{trip_id}/plans/{plan['id']}/links",
+        json={"url": "not-a-url"},
+    )
+    assert resp.status_code == 422
+
+
+async def test_delete_plan_link(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = await _create_plan(authed_client, trip_id)
+    link = (
+        await authed_client.post(
+            f"/trips/{trip_id}/plans/{plan['id']}/links",
+            json={"url": "https://example.com"},
+        )
+    ).json()
+
+    resp = await authed_client.delete(
+        f"/trips/{trip_id}/plans/{plan['id']}/links/{link['id']}"
+    )
+    assert resp.status_code == 204
+
+    plans = (await authed_client.get(f"/trips/{trip_id}/plans")).json()
+    assert plans[0]["links"] == []
+
+
+async def test_delete_missing_plan_link_404(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = await _create_plan(authed_client, trip_id)
+
+    resp = await authed_client.delete(
+        f"/trips/{trip_id}/plans/{plan['id']}/links/{uuid4()}"
+    )
+    assert resp.status_code == 404
+
+
+async def test_deleting_plan_removes_its_links(
+    authed_client: AsyncClient, session: AsyncSession
+) -> None:
+    from sqlalchemy import func, select
+
+    from app.domain.plans.entity import PlanLink
+
+    trip_id = await _create_trip_via_api(authed_client)
+    plan = await _create_plan(authed_client, trip_id)
+    await authed_client.post(
+        f"/trips/{trip_id}/plans/{plan['id']}/links",
+        json={"url": "https://example.com"},
+    )
+
+    await authed_client.delete(f"/trips/{trip_id}/plans/{plan['id']}")
+
+    count = (
+        await session.execute(select(func.count()).select_from(PlanLink))
+    ).scalar_one()
+    assert count == 0
+
+
 async def test_collaborator_can_crud_plans(
     client: AsyncClient,
     session: AsyncSession,

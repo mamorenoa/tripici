@@ -404,6 +404,40 @@ export interface paths {
         patch: operations["update_plan_trips__trip_id__plans__plan_id__patch"];
         trace?: never;
     };
+    "/trips/{trip_id}/plans/{plan_id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Plan Link */
+        post: operations["add_plan_link_trips__trip_id__plans__plan_id__links_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{trip_id}/plans/{plan_id}/links/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Plan Link */
+        delete: operations["delete_plan_link_trips__trip_id__plans__plan_id__links__link_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stats": {
         parameters: {
             query?: never;
@@ -521,6 +555,8 @@ export interface components {
              * Format: uuid
              */
             created_by_user_id: string;
+            /** Plan Id */
+            plan_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -706,46 +742,6 @@ export interface components {
             /** Amount Cents */
             amount_cents: number;
         };
-        /** Plan */
-        Plan: {
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-            /** Start Date */
-            start_date?: string | null;
-            /** End Date */
-            end_date?: string | null;
-            /** Duration */
-            duration?: string | null;
-            /** Cost Cents */
-            cost_cents?: number | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id?: string;
-            /**
-             * Trip Id
-             * Format: uuid
-             */
-            trip_id: string;
-            /**
-             * Created By User Id
-             * Format: uuid
-             */
-            created_by_user_id: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at?: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at?: string;
-        };
         /**
          * PlanCreate
          * @description Payload accepted by ``POST /trips/{trip_id}/plans``.
@@ -763,6 +759,97 @@ export interface components {
             duration?: string | null;
             /** Cost Cents */
             cost_cents?: number | null;
+            /**
+             * Count As Expense
+             * @default false
+             */
+            count_as_expense: boolean;
+            /** Expense Category Code */
+            expense_category_code?: string | null;
+        };
+        /** PlanLink */
+        PlanLink: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /**
+             * Plan Id
+             * Format: uuid
+             */
+            plan_id: string;
+            /** Url */
+            url: string;
+            /** Label */
+            label?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at?: string;
+        };
+        /**
+         * PlanLinkCreate
+         * @description Payload for ``POST /trips/{id}/plans/{plan_id}/links``.
+         */
+        PlanLinkCreate: {
+            /** Url */
+            url: string;
+            /** Label */
+            label?: string | null;
+        };
+        /**
+         * PlanRead
+         * @description A plan with its documentation links embedded.
+         */
+        PlanRead: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Duration */
+            duration?: string | null;
+            /** Cost Cents */
+            cost_cents?: number | null;
+            /**
+             * Count As Expense
+             * @default false
+             */
+            count_as_expense: boolean;
+            /** Expense Category Code */
+            expense_category_code?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Trip Id
+             * Format: uuid
+             */
+            trip_id: string;
+            /**
+             * Created By User Id
+             * Format: uuid
+             */
+            created_by_user_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Links */
+            links?: components["schemas"]["PlanLink"][];
         };
         /**
          * PlanUpdate
@@ -784,6 +871,10 @@ export interface components {
             duration?: string | null;
             /** Cost Cents */
             cost_cents?: number | null;
+            /** Count As Expense */
+            count_as_expense?: boolean | null;
+            /** Expense Category Code */
+            expense_category_code?: string | null;
         };
         /**
          * Settlement
@@ -2026,7 +2117,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Plan"][];
+                    "application/json": components["schemas"]["PlanRead"][];
                 };
             };
             /** @description Validation Error */
@@ -2061,7 +2152,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Plan"];
+                    "application/json": components["schemas"]["PlanRead"];
                 };
             };
             /** @description Validation Error */
@@ -2127,8 +2218,75 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Plan"];
+                    "application/json": components["schemas"]["PlanRead"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_plan_link_trips__trip_id__plans__plan_id__links_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanLinkCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanLink"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_plan_link_trips__trip_id__plans__plan_id__links__link_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+                plan_id: string;
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -3,7 +3,7 @@
 from typing import Protocol
 from uuid import UUID
 
-from app.domain.plans.entity import Plan
+from app.domain.plans.entity import Plan, PlanLink
 
 
 class PlanRepository(Protocol):
@@ -16,3 +16,17 @@ class PlanRepository(Protocol):
     async def update(self, plan: Plan) -> Plan: ...
 
     async def delete(self, plan: Plan) -> None: ...
+
+
+class PlanLinkRepository(Protocol):
+    async def add(self, link: PlanLink) -> PlanLink: ...
+
+    async def get_by_id(self, link_id: UUID) -> PlanLink | None: ...
+
+    async def list_for_trip(self, trip_id: UUID) -> list[PlanLink]:
+        """All links belonging to the trip's plans (joined via plan)."""
+        ...
+
+    async def delete(self, link: PlanLink) -> None: ...
+
+    async def delete_for_plan(self, plan_id: UUID) -> None: ...

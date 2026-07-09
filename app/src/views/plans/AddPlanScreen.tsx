@@ -20,6 +20,7 @@ export function AddPlanScreen() {
 
   return (
     <PlanForm
+      tripId={tripId}
       submitting={mutation.isPending}
       error={mutation.error ?? undefined}
       onSubmit={handleSubmit}

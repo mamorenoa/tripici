@@ -44,6 +44,12 @@ class Expense(ExpenseBase, table=True):
     trip_id: UUID = Field(foreign_key="trip.id", index=True)
     # Audit only: the authenticated user who created the record.
     created_by_user_id: UUID = Field(foreign_key="user.id")
+    # Set when this expense is derived from a plan's cost (managed by
+    # ``PlanService``). ``NULL`` for regular expenses. The FK cascades on
+    # delete so removing the plan removes its derived expense.
+    plan_id: UUID | None = Field(
+        default=None, foreign_key="plan.id", index=True
+    )
     created_at: datetime = Field(default_factory=_now)
     updated_at: datetime = Field(default_factory=_now)
 

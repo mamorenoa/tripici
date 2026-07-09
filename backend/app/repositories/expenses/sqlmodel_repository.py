@@ -21,6 +21,11 @@ class SQLModelExpenseRepository:
     async def get_by_id(self, expense_id: UUID) -> Expense | None:
         return await self._session.get(Expense, expense_id)
 
+    async def get_by_plan_id(self, plan_id: UUID) -> Expense | None:
+        statement = select(Expense).where(Expense.plan_id == plan_id)
+        result = await self._session.execute(statement)
+        return result.scalar_one_or_none()
+
     async def list_for_trip(self, trip_id: UUID) -> list[Expense]:
         statement = (
             select(Expense)

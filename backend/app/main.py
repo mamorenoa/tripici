@@ -26,7 +26,7 @@ from app.api import (
 from app.core.config import settings
 from app.domain.expenses.service import ExpenseNotFound, PayerNotMember
 from app.domain.invitations.exceptions import InvitationInvalid
-from app.domain.plans.service import PlanNotFound
+from app.domain.plans.service import PlanLinkNotFound, PlanNotFound
 from app.domain.settlements.exceptions import (
     SettlementPaymentInvalid,
     SettlementPaymentNotFound,
@@ -69,6 +69,13 @@ async def _expense_not_found_handler(
 @app.exception_handler(PlanNotFound)
 async def _plan_not_found_handler(_: Request, exc: PlanNotFound) -> JSONResponse:
     return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+@app.exception_handler(PlanLinkNotFound)
+async def _plan_link_not_found_handler(
+    _: Request, exc: PlanLinkNotFound
+) -> JSONResponse:
+    return JSONResponse(status_code=404, content={"detail": "Link not found"})
 
 
 @app.exception_handler(PayerNotMember)

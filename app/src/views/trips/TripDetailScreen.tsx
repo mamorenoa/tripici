@@ -35,6 +35,8 @@ function planMeta(plan: Plan): string {
     parts.push(plan.end_date);
   }
   if (plan.duration) parts.push(plan.duration);
+  const linkCount = plan.links?.length ?? 0;
+  if (linkCount > 0) parts.push(`🔗 ${linkCount}`);
   return parts.join(" · ");
 }
 
@@ -202,6 +204,7 @@ export function TripDetailScreen() {
                           {categoryLabel(item.category_code)} · {item.expense_date}
                           {" · "}
                           {payerLabel(item.paid_by_user_id)}
+                          {item.plan_id ? " · 📌 Plan" : ""}
                         </Text>
                       </View>
                       <Text className="text-base font-semibold text-ink-primary">

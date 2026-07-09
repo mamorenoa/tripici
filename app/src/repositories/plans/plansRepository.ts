@@ -1,4 +1,10 @@
-import type { Plan, PlanCreate, PlanUpdate } from "../../domain/plans/types";
+import type {
+  Plan,
+  PlanCreate,
+  PlanLink,
+  PlanLinkCreate,
+  PlanUpdate,
+} from "../../domain/plans/types";
 import { apiRequest } from "../../lib/apiClient";
 
 export const plansRepository = {
@@ -19,6 +25,25 @@ export const plansRepository = {
 
   delete: (tripId: string, planId: string): Promise<void> =>
     apiRequest<void>(`/trips/${tripId}/plans/${planId}`, {
+      method: "DELETE",
+    }),
+
+  addLink: (
+    tripId: string,
+    planId: string,
+    body: PlanLinkCreate,
+  ): Promise<PlanLink> =>
+    apiRequest<PlanLink>(`/trips/${tripId}/plans/${planId}/links`, {
+      method: "POST",
+      body,
+    }),
+
+  deleteLink: (
+    tripId: string,
+    planId: string,
+    linkId: string,
+  ): Promise<void> =>
+    apiRequest<void>(`/trips/${tripId}/plans/${planId}/links/${linkId}`, {
       method: "DELETE",
     }),
 };

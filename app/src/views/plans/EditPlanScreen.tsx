@@ -53,6 +53,7 @@ export function EditPlanScreen() {
     <View className="flex-1 bg-background">
       <View className="flex-1">
         <PlanForm
+          tripId={tripId}
           initialValue={plan}
           submitting={updateMutation.isPending}
           error={updateMutation.error ?? undefined}

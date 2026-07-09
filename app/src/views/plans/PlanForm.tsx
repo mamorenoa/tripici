@@ -3,11 +3,19 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
 import { DateInput } from "../../components/DateInput";
+import { Icon } from "../../components/Icon";
 import { Input } from "../../components/Input";
+import { Pill } from "../../components/Pill";
+import { useCategories } from "../../domain/categories/useCategories";
 import type { Plan, PlanCreate } from "../../domain/plans/types";
 import { parseEurosToCents } from "../../lib/money";
+import { PlanLinks } from "./PlanLinks";
+
+const DEFAULT_EXPENSE_CATEGORY = "ACTIVITIES";
 
 type Props = {
+  /** The trip this plan belongs to — needed to manage documentation links. */
+  tripId: string;
   /** When provided, the form acts as "edit" with pre-filled values. */
   initialValue?: Plan;
   submitting: boolean;
@@ -45,7 +53,15 @@ function OptionalDate({
   );
 }
 
-export function PlanForm({ initialValue, submitting, error, onSubmit }: Props) {
+export function PlanForm({
+  tripId,
+  initialValue,
+  submitting,
+  error,
+  onSubmit,
+}: Props) {
+  const { data: categories = [] } = useCategories();
+
   const [name, setName] = useState(initialValue?.name ?? "");
   const [description, setDescription] = useState(
     initialValue?.description ?? "",
@@ -57,6 +73,12 @@ export function PlanForm({ initialValue, submitting, error, onSubmit }: Props) {
     initialValue?.cost_cents != null
       ? (initialValue.cost_cents / 100).toFixed(2)
       : "",
+  );
+  const [countAsExpense, setCountAsExpense] = useState(
+    initialValue?.count_as_expense ?? false,
+  );
+  const [expenseCategory, setExpenseCategory] = useState(
+    initialValue?.expense_category_code ?? DEFAULT_EXPENSE_CATEGORY,
   );
 
   const costTrimmed = cost.trim();
@@ -78,6 +100,8 @@ export function PlanForm({ initialValue, submitting, error, onSubmit }: Props) {
       end_date: endDate || null,
       duration: duration.trim() ? duration.trim() : null,
       cost_cents: costTrimmed ? costCents : null,
+      count_as_expense: countAsExpense,
+      expense_category_code: countAsExpense ? expenseCategory : null,
     });
   }
 
@@ -141,6 +165,54 @@ export function PlanForm({ initialValue, submitting, error, onSubmit }: Props) {
         editable={!submitting}
       />
 
+      {/* Count the plan's cost as a trip expense */}
+      <View className="gap-2">
+        <Pressable
+          onPress={() => setCountAsExpense((v) => !v)}
+          disabled={submitting}
+          className="flex-row items-center gap-2"
+        >
+          <View
+            className={`w-5 h-5 rounded border items-center justify-center ${
+              countAsExpense
+                ? "bg-brand-600 border-brand-600"
+                : "border-border bg-surface"
+            }`}
+          >
+            {countAsExpense ? (
+              <Icon name="check" size={14} color="#ffffff" />
+            ) : null}
+          </View>
+          <Text className="text-sm text-ink-primary">
+            Count cost as a trip expense
+          </Text>
+        </Pressable>
+
+        {countAsExpense ? (
+          <View className="gap-2 pl-7">
+            <Text className="text-xs text-ink-muted">
+              Booked as a common expense. Pick a category:
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {categories.map((c) => (
+                <Pill
+                  key={c.code}
+                  label={c.label}
+                  active={c.code === expenseCategory}
+                  onPress={() => setExpenseCategory(c.code)}
+                  disabled={submitting}
+                />
+              ))}
+            </View>
+            {costTrimmed === "" ? (
+              <Text className="text-xs text-danger-500">
+                Add a cost above for this to take effect.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+      </View>
+
       {error ? (
         <Text className="text-sm text-danger-500">
           Could not save: {String((error as Error).message ?? error)}
@@ -156,6 +228,17 @@ export function PlanForm({ initialValue, submitting, error, onSubmit }: Props) {
       >
         Save
       </Button>
+
+      {/* Documentation links — only once the plan exists (needs its id). */}
+      {initialValue ? (
+        <View className="mt-2 pt-4 border-t border-border">
+          <PlanLinks tripId={tripId} plan={initialValue} />
+        </View>
+      ) : (
+        <Text className="text-xs text-ink-muted text-center">
+          Save the plan first to attach documentation links.
+        </Text>
+      )}
     </ScrollView>
   );
 }
