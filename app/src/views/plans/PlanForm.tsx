@@ -9,6 +9,7 @@ import { Pill } from "../../components/Pill";
 import { TimeInput } from "../../components/TimeInput";
 import { useCategories } from "../../domain/categories/useCategories";
 import type { Plan, PlanCreate } from "../../domain/plans/types";
+import { openInMaps } from "../../lib/maps";
 import { parseEurosToCents } from "../../lib/money";
 import { PlanLinks } from "./PlanLinks";
 
@@ -74,6 +75,7 @@ export function PlanForm({
   );
   const [endDate, setEndDate] = useState(initialValue?.end_date ?? "");
   const [duration, setDuration] = useState(initialValue?.duration ?? "");
+  const [location, setLocation] = useState(initialValue?.location ?? "");
   const [cost, setCost] = useState(
     initialValue?.cost_cents != null
       ? (initialValue.cost_cents / 100).toFixed(2)
@@ -105,6 +107,7 @@ export function PlanForm({
       start_time: startTime || null,
       end_date: endDate || null,
       duration: duration.trim() ? duration.trim() : null,
+      location: location.trim() ? location.trim() : null,
       cost_cents: costTrimmed ? costCents : null,
       count_as_expense: countAsExpense,
       expense_category_code: countAsExpense ? expenseCategory : null,
@@ -175,6 +178,29 @@ export function PlanForm({
         placeholder="e.g. 2h, all day, weekend"
         editable={!submitting}
       />
+
+      <View className="gap-2">
+        <Input
+          label="Location (optional)"
+          value={location}
+          onChangeText={setLocation}
+          placeholder="Address, place, coords, or a maps link"
+          autoCapitalize="none"
+          editable={!submitting}
+        />
+        {location.trim() ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            onPress={() => openInMaps(location)}
+          >
+            <View className="flex-row items-center gap-1.5">
+              <Icon name="map-pin" size={16} color="#059669" />
+              <Text className="text-brand-700 font-semibold">Open in Maps</Text>
+            </View>
+          </Button>
+        ) : null}
+      </View>
 
       <Input
         label="Cost (EUR, optional)"

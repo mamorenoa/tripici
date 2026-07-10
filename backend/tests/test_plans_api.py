@@ -70,6 +70,20 @@ async def test_create_plan_with_start_time(authed_client: AsyncClient) -> None:
     assert response.json()["start_time"] == "21:30:00"
 
 
+async def test_create_plan_with_location(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    response = await authed_client.post(
+        f"/trips/{trip_id}/plans",
+        json={
+            "name": "Coliseo",
+            "description": "Visita",
+            "location": "Piazza del Colosseo, 1, Roma",
+        },
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["location"] == "Piazza del Colosseo, 1, Roma"
+
+
 async def test_create_plan_only_mandatory_fields(
     authed_client: AsyncClient,
 ) -> None:

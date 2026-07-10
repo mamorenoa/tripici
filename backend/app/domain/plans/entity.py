@@ -34,6 +34,9 @@ class PlanBase(SQLModel):
     start_time: time | None = None  # optional time of day for the plan
     end_date: date | None = None
     duration: str | None = Field(default=None, max_length=100)
+    # Free text: an address, place name, coordinates, or a maps URL. The
+    # app turns it into an "Open in Maps" action (no geocoding backend).
+    location: str | None = Field(default=None, max_length=500)
     cost_cents: int | None = Field(default=None, ge=0)
     # When ``True`` (and a cost is set), the plan's cost is mirrored into
     # a trip expense (see ``PlanService._reconcile_expense``). The mirror
@@ -71,6 +74,7 @@ class PlanUpdate(SQLModel):
     start_time: time | None = None
     end_date: date | None = None
     duration: str | None = Field(default=None, max_length=100)
+    location: str | None = Field(default=None, max_length=500)
     cost_cents: int | None = Field(default=None, ge=0)
     count_as_expense: bool | None = None
     expense_category_code: str | None = Field(default=None, max_length=40)

@@ -21,7 +21,8 @@ export type IconName =
   | "bar-chart-2"
   | "eye"
   | "eye-off"
-  | "divide";
+  | "divide"
+  | "map-pin";
 
 type Props = {
   name: IconName;

@@ -275,6 +275,14 @@ export function TripDetailScreen() {
                             {meta}
                           </Text>
                         ) : null}
+                        {item.location ? (
+                          <Text
+                            className="text-xs text-ink-muted mt-0.5"
+                            numberOfLines={1}
+                          >
+                            📍 {item.location}
+                          </Text>
+                        ) : null}
                       </View>
                       {item.cost_cents != null ? (
                         <Text className="text-base font-semibold text-ink-primary">

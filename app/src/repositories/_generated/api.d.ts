@@ -759,6 +759,8 @@ export interface components {
             end_date?: string | null;
             /** Duration */
             duration?: string | null;
+            /** Location */
+            location?: string | null;
             /** Cost Cents */
             cost_cents?: number | null;
             /**
@@ -818,6 +820,8 @@ export interface components {
             end_date?: string | null;
             /** Duration */
             duration?: string | null;
+            /** Location */
+            location?: string | null;
             /** Cost Cents */
             cost_cents?: number | null;
             /**
@@ -875,6 +879,8 @@ export interface components {
             end_date?: string | null;
             /** Duration */
             duration?: string | null;
+            /** Location */
+            location?: string | null;
             /** Cost Cents */
             cost_cents?: number | null;
             /** Count As Expense */
