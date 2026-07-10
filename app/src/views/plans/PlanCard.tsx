@@ -5,7 +5,7 @@ import { Badge } from "../../components/Badge";
 import { Card } from "../../components/Card";
 import type { Plan } from "../../domain/plans/types";
 import { formatEuros } from "../../lib/money";
-import { planIsPast, planMeta, todayIso } from "./planUtils";
+import { planColor, planIsPast, planMeta, todayIso } from "./planUtils";
 
 export function PlanCard({ plan, tripId }: { plan: Plan; tripId: string }) {
   const meta = planMeta(plan);
@@ -19,6 +19,10 @@ export function PlanCard({ plan, tripId }: { plan: Plan; tripId: string }) {
         >
           <View className="flex-1">
             <View className="flex-row items-center gap-2">
+              <View
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: planColor(plan) }}
+              />
               <Text
                 className="text-base font-semibold text-ink-primary flex-shrink"
                 numberOfLines={1}

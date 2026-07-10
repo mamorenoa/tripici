@@ -2,6 +2,30 @@ import type { Plan } from "../../domain/plans/types";
 
 export type PlanSort = "soonest" | "latest";
 
+// A categorical palette. Each plan gets a stable colour derived from its
+// id (no storage, no migration) — same plan → same colour everywhere.
+const PLAN_COLORS = [
+  "#059669", // emerald
+  "#2563eb", // blue
+  "#db2777", // pink
+  "#d97706", // amber
+  "#7c3aed", // violet
+  "#0891b2", // cyan
+  "#dc2626", // red
+  "#65a30d", // lime
+  "#ea580c", // orange
+  "#4f46e5", // indigo
+];
+
+export function planColor(plan: Plan): string {
+  const id = plan.id ?? "";
+  let h = 0;
+  for (let i = 0; i < id.length; i++) {
+    h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return PLAN_COLORS[h % PLAN_COLORS.length];
+}
+
 /** Local date as "YYYY-MM-DD". */
 export function isoOf(d: Date): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");

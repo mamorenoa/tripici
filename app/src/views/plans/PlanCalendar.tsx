@@ -4,7 +4,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Icon } from "../../components/Icon";
 import type { Plan } from "../../domain/plans/types";
 import { PlanCard } from "./PlanCard";
-import { isoOf, planOccursOn, todayIso } from "./planUtils";
+import { isoOf, planColor, planOccursOn, todayIso } from "./planUtils";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -102,14 +102,14 @@ export function PlanCalendar({
               const inMonth = d.getMonth() === view.m;
               const selected = iso === selectedDay;
               const isToday = iso === today;
-              const count = plans.filter((p) => planOccursOn(p, iso)).length;
+              const dayCellPlans = plans.filter((p) => planOccursOn(p, iso));
               return (
                 <Pressable
                   key={iso}
                   onPress={() => setSelectedDay(iso)}
                   className={`flex-1 items-center py-1.5 rounded-lg ${
                     selected
-                      ? "bg-brand-600"
+                      ? "bg-brand-100"
                       : isToday
                         ? "border border-brand-600"
                         : ""
@@ -117,24 +117,21 @@ export function PlanCalendar({
                 >
                   <Text
                     className={`text-sm ${
-                      selected
-                        ? "text-white font-semibold"
-                        : inMonth
-                          ? "text-ink-primary"
-                          : "text-ink-muted"
-                    }`}
+                      inMonth ? "text-ink-primary" : "text-ink-muted"
+                    } ${selected ? "font-semibold" : ""}`}
                   >
                     {d.getDate()}
                   </Text>
-                  <View
-                    className={`w-1.5 h-1.5 rounded-full mt-0.5 ${
-                      count > 0
-                        ? selected
-                          ? "bg-white"
-                          : "bg-brand-600"
-                        : ""
-                    }`}
-                  />
+                  {/* Up to 3 coloured dots, one per plan on this day. */}
+                  <View className="flex-row gap-0.5 mt-0.5 h-1.5">
+                    {dayCellPlans.slice(0, 3).map((p) => (
+                      <View
+                        key={p.id}
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: planColor(p) }}
+                      />
+                    ))}
+                  </View>
                 </Pressable>
               );
             })}
