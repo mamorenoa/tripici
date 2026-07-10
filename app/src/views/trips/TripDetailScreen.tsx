@@ -27,12 +27,18 @@ type Tab = "expenses" | "plans";
 /** Compact meta line for a plan: dates + duration, when present. */
 function planMeta(plan: Plan): string {
   const parts: string[] = [];
+  const time = plan.start_time ? plan.start_time.slice(0, 5) : "";
+  const start = plan.start_date
+    ? `${plan.start_date}${time ? ` ${time}` : ""}`
+    : "";
   if (plan.start_date && plan.end_date && plan.start_date !== plan.end_date) {
-    parts.push(`${plan.start_date} → ${plan.end_date}`);
+    parts.push(`${start} → ${plan.end_date}`);
   } else if (plan.start_date) {
-    parts.push(plan.start_date);
+    parts.push(start);
   } else if (plan.end_date) {
     parts.push(plan.end_date);
+  } else if (time) {
+    parts.push(time);
   }
   if (plan.duration) parts.push(plan.duration);
   const linkCount = plan.links?.length ?? 0;

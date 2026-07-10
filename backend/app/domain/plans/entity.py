@@ -11,7 +11,7 @@ partial PATCH payload.
 """
 
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from uuid import UUID, uuid4
 
 from pydantic import field_validator
@@ -31,6 +31,7 @@ class PlanBase(SQLModel):
     name: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=2000)
     start_date: date | None = None
+    start_time: time | None = None  # optional time of day for the plan
     end_date: date | None = None
     duration: str | None = Field(default=None, max_length=100)
     cost_cents: int | None = Field(default=None, ge=0)
@@ -67,6 +68,7 @@ class PlanUpdate(SQLModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     description: str | None = Field(default=None, min_length=1, max_length=2000)
     start_date: date | None = None
+    start_time: time | None = None
     end_date: date | None = None
     duration: str | None = Field(default=None, max_length=100)
     cost_cents: int | None = Field(default=None, ge=0)

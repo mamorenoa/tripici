@@ -753,6 +753,8 @@ export interface components {
             description: string;
             /** Start Date */
             start_date?: string | null;
+            /** Start Time */
+            start_time?: string | null;
             /** End Date */
             end_date?: string | null;
             /** Duration */
@@ -810,6 +812,8 @@ export interface components {
             description: string;
             /** Start Date */
             start_date?: string | null;
+            /** Start Time */
+            start_time?: string | null;
             /** End Date */
             end_date?: string | null;
             /** Duration */
@@ -865,6 +869,8 @@ export interface components {
             description?: string | null;
             /** Start Date */
             start_date?: string | null;
+            /** Start Time */
+            start_time?: string | null;
             /** End Date */
             end_date?: string | null;
             /** Duration */

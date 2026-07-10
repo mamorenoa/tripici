@@ -6,6 +6,7 @@ import { DateInput } from "../../components/DateInput";
 import { Icon } from "../../components/Icon";
 import { Input } from "../../components/Input";
 import { Pill } from "../../components/Pill";
+import { TimeInput } from "../../components/TimeInput";
 import { useCategories } from "../../domain/categories/useCategories";
 import type { Plan, PlanCreate } from "../../domain/plans/types";
 import { parseEurosToCents } from "../../lib/money";
@@ -67,6 +68,10 @@ export function PlanForm({
     initialValue?.description ?? "",
   );
   const [startDate, setStartDate] = useState(initialValue?.start_date ?? "");
+  // API sends "HH:MM:SS"; the input works in "HH:MM".
+  const [startTime, setStartTime] = useState(
+    initialValue?.start_time?.slice(0, 5) ?? "",
+  );
   const [endDate, setEndDate] = useState(initialValue?.end_date ?? "");
   const [duration, setDuration] = useState(initialValue?.duration ?? "");
   const [cost, setCost] = useState(
@@ -97,6 +102,7 @@ export function PlanForm({
       name: name.trim(),
       description: description.trim(),
       start_date: startDate || null,
+      start_time: startTime || null,
       end_date: endDate || null,
       duration: duration.trim() ? duration.trim() : null,
       cost_cents: costTrimmed ? costCents : null,
@@ -146,6 +152,20 @@ export function PlanForm({
             editable={!submitting}
           />
         </View>
+      </View>
+
+      <View className="gap-1">
+        <TimeInput
+          label="Start time (optional)"
+          value={startTime}
+          onChange={setStartTime}
+          editable={!submitting}
+        />
+        {startTime ? (
+          <Pressable onPress={() => setStartTime("")} disabled={submitting}>
+            <Text className="text-xs text-ink-muted">Clear</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <Input

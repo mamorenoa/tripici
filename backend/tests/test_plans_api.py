@@ -53,6 +53,23 @@ async def test_create_plan_returns_201_and_payload(
     UUID(body["id"])
 
 
+async def test_create_plan_with_start_time(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+
+    response = await authed_client.post(
+        f"/trips/{trip_id}/plans",
+        json={
+            "name": "Cena",
+            "description": "Reserva",
+            "start_date": "2026-06-12",
+            "start_time": "21:30",
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    assert response.json()["start_time"] == "21:30:00"
+
+
 async def test_create_plan_only_mandatory_fields(
     authed_client: AsyncClient,
 ) -> None:
