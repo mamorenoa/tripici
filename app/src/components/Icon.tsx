@@ -22,7 +22,8 @@ export type IconName =
   | "eye"
   | "eye-off"
   | "divide"
-  | "map-pin";
+  | "map-pin"
+  | "list";
 
 type Props = {
   name: IconName;

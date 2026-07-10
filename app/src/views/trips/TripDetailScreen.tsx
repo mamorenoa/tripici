@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 
-import { Badge } from "../../components/Badge";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
@@ -22,57 +21,12 @@ import type { Plan } from "../../domain/plans/types";
 import { usePlans } from "../../domain/plans/usePlans";
 import { useTrip } from "../../domain/trips/useTrip";
 import { formatEuros } from "../../lib/money";
+import { PlanCalendar } from "../plans/PlanCalendar";
+import { PlanCard } from "../plans/PlanCard";
+import { sortPlans, type PlanSort } from "../plans/planUtils";
 
 type Tab = "expenses" | "plans";
-type PlanSort = "soonest" | "latest";
-
-function todayIso(): string {
-  const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${mm}-${dd}`;
-}
-
-/** A plan is "past" when its end (or start, if no end) date is before
- * today. Undated plans are never past. */
-function planIsPast(plan: Plan, today: string): boolean {
-  const ref = plan.end_date || plan.start_date;
-  return !!ref && ref < today;
-}
-
-/** Chronological sort. Dated plans first (by date, then time); undated
- * plans always last, whatever the direction. */
-function sortPlans(plans: Plan[], dir: PlanSort): Plan[] {
-  const key = (p: Plan) =>
-    p.start_date ? `${p.start_date}T${p.start_time ?? "00:00:00"}` : null;
-  const dated = plans.filter((p) => p.start_date);
-  const undated = plans.filter((p) => !p.start_date);
-  dated.sort((a, b) => key(a)!.localeCompare(key(b)!));
-  if (dir === "latest") dated.reverse();
-  return [...dated, ...undated];
-}
-
-/** Compact meta line for a plan: dates + duration, when present. */
-function planMeta(plan: Plan): string {
-  const parts: string[] = [];
-  const time = plan.start_time ? plan.start_time.slice(0, 5) : "";
-  const start = plan.start_date
-    ? `${plan.start_date}${time ? ` ${time}` : ""}`
-    : "";
-  if (plan.start_date && plan.end_date && plan.start_date !== plan.end_date) {
-    parts.push(`${start} → ${plan.end_date}`);
-  } else if (plan.start_date) {
-    parts.push(start);
-  } else if (plan.end_date) {
-    parts.push(plan.end_date);
-  } else if (time) {
-    parts.push(time);
-  }
-  if (plan.duration) parts.push(plan.duration);
-  const linkCount = plan.links?.length ?? 0;
-  if (linkCount > 0) parts.push(`🔗 ${linkCount}`);
-  return parts.join(" · ");
-}
+type PlanView = "list" | "calendar";
 
 export function TripDetailScreen() {
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
@@ -89,8 +43,8 @@ export function TripDetailScreen() {
   const [tab, setTab] = useState<Tab>("expenses");
   const [filter, setFilter] = useState<string | null>(null);
   const [planSort, setPlanSort] = useState<PlanSort>("soonest");
+  const [planView, setPlanView] = useState<PlanView>("list");
 
-  const today = todayIso();
   const orderedPlans = sortPlans(plans, planSort);
 
   const visible = filter
@@ -280,75 +234,61 @@ export function TripDetailScreen() {
           />
         ) : (
           <View className="flex-1">
-            <View className="px-4 pt-3 pb-1 flex-row items-center gap-2">
-              <Text className="text-xs text-ink-muted">Sort</Text>
-              <Pill
-                label="Soonest"
-                active={planSort === "soonest"}
-                onPress={() => setPlanSort("soonest")}
-              />
-              <Pill
-                label="Latest"
-                active={planSort === "latest"}
-                onPress={() => setPlanSort("latest")}
-              />
+            <View className="px-4 pt-3 pb-1 flex-row items-center justify-between">
+              {planView === "list" ? (
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-xs text-ink-muted">Sort</Text>
+                  <Pill
+                    label="Soonest"
+                    active={planSort === "soonest"}
+                    onPress={() => setPlanSort("soonest")}
+                  />
+                  <Pill
+                    label="Latest"
+                    active={planSort === "latest"}
+                    onPress={() => setPlanSort("latest")}
+                  />
+                </View>
+              ) : (
+                <View />
+              )}
+              <View className="flex-row items-center gap-1">
+                <Pressable
+                  onPress={() => setPlanView("list")}
+                  hitSlop={6}
+                  className="p-1.5"
+                >
+                  <Icon
+                    name="list"
+                    size={20}
+                    color={planView === "list" ? "#059669" : "#94a3b8"}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={() => setPlanView("calendar")}
+                  hitSlop={6}
+                  className="p-1.5"
+                >
+                  <Icon
+                    name="calendar"
+                    size={20}
+                    color={planView === "calendar" ? "#059669" : "#94a3b8"}
+                  />
+                </Pressable>
+              </View>
             </View>
-            <FlatList
-              data={orderedPlans}
-              keyExtractor={(p, i) => p.id ?? String(i)}
-              contentContainerClassName="px-4 pt-2 pb-24 gap-2"
-              renderItem={({ item }: { item: Plan }) => {
-                const meta = planMeta(item);
-                const past = planIsPast(item, today);
-                return (
-                <Link href={`/trips/${tripId}/plans/${item.id}/edit`} asChild>
-                  <Pressable>
-                    <Card
-                      className={`flex-row items-start gap-3 ${
-                        past ? "opacity-60" : ""
-                      }`}
-                    >
-                      <View className="flex-1">
-                        <View className="flex-row items-center gap-2">
-                          <Text
-                            className="text-base font-semibold text-ink-primary flex-shrink"
-                            numberOfLines={1}
-                          >
-                            {item.name}
-                          </Text>
-                          {past ? <Badge variant="neutral">Past</Badge> : null}
-                        </View>
-                        <Text
-                          className="text-sm text-ink-secondary mt-0.5"
-                          numberOfLines={2}
-                        >
-                          {item.description}
-                        </Text>
-                        {meta ? (
-                          <Text className="text-xs text-ink-muted mt-1">
-                            {meta}
-                          </Text>
-                        ) : null}
-                        {item.location ? (
-                          <Text
-                            className="text-xs text-ink-muted mt-0.5"
-                            numberOfLines={1}
-                          >
-                            📍 {item.location}
-                          </Text>
-                        ) : null}
-                      </View>
-                      {item.cost_cents != null ? (
-                        <Text className="text-base font-semibold text-ink-primary">
-                          {formatEuros(item.cost_cents)}
-                        </Text>
-                      ) : null}
-                    </Card>
-                  </Pressable>
-                </Link>
-                );
-              }}
-            />
+            {planView === "list" ? (
+              <FlatList
+                data={orderedPlans}
+                keyExtractor={(p, i) => p.id ?? String(i)}
+                contentContainerClassName="px-4 pt-2 pb-24 gap-2"
+                renderItem={({ item }: { item: Plan }) => (
+                  <PlanCard plan={item} tripId={tripId} />
+                )}
+              />
+            ) : (
+              <PlanCalendar plans={plans} tripId={tripId} />
+            )}
           </View>
         )
       )}
