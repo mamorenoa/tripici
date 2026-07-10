@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 
+import { Badge } from "../../components/Badge";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
@@ -23,6 +24,33 @@ import { useTrip } from "../../domain/trips/useTrip";
 import { formatEuros } from "../../lib/money";
 
 type Tab = "expenses" | "plans";
+type PlanSort = "soonest" | "latest";
+
+function todayIso(): string {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/** A plan is "past" when its end (or start, if no end) date is before
+ * today. Undated plans are never past. */
+function planIsPast(plan: Plan, today: string): boolean {
+  const ref = plan.end_date || plan.start_date;
+  return !!ref && ref < today;
+}
+
+/** Chronological sort. Dated plans first (by date, then time); undated
+ * plans always last, whatever the direction. */
+function sortPlans(plans: Plan[], dir: PlanSort): Plan[] {
+  const key = (p: Plan) =>
+    p.start_date ? `${p.start_date}T${p.start_time ?? "00:00:00"}` : null;
+  const dated = plans.filter((p) => p.start_date);
+  const undated = plans.filter((p) => !p.start_date);
+  dated.sort((a, b) => key(a)!.localeCompare(key(b)!));
+  if (dir === "latest") dated.reverse();
+  return [...dated, ...undated];
+}
 
 /** Compact meta line for a plan: dates + duration, when present. */
 function planMeta(plan: Plan): string {
@@ -60,6 +88,10 @@ export function TripDetailScreen() {
 
   const [tab, setTab] = useState<Tab>("expenses");
   const [filter, setFilter] = useState<string | null>(null);
+  const [planSort, setPlanSort] = useState<PlanSort>("soonest");
+
+  const today = todayIso();
+  const orderedPlans = sortPlans(plans, planSort);
 
   const visible = filter
     ? expenses.filter((e) => e.category_code === filter)
@@ -247,23 +279,45 @@ export function TripDetailScreen() {
             description="Tap the + button to add a plan for this trip."
           />
         ) : (
-          <FlatList
-            data={plans}
-            keyExtractor={(p, i) => p.id ?? String(i)}
-            contentContainerClassName="px-4 pt-4 pb-24 gap-2"
-            renderItem={({ item }: { item: Plan }) => {
-              const meta = planMeta(item);
-              return (
+          <View className="flex-1">
+            <View className="px-4 pt-3 pb-1 flex-row items-center gap-2">
+              <Text className="text-xs text-ink-muted">Sort</Text>
+              <Pill
+                label="Soonest"
+                active={planSort === "soonest"}
+                onPress={() => setPlanSort("soonest")}
+              />
+              <Pill
+                label="Latest"
+                active={planSort === "latest"}
+                onPress={() => setPlanSort("latest")}
+              />
+            </View>
+            <FlatList
+              data={orderedPlans}
+              keyExtractor={(p, i) => p.id ?? String(i)}
+              contentContainerClassName="px-4 pt-2 pb-24 gap-2"
+              renderItem={({ item }: { item: Plan }) => {
+                const meta = planMeta(item);
+                const past = planIsPast(item, today);
+                return (
                 <Link href={`/trips/${tripId}/plans/${item.id}/edit`} asChild>
                   <Pressable>
-                    <Card className="flex-row items-start gap-3">
+                    <Card
+                      className={`flex-row items-start gap-3 ${
+                        past ? "opacity-60" : ""
+                      }`}
+                    >
                       <View className="flex-1">
-                        <Text
-                          className="text-base font-semibold text-ink-primary"
-                          numberOfLines={1}
-                        >
-                          {item.name}
-                        </Text>
+                        <View className="flex-row items-center gap-2">
+                          <Text
+                            className="text-base font-semibold text-ink-primary flex-shrink"
+                            numberOfLines={1}
+                          >
+                            {item.name}
+                          </Text>
+                          {past ? <Badge variant="neutral">Past</Badge> : null}
+                        </View>
                         <Text
                           className="text-sm text-ink-secondary mt-0.5"
                           numberOfLines={2}
@@ -292,9 +346,10 @@ export function TripDetailScreen() {
                     </Card>
                   </Pressable>
                 </Link>
-              );
-            }}
-          />
+                );
+              }}
+            />
+          </View>
         )
       )}
 
