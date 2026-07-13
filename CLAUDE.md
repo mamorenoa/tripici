@@ -34,6 +34,10 @@ App de gastos de viajes compartidos entre amigos y pareja.
 - NativeWind para estilos (clases tipo Tailwind en web y nativo).
 - Almacenamiento del token de sesión: expo-secure-store en iOS/Android;
   contemplar el mecanismo equivalente en web. Diseñarlo desde el login.
+- Internacionalización (i18n) con **i18next + react-i18next +
+  expo-localization**. Idiomas: inglés y español. Config y recursos en
+  `src/lib/i18n/` (`locales/en.json`, `locales/es.json`); preferencia
+  persistida vía `secureStorage` y orquestada por `domain/settings`.
 
 **Integración backend ↔ frontend**
 - FastAPI expone OpenAPI. Generar el cliente y los tipos de TypeScript a partir
@@ -129,6 +133,13 @@ view  →  domain  →  repository (interfaz)
   datos), **propón primero un plan corto** y espera mi visto bueno antes de
   generar o modificar ficheros. Los incrementos triviales puedes ir directo.
 - Mantén el código simple y legible; prioriza claridad sobre listeza.
+- **i18n obligatorio**: toda feature nueva expone sus textos visibles al
+  usuario mediante claves de traducción (`t("...")`), nunca strings
+  hardcodeados. Añade la clave a `en.json` **y** `es.json` a la vez.
+  Incluye también títulos de navegación, placeholders, mensajes de error
+  y textos de diálogos/alertas. Las etiquetas de datos del backend que se
+  muestran (p. ej. categorías) se traducen en el front por su `code`,
+  usando el valor del servidor solo como fallback.
 
 ## Estado actual
 
@@ -225,6 +236,24 @@ Slices entregados:
   selector "Paid by" en `ExpenseForm` (Common + miembros, default = tú),
   etiqueta del pagador en la lista de `TripDetailScreen` y "Your share"
   en `GlobalStatsScreen`. 7 nuevos tests backend.
+
+- **Slice 12** — pantalla de detalle read-only para gastos y planes. Al
+  tocar un gasto/plan se abre su detalle (no el formulario de edición);
+  botón "Edit" en la cabecera para entrar en modo edición bajo demanda.
+  Nuevas `ExpenseDetailScreen` y `PlanDetailScreen` + rutas `index.tsx`;
+  las tarjetas enlazan al detalle en vez de a `/edit`. Sin cambios de
+  backend.
+
+- **Slice 13** — internacionalización (i18n). i18next + react-i18next +
+  expo-localization; inglés y español. Config y recursos en
+  `src/lib/i18n/` (`locales/{en,es}.json`), detección del idioma del
+  dispositivo, preferencia persistida (`secureStorage` vía
+  `domain/settings/useLanguage`) que gana sobre el device locale, y
+  selector 🌐 EN⇄ES en la cabecera de la lista de viajes. Moneda y fechas
+  se formatean con el locale activo (`Intl`). Categorías traducidas en el
+  front por su `code` (label del servidor como fallback). Todas las
+  screens y textos (nav, placeholders, errores, diálogos) usan `t()`.
+  Sin cambios de backend.
 
 Próximo candidato: **monetización** (Stripe one-time + paywall sobre stats globales),
 **invitaciones por email**, **modo oscuro**, o **EAS Build**.

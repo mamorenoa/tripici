@@ -1,9 +1,10 @@
 import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 import { Card } from "../../components/Card";
 import { Icon } from "../../components/Icon";
-import { useCategories } from "../../domain/categories/useCategories";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import { useExpenses } from "../../domain/expenses/useExpenses";
 import { useMembers } from "../../domain/members/useMembers";
 import { formatEuros } from "../../lib/money";
@@ -22,8 +23,9 @@ export function ExpenseDetailScreen() {
     id: string;
     expenseId: string;
   }>();
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   const { data: expenses, isLoading } = useExpenses(tripId);
-  const { data: categories = [] } = useCategories();
   const { data: members = [] } = useMembers(tripId);
 
   const expense = expenses?.find((e) => e.id === expenseId);
@@ -36,12 +38,9 @@ export function ExpenseDetailScreen() {
     );
   }
 
-  const categoryLabel =
-    categories.find((c) => c.code === expense.category_code)?.label ??
-    expense.category_code;
   const payerLabel =
     expense.paid_by_user_id == null
-      ? "Common"
+      ? t("expenses.common")
       : (members.find((m) => m.user_id === expense.paid_by_user_id)
           ?.display_name ?? "—");
 
@@ -57,7 +56,7 @@ export function ExpenseDetailScreen() {
               <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                 <Icon name="edit-2" size={18} color="#059669" />
                 <Text className="text-brand-600 font-semibold text-sm">
-                  Edit
+                  {t("common.edit")}
                 </Text>
               </Pressable>
             </Link>
@@ -69,11 +68,17 @@ export function ExpenseDetailScreen() {
           <Text className="text-3xl font-bold text-brand-600">
             {formatEuros(expense.amount_cents)}
           </Text>
-          <Field label="Category" value={categoryLabel} />
-          <Field label="Date" value={expense.expense_date ?? "—"} />
-          <Field label="Paid by" value={payerLabel} />
+          <Field
+            label={t("expenses.category")}
+            value={categoryLabel(expense.category_code)}
+          />
+          <Field label={t("expenses.date")} value={expense.expense_date ?? "—"} />
+          <Field label={t("expenses.paidBy")} value={payerLabel} />
           {expense.description ? (
-            <Field label="Description" value={expense.description} />
+            <Field
+              label={t("expenses.description")}
+              value={expense.description}
+            />
           ) : null}
         </Card>
       </ScrollView>

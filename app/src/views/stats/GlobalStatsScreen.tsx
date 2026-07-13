@@ -1,10 +1,12 @@
 import { Stack } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Pill } from "../../components/Pill";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import type { CategoryStat, MonthStat, TripStat } from "../../domain/stats/types";
 import { useGlobalStats } from "../../domain/stats/useGlobalStats";
 import { formatEuros } from "../../lib/money";
@@ -25,15 +27,19 @@ function HBar({ pct }: { pct: number }) {
 // ── Section: by category ─────────────────────────────────────────
 
 function CategorySection({ rows }: { rows: CategoryStat[] }) {
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        By category
+        {t("stats.byCategory")}
       </Text>
       {rows.map((r) => (
         <View key={r.category_code} className="gap-1">
           <View className="flex-row justify-between items-center">
-            <Text className="text-sm text-ink-primary">{r.label}</Text>
+            <Text className="text-sm text-ink-primary">
+              {categoryLabel(r.category_code, r.label)}
+            </Text>
             <Text className="text-sm font-semibold text-ink-primary">
               {formatEuros(r.total_cents)}
             </Text>
@@ -77,26 +83,27 @@ function TripSection({
     return sortDir === "desc" ? -diff : diff;
   });
   const max = Math.max(...sorted.map((r) => metric(r, sortKey)), 1);
+  const { t } = useTranslation();
 
   return (
     <Card className="gap-3">
       <View className="flex-row items-center justify-between">
         <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-          By trip
+          {t("stats.byTrip")}
         </Text>
         <View className="flex-row items-center gap-2">
           <Pill
-            label="Total"
+            label={t("stats.total")}
             active={sortKey === "total"}
             onPress={() => onSortKey("total")}
           />
           <Pill
-            label="€/day"
+            label={t("stats.perDay")}
             active={sortKey === "daily"}
             onPress={() => onSortKey("daily")}
           />
           <Pill
-            label={sortDir === "desc" ? "↓ High" : "↑ Low"}
+            label={sortDir === "desc" ? t("stats.sortHigh") : t("stats.sortLow")}
             active={false}
             onPress={onToggleDir}
           />
@@ -117,7 +124,7 @@ function TripSection({
             <View className="flex-row items-center gap-2">
               <HBar pct={pct} />
               <Text className="text-xs text-ink-muted">
-                {formatEuros(r.daily_cents)}/day
+                {t("stats.dailyPerDay", { amount: formatEuros(r.daily_cents) })}
               </Text>
             </View>
           </View>
@@ -130,11 +137,12 @@ function TripSection({
 // ── Section: by month ────────────────────────────────────────────
 
 function MonthSection({ rows }: { rows: MonthStat[] }) {
+  const { t } = useTranslation();
   const max = Math.max(...rows.map((r) => r.total_cents), 1);
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        By month
+        {t("stats.byMonth")}
       </Text>
       <View className="flex-row items-end gap-1 h-24">
         {rows.map((r) => {
@@ -160,6 +168,8 @@ function MonthSection({ rows }: { rows: MonthStat[] }) {
 // ── Screen ────────────────────────────────────────────────────────
 
 export function GlobalStatsScreen() {
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   const [activeFilter, setActiveFilter] = useState<string | undefined>(
     undefined
   );
@@ -167,13 +177,16 @@ export function GlobalStatsScreen() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const { data: stats, isLoading, error } = useGlobalStats(activeFilter);
 
-  const activeLabel = activeFilter
-    ? stats?.by_category.find((c) => c.category_code === activeFilter)?.label
+  const activeCategory = activeFilter
+    ? stats?.by_category.find((c) => c.category_code === activeFilter)
+    : undefined;
+  const activeLabel = activeCategory
+    ? categoryLabel(activeCategory.category_code, activeCategory.label)
     : undefined;
 
   return (
     <View className="flex-1 bg-background">
-      <Stack.Screen options={{ title: "All trips" }} />
+      <Stack.Screen options={{ title: t("nav.allTrips") }} />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
@@ -182,14 +195,14 @@ export function GlobalStatsScreen() {
       ) : error ? (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-ink-muted text-center">
-            Could not load statistics.
+            {t("stats.loadError")}
           </Text>
         </View>
       ) : !stats || (stats.total_cents === 0 && !activeFilter) ? (
         <View className="flex-1 items-center justify-center px-6">
           <EmptyState
-            title="No expenses yet"
-            description="Add expenses to your trips to see statistics here."
+            title={t("stats.emptyTitle")}
+            description={t("stats.globalEmptyDescription")}
           />
         </View>
       ) : (
@@ -197,16 +210,18 @@ export function GlobalStatsScreen() {
           {/* Total */}
           <View className="gap-1">
             <Text className="text-sm text-ink-secondary">
-              {activeLabel ? `Total · ${activeLabel}` : "Total · All trips"}
+              {activeLabel
+                ? t("expenses.totalCategory", { category: activeLabel })
+                : t("stats.globalTotalAll")}
             </Text>
             <Text className="text-4xl font-bold text-brand-600">
               {formatEuros(stats.total_cents)}
             </Text>
             <Text className="text-sm text-ink-muted">
-              Your share: {formatEuros(stats.personal_total_cents)}
-              <Text className="text-ink-muted">
-                {" "}· attributed to you + your part of common expenses
-              </Text>
+              {t("stats.yourShare", {
+                amount: formatEuros(stats.personal_total_cents),
+              })}
+              <Text className="text-ink-muted">{t("stats.yourShareNote")}</Text>
             </Text>
           </View>
 
@@ -219,14 +234,14 @@ export function GlobalStatsScreen() {
               className="flex-grow-0 flex-shrink-0 -mx-4 px-4"
             >
               <Pill
-                label="All"
+                label={t("common.all")}
                 active={!activeFilter}
                 onPress={() => setActiveFilter(undefined)}
               />
               {stats.by_category.map((c) => (
                 <Pill
                   key={c.category_code}
-                  label={c.label}
+                  label={categoryLabel(c.category_code, c.label)}
                   active={activeFilter === c.category_code}
                   onPress={() => setActiveFilter(c.category_code)}
                 />

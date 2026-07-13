@@ -1,20 +1,24 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Icon } from "../../components/Icon";
 import type { Plan } from "../../domain/plans/types";
+import { activeLocaleTag } from "../../lib/i18n";
 import { PlanCard } from "./PlanCard";
 import { isoOf, planColor, planOccursOn, todayIso } from "./planUtils";
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function parseIso(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d, 12, 0, 0);
+}
+
+/** Localized short weekday names, Monday-first. 2024-01-01 is a Monday. */
+function weekdayNames(localeTag: string): string[] {
+  const fmt = new Intl.DateTimeFormat(localeTag, { weekday: "short" });
+  return Array.from({ length: 7 }, (_, i) =>
+    fmt.format(new Date(2024, 0, 1 + i)),
+  );
 }
 
 /** Month-grid calendar for a trip's plans. Self-contained: give it the
@@ -28,6 +32,9 @@ export function PlanCalendar({
   plans: Plan[];
   tripId: string;
 }) {
+  const { t } = useTranslation();
+  const localeTag = activeLocaleTag();
+  const weekdays = weekdayNames(localeTag);
   const today = todayIso();
 
   // Open on the month of the earliest dated plan, else the current month.
@@ -74,7 +81,10 @@ export function PlanCalendar({
           <Icon name="chevron-left" size={22} color="#059669" />
         </Pressable>
         <Text className="text-base font-semibold text-ink-primary">
-          {MONTHS[view.m]} {view.y}
+          {new Date(view.y, view.m, 1).toLocaleDateString(localeTag, {
+            month: "long",
+            year: "numeric",
+          })}
         </Text>
         <Pressable onPress={() => shiftMonth(1)} hitSlop={8} className="p-2">
           <Icon name="chevron-right" size={22} color="#059669" />
@@ -83,9 +93,9 @@ export function PlanCalendar({
 
       {/* Weekday labels */}
       <View className="flex-row">
-        {WEEKDAYS.map((w) => (
+        {weekdays.map((w, i) => (
           <Text
-            key={w}
+            key={i}
             className="flex-1 text-center text-xs text-ink-muted font-medium"
           >
             {w}
@@ -149,7 +159,9 @@ export function PlanCalendar({
             <PlanCard key={p.id} plan={p} tripId={tripId} />
           ))
         ) : (
-          <Text className="text-sm text-ink-muted">No plans on this day.</Text>
+          <Text className="text-sm text-ink-muted">
+            {t("plans.noPlansOnDay")}
+          </Text>
         )}
       </View>
 
@@ -157,7 +169,7 @@ export function PlanCalendar({
       {undated.length > 0 ? (
         <View className="gap-2 mt-3">
           <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-            No date ({undated.length})
+            {t("plans.noDate", { count: undated.length })}
           </Text>
           {undated.map((p) => (
             <PlanCard key={p.id} plan={p} tripId={tripId} />

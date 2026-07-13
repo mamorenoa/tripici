@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
@@ -7,6 +8,7 @@ import { Input } from "../../components/Input";
 import { Pill } from "../../components/Pill";
 import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useCategories } from "../../domain/categories/useCategories";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import type { Expense, ExpenseCreate } from "../../domain/expenses/types";
 import { useMembers } from "../../domain/members/useMembers";
 import { parseEurosToCents } from "../../lib/money";
@@ -42,6 +44,8 @@ export function ExpenseForm({
   error,
   onSubmit,
 }: Props) {
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   const { data: categories = [] } = useCategories();
   const { data: members = [] } = useMembers(tripId);
   const { data: currentUser } = useCurrentUser();
@@ -96,7 +100,7 @@ export function ExpenseForm({
       keyboardShouldPersistTaps="handled"
     >
       <Input
-        label="Amount (EUR)"
+        label={t("expenses.amount")}
         value={amount}
         onChangeText={setAmount}
         keyboardType="decimal-pad"
@@ -105,12 +109,14 @@ export function ExpenseForm({
       />
 
       <View className="gap-2">
-        <Text className="text-sm text-ink-secondary font-medium">Category</Text>
+        <Text className="text-sm text-ink-secondary font-medium">
+          {t("expenses.category")}
+        </Text>
         <View className="flex-row flex-wrap gap-2">
           {categories.map((c) => (
             <Pill
               key={c.code}
-              label={c.label}
+              label={categoryLabel(c.code, c.label)}
               active={c.code === categoryCode}
               onPress={() => setCategoryCode(c.code)}
               disabled={submitting}
@@ -120,10 +126,12 @@ export function ExpenseForm({
       </View>
 
       <View className="gap-2">
-        <Text className="text-sm text-ink-secondary font-medium">Paid by</Text>
+        <Text className="text-sm text-ink-secondary font-medium">
+          {t("expenses.paidBy")}
+        </Text>
         <View className="flex-row flex-wrap gap-2">
           <Pill
-            label="Common"
+            label={t("expenses.common")}
             active={effectivePaidBy === COMMON}
             onPress={() => setPaidBy(COMMON)}
             disabled={submitting}
@@ -133,7 +141,7 @@ export function ExpenseForm({
               key={m.user_id}
               label={
                 currentUser && m.user_id === currentUser.id
-                  ? `${m.display_name} (you)`
+                  ? t("common.nameYou", { name: m.display_name })
                   : m.display_name
               }
               active={effectivePaidBy === m.user_id}
@@ -145,23 +153,25 @@ export function ExpenseForm({
       </View>
 
       <DateInput
-        label="Date"
+        label={t("expenses.date")}
         value={date}
         onChange={setDate}
         editable={!submitting}
       />
 
       <Input
-        label="Description (optional)"
+        label={t("expenses.descriptionOptional")}
         value={description}
         onChangeText={setDescription}
-        placeholder="e.g. Pizza"
+        placeholder={t("expenses.descriptionPlaceholder")}
         editable={!submitting}
       />
 
       {error ? (
         <Text className="text-sm text-danger-500">
-          Could not save: {String((error as Error).message ?? error)}
+          {t("common.saveError", {
+            error: String((error as Error).message ?? error),
+          })}
         </Text>
       ) : null}
 
@@ -172,7 +182,7 @@ export function ExpenseForm({
         isLoading={submitting}
         className="mt-2"
       >
-        Save
+        {t("common.save")}
       </Button>
     </ScrollView>
   );

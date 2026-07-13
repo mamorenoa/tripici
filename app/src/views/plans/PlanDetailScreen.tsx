@@ -1,4 +1,5 @@
 import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Linking,
@@ -12,7 +13,7 @@ import {
 import { Badge } from "../../components/Badge";
 import { Card } from "../../components/Card";
 import { Icon } from "../../components/Icon";
-import { useCategories } from "../../domain/categories/useCategories";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import { usePlans } from "../../domain/plans/usePlans";
 import { openInMaps } from "../../lib/maps";
 import { formatEuros } from "../../lib/money";
@@ -33,8 +34,9 @@ export function PlanDetailScreen() {
     id: string;
     planId: string;
   }>();
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   const { data: plans, isLoading } = usePlans(tripId);
-  const { data: categories = [] } = useCategories();
 
   const plan = plans?.find((p) => p.id === planId);
 
@@ -49,8 +51,7 @@ export function PlanDetailScreen() {
   const meta = planMeta(plan);
   const past = planIsPast(plan, todayIso());
   const expenseCategoryLabel = plan.expense_category_code
-    ? (categories.find((c) => c.code === plan.expense_category_code)?.label ??
-      plan.expense_category_code)
+    ? categoryLabel(plan.expense_category_code)
     : null;
 
   return (
@@ -63,7 +64,7 @@ export function PlanDetailScreen() {
               <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                 <Icon name="edit-2" size={18} color="#059669" />
                 <Text className="text-brand-600 font-semibold text-sm">
-                  Edit
+                  {t("common.edit")}
                 </Text>
               </Pressable>
             </Link>
@@ -80,7 +81,7 @@ export function PlanDetailScreen() {
             <Text className="text-xl font-semibold text-ink-primary flex-1">
               {plan.name}
             </Text>
-            {past ? <Badge variant="neutral">Past</Badge> : null}
+            {past ? <Badge variant="neutral">{t("plans.past")}</Badge> : null}
           </View>
 
           <Text className="text-base text-ink-secondary">
@@ -100,7 +101,7 @@ export function PlanDetailScreen() {
               >
                 <Icon name="map-pin" size={16} color="#059669" />
                 <Text className="text-brand-700 font-semibold">
-                  Open in Maps
+                  {t("plans.openInMaps")}
                 </Text>
               </Pressable>
             </View>
@@ -108,13 +109,13 @@ export function PlanDetailScreen() {
 
           {plan.cost_cents != null ? (
             <View className="gap-1">
-              <Text className="text-xs text-ink-muted">Cost</Text>
+              <Text className="text-xs text-ink-muted">{t("plans.cost")}</Text>
               <Text className="text-lg font-semibold text-ink-primary">
                 {formatEuros(plan.cost_cents)}
               </Text>
               {plan.count_as_expense ? (
                 <Text className="text-xs text-ink-muted">
-                  Counted as a common expense
+                  {t("plans.countedAsCommon")}
                   {expenseCategoryLabel ? ` · ${expenseCategoryLabel}` : ""}
                 </Text>
               ) : null}
@@ -125,7 +126,7 @@ export function PlanDetailScreen() {
         {plan.links && plan.links.length > 0 ? (
           <Card className="gap-2">
             <Text className="text-sm text-ink-secondary font-medium">
-              Documentation
+              {t("plans.documentation")}
             </Text>
             {plan.links.map((link) => (
               <Pressable key={link.id} onPress={() => openUrl(link.url)}>

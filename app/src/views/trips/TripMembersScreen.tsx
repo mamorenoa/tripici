@@ -1,5 +1,6 @@
 import * as Clipboard from "expo-clipboard";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -21,9 +22,11 @@ import { useRevokeInvitation } from "../../domain/invitations/useRevokeInvitatio
 import { useMembers, useRemoveMember } from "../../domain/members/useMembers";
 import type { TripMember } from "../../domain/members/types";
 import { useTrip } from "../../domain/trips/useTrip";
+import { activeLocaleTag } from "../../lib/i18n";
 import { buildInviteUrl } from "../../lib/inviteLink";
 
 export function TripMembersScreen() {
+  const { t } = useTranslation();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: currentUser } = useCurrentUser();
   const { data: trip } = useTrip(tripId);
@@ -46,7 +49,7 @@ export function TripMembersScreen() {
   async function copyToClipboard(url: string) {
     await Clipboard.setStringAsync(url);
     if (Platform.OS === "web" && globalThis.window) {
-      globalThis.window.alert("Invite link copied to clipboard.");
+      globalThis.window.alert(t("members.copied"));
     }
   }
 
@@ -67,35 +70,29 @@ export function TripMembersScreen() {
   function confirmRemove(member: TripMember) {
     const name = member.display_name || member.email;
     if (Platform.OS === "web") {
-      if (
-        globalThis.window?.confirm(`Remove ${name} from this trip?`)
-      ) {
+      if (globalThis.window?.confirm(t("members.removeConfirm", { name }))) {
         removeMember.mutate(member.user_id);
       }
     } else {
-      Alert.alert(
-        "Remove member",
-        `Remove ${name} from this trip?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Remove",
-            style: "destructive",
-            onPress: () => removeMember.mutate(member.user_id),
-          },
-        ],
-      );
+      Alert.alert(t("members.removeTitle"), t("members.removeConfirm", { name }), [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.remove"),
+          style: "destructive",
+          onPress: () => removeMember.mutate(member.user_id),
+        },
+      ]);
     }
   }
 
   return (
     <View className="flex-1 bg-background">
-      <Stack.Screen options={{ title: trip?.name ?? "Members" }} />
+      <Stack.Screen options={{ title: trip?.name ?? t("nav.members") }} />
 
       <FlatList
         ListHeaderComponent={
           <Text className="text-xs uppercase tracking-wide text-ink-muted mb-2 mt-4 px-4">
-            Members
+            {t("members.sectionTitle")}
           </Text>
         }
         data={members}
@@ -119,7 +116,7 @@ export function TripMembersScreen() {
                 <Text className="text-xs text-ink-muted">{item.email}</Text>
               </View>
               {item.is_owner ? (
-                <Badge variant="brand">Owner</Badge>
+                <Badge variant="brand">{t("members.owner")}</Badge>
               ) : isOwner ? (
                 <Button
                   size="sm"
@@ -127,7 +124,7 @@ export function TripMembersScreen() {
                   onPress={() => confirmRemove(item)}
                   disabled={removeMember.isPending}
                 >
-                  Remove
+                  {t("common.remove")}
                 </Button>
               ) : null}
             </Card>
@@ -137,7 +134,7 @@ export function TripMembersScreen() {
           isOwner ? (
             <View className="px-4 mt-4 gap-3">
               <Text className="text-xs uppercase tracking-wide text-ink-muted">
-                Invite link
+                {t("members.inviteLink")}
               </Text>
               <Card className="gap-3">
                 {invitesLoading ? (
@@ -152,15 +149,18 @@ export function TripMembersScreen() {
                       {activeUrl}
                     </Text>
                     <Text className="text-xs text-ink-muted">
-                      Expires{" "}
-                      {new Date(activeInvite.expires_at).toLocaleDateString()}
+                      {t("members.expires", {
+                        date: new Date(
+                          activeInvite.expires_at,
+                        ).toLocaleDateString(activeLocaleTag()),
+                      })}
                     </Text>
                     <View className="flex-row gap-2">
                       <Button
                         size="sm"
                         onPress={() => copyToClipboard(activeUrl)}
                       >
-                        Copy link
+                        {t("members.copyLink")}
                       </Button>
                       <Button
                         size="sm"
@@ -168,14 +168,14 @@ export function TripMembersScreen() {
                         onPress={revokeLink}
                         disabled={revokeMutation.isPending}
                       >
-                        Revoke
+                        {t("members.revoke")}
                       </Button>
                     </View>
                   </>
                 ) : (
                   <EmptyState
-                    title="No active invite link"
-                    description="Generate one to share with someone."
+                    title={t("members.noActiveInviteTitle")}
+                    description={t("members.noActiveInviteDescription")}
                   />
                 )}
                 <Button
@@ -186,7 +186,9 @@ export function TripMembersScreen() {
                   }
                   isLoading={createMutation.isPending}
                 >
-                  {activeInvite ? "Generate new link" : "Generate invite link"}
+                  {activeInvite
+                    ? t("members.generateNew")
+                    : t("members.generate")}
                 </Button>
               </Card>
             </View>

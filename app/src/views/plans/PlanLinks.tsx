@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Linking, Platform, Pressable, Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
@@ -24,6 +25,7 @@ function openUrl(url: string) {
  * Links persist immediately via their own mutations — independent of the
  * plan's Save button. */
 export function PlanLinks({ tripId, plan }: { tripId: string; plan: Plan }) {
+  const { t } = useTranslation();
   const links = plan.links ?? [];
   const addLink = useAddPlanLink(tripId, plan.id);
   const deleteLink = useDeletePlanLink(tripId, plan.id);
@@ -50,7 +52,7 @@ export function PlanLinks({ tripId, plan }: { tripId: string; plan: Plan }) {
   return (
     <View className="gap-2">
       <Text className="text-sm text-ink-secondary font-medium">
-        Documentation
+        {t("plans.documentation")}
       </Text>
 
       {links.map((link) => (
@@ -82,12 +84,12 @@ export function PlanLinks({ tripId, plan }: { tripId: string; plan: Plan }) {
       <Input
         value={label}
         onChangeText={setLabel}
-        placeholder="Label (optional)"
+        placeholder={t("plans.linkLabelPlaceholder")}
         editable={!addLink.isPending}
       />
       {addLink.error ? (
         <Text className="text-xs text-danger-500">
-          Could not add link (must start with http:// or https://).
+          {t("plans.addLinkError")}
         </Text>
       ) : null}
       <Button
@@ -97,7 +99,7 @@ export function PlanLinks({ tripId, plan }: { tripId: string; plan: Plan }) {
         disabled={!canAdd}
         isLoading={addLink.isPending}
       >
-        Add link
+        {t("plans.addLink")}
       </Button>
     </View>
   );

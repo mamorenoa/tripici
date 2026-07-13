@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
@@ -7,6 +8,7 @@ import { useAcceptInvitation } from "../../domain/invitations/useAcceptInvitatio
 import { useInvitationPreview } from "../../domain/invitations/useInvitationPreview";
 
 export function AcceptInvitationScreen() {
+  const { t } = useTranslation();
   const { token } = useLocalSearchParams<{ token: string }>();
   const router = useRouter();
   const { data: preview, isLoading, isError } = useInvitationPreview(token);
@@ -24,17 +26,17 @@ export function AcceptInvitationScreen() {
     return (
       <View className="flex-1 bg-background items-center justify-center px-6 gap-3">
         <Text className="text-xl font-semibold text-ink-primary text-center">
-          Invitation not valid
+          {t("invitation.notValidTitle")}
         </Text>
         <Text className="text-sm text-ink-secondary text-center">
-          The link has expired or been revoked by the trip owner.
+          {t("invitation.notValidDescription")}
         </Text>
         <Button
           variant="secondary"
           className="mt-2"
           onPress={() => router.replace("/")}
         >
-          Go to my trips
+          {t("invitation.goToTrips")}
         </Button>
       </View>
     );
@@ -56,7 +58,7 @@ export function AcceptInvitationScreen() {
           <Text className="font-semibold text-ink-primary">
             {preview.inviter_display_name}
           </Text>{" "}
-          invited you to join
+          {t("invitation.invitedYou")}
         </Text>
         <Text className="text-3xl font-bold text-brand-600 text-center">
           {preview.trip_name}
@@ -64,7 +66,7 @@ export function AcceptInvitationScreen() {
 
         {acceptMutation.isError ? (
           <Text className="text-sm text-danger-500 text-center">
-            Could not join. Try again.
+            {t("invitation.joinError")}
           </Text>
         ) : null}
 
@@ -74,7 +76,7 @@ export function AcceptInvitationScreen() {
           onPress={handleAccept}
           isLoading={acceptMutation.isPending}
         >
-          Join trip
+          {t("invitation.joinTrip")}
         </Button>
       </Card>
     </View>

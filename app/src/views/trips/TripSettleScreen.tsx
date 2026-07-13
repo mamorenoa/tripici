@@ -1,4 +1,5 @@
 import { Stack, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, Platform, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "../../components/Avatar";
@@ -17,16 +18,19 @@ import {
   useTripSettlement,
 } from "../../domain/settlements/useTripSettlement";
 import { useTrip } from "../../domain/trips/useTrip";
+import i18n from "../../lib/i18n";
 import { formatEuros } from "../../lib/money";
 
-/** Cross-platform confirmation (web uses window.confirm; native uses Alert). */
+/** Cross-platform confirmation (web uses window.confirm; native uses Alert).
+ * Reads labels from the i18n instance imperatively (not reactive — fine
+ * for a one-shot dialog). */
 function confirm(message: string, onConfirm: () => void) {
   if (Platform.OS === "web") {
     if (globalThis.window?.confirm(message)) onConfirm();
   } else {
-    Alert.alert("Confirm", message, [
-      { text: "Cancel", style: "cancel" },
-      { text: "OK", onPress: onConfirm },
+    Alert.alert(i18n.t("common.confirm"), message, [
+      { text: i18n.t("common.cancel"), style: "cancel" },
+      { text: i18n.t("common.ok"), onPress: onConfirm },
     ]);
   }
 }
@@ -40,10 +44,11 @@ function BalancesSection({
   rows: MemberBalance[];
   currentUserId?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        Balances
+        {t("settle.balances")}
       </Text>
       {rows.map((r) => {
         const you = r.user_id === currentUserId;
@@ -53,18 +58,21 @@ function BalancesSection({
           <View key={r.user_id} className="flex-row items-center gap-2">
             <Avatar name={r.display_name} size={24} />
             <Text className="flex-1 text-sm text-ink-primary">
-              {r.display_name}
-              {you ? " (you)" : ""}
+              {you
+                ? t("common.nameYou", { name: r.display_name })
+                : r.display_name}
             </Text>
             {settled ? (
-              <Text className="text-sm text-ink-muted">settled</Text>
+              <Text className="text-sm text-ink-muted">
+                {t("settle.settled")}
+              </Text>
             ) : (
               <Text
                 className={`text-sm font-semibold ${
                   owes ? "text-danger-500" : "text-brand-600"
                 }`}
               >
-                {owes ? "owes " : "gets back "}
+                {owes ? t("settle.owes") : t("settle.getsBack")}
                 {formatEuros(Math.abs(r.balance_cents))}
               </Text>
             )}
@@ -88,10 +96,11 @@ function SettlementsSection({
   onSettle: (s: Settlement) => void;
   busy: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        Who owes whom
+        {t("settle.whoOwesWhom")}
       </Text>
       {rows.map((r, i) => {
         const involvesYou =
@@ -114,7 +123,7 @@ function SettlementsSection({
               {formatEuros(r.amount_cents)}
             </Text>
             <Button size="sm" onPress={() => onSettle(r)} disabled={busy}>
-              Settle
+              {t("settle.settleBtn")}
             </Button>
           </View>
         );
@@ -134,10 +143,11 @@ function PaymentsSection({
   onUndo: (p: PaymentRead) => void;
   busy: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        Recorded payments
+        {t("settle.recordedPayments")}
       </Text>
       {rows.map((p) => (
         <View key={p.id} className="flex-row items-center gap-2">
@@ -153,7 +163,7 @@ function PaymentsSection({
             onPress={() => onUndo(p)}
             disabled={busy}
           >
-            Undo
+            {t("settle.undo")}
           </Button>
         </View>
       ))}
@@ -164,6 +174,7 @@ function PaymentsSection({
 // ── Screen ────────────────────────────────────────────────────────
 
 export function TripSettleScreen() {
+  const { t } = useTranslation();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
   const { data: currentUser } = useCurrentUser();
@@ -175,9 +186,11 @@ export function TripSettleScreen() {
 
   function handleSettle(s: Settlement) {
     confirm(
-      `Mark ${s.from_name} → ${s.to_name} ${formatEuros(
-        s.amount_cents,
-      )} as paid?`,
+      t("settle.settleConfirm", {
+        from: s.from_name,
+        to: s.to_name,
+        amount: formatEuros(s.amount_cents),
+      }),
       () =>
         recordPayment.mutate({
           from_user_id: s.from_user_id,
@@ -189,9 +202,11 @@ export function TripSettleScreen() {
 
   function handleUndo(p: PaymentRead) {
     confirm(
-      `Undo the ${formatEuros(p.amount_cents)} payment from ${
-        p.from_name
-      } to ${p.to_name}?`,
+      t("settle.undoConfirm", {
+        amount: formatEuros(p.amount_cents),
+        from: p.from_name,
+        to: p.to_name,
+      }),
       () => deletePayment.mutate(p.id),
     );
   }
@@ -203,7 +218,9 @@ export function TripSettleScreen() {
     <View className="flex-1 bg-background">
       <Stack.Screen
         options={{
-          title: trip?.name ? `${trip.name} · Settle up` : "Settle up",
+          title: trip?.name
+            ? t("settle.titleTrip", { trip: trip.name })
+            : t("settle.title"),
         }}
       />
 
@@ -214,15 +231,15 @@ export function TripSettleScreen() {
       ) : error ? (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-ink-muted text-center">
-            Could not load the settlement.
+            {t("settle.loadError")}
           </Text>
         </View>
       ) : !hasSettlements && !hasPayments ? (
         <View className="flex-1 items-center justify-center px-6">
           <EmptyState
             icon="check"
-            title="All settled"
-            description="No member-paid expenses to settle yet. Add expenses paid by a specific person to see who owes whom."
+            title={t("settle.allSettledTitle")}
+            description={t("settle.allSettledDescription")}
           />
         </View>
       ) : (
@@ -243,7 +260,7 @@ export function TripSettleScreen() {
           ) : (
             <Card>
               <Text className="text-sm text-ink-secondary text-center">
-                🎉 Everything is settled.
+                {t("settle.everythingSettled")}
               </Text>
             </Card>
           )}

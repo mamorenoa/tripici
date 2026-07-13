@@ -1,4 +1,5 @@
 import { Link } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 
 import { Badge } from "../../components/Badge";
@@ -8,6 +9,7 @@ import { formatEuros } from "../../lib/money";
 import { planColor, planIsPast, planMeta, todayIso } from "./planUtils";
 
 export function PlanCard({ plan, tripId }: { plan: Plan; tripId: string }) {
+  const { t } = useTranslation();
   const meta = planMeta(plan);
   const past = planIsPast(plan, todayIso());
 
@@ -29,7 +31,7 @@ export function PlanCard({ plan, tripId }: { plan: Plan; tripId: string }) {
               >
                 {plan.name}
               </Text>
-              {past ? <Badge variant="neutral">Past</Badge> : null}
+              {past ? <Badge variant="neutral">{t("plans.past")}</Badge> : null}
             </View>
             <Text
               className="text-sm text-ink-secondary mt-0.5"

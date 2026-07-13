@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
@@ -8,6 +9,7 @@ import { Input } from "../../components/Input";
 import { Pill } from "../../components/Pill";
 import { TimeInput } from "../../components/TimeInput";
 import { useCategories } from "../../domain/categories/useCategories";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import type { Plan, PlanCreate } from "../../domain/plans/types";
 import { openInMaps } from "../../lib/maps";
 import { parseEurosToCents } from "../../lib/money";
@@ -38,6 +40,7 @@ function OptionalDate({
   onChange: (v: string) => void;
   editable: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <View className="gap-1">
       <DateInput
@@ -48,7 +51,7 @@ function OptionalDate({
       />
       {value ? (
         <Pressable onPress={() => onChange("")} disabled={!editable}>
-          <Text className="text-xs text-ink-muted">Clear</Text>
+          <Text className="text-xs text-ink-muted">{t("common.clear")}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -62,6 +65,8 @@ export function PlanForm({
   error,
   onSubmit,
 }: Props) {
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   const { data: categories = [] } = useCategories();
 
   const [name, setName] = useState(initialValue?.name ?? "");
@@ -121,18 +126,18 @@ export function PlanForm({
       keyboardShouldPersistTaps="handled"
     >
       <Input
-        label="Name"
+        label={t("common.name")}
         value={name}
         onChangeText={setName}
-        placeholder="e.g. Coliseo"
+        placeholder={t("plans.namePlaceholder")}
         editable={!submitting}
       />
 
       <Input
-        label="Description"
+        label={t("plans.description")}
         value={description}
         onChangeText={setDescription}
-        placeholder="What's the plan?"
+        placeholder={t("plans.descriptionPlaceholder")}
         editable={!submitting}
         multiline
         numberOfLines={3}
@@ -141,7 +146,7 @@ export function PlanForm({
       <View className="flex-row gap-3">
         <View className="flex-1">
           <OptionalDate
-            label="Start (optional)"
+            label={t("plans.startOptional")}
             value={startDate}
             onChange={setStartDate}
             editable={!submitting}
@@ -149,7 +154,7 @@ export function PlanForm({
         </View>
         <View className="flex-1">
           <OptionalDate
-            label="End (optional)"
+            label={t("plans.endOptional")}
             value={endDate}
             onChange={setEndDate}
             editable={!submitting}
@@ -159,32 +164,32 @@ export function PlanForm({
 
       <View className="gap-1">
         <TimeInput
-          label="Start time (optional)"
+          label={t("plans.startTimeOptional")}
           value={startTime}
           onChange={setStartTime}
           editable={!submitting}
         />
         {startTime ? (
           <Pressable onPress={() => setStartTime("")} disabled={submitting}>
-            <Text className="text-xs text-ink-muted">Clear</Text>
+            <Text className="text-xs text-ink-muted">{t("common.clear")}</Text>
           </Pressable>
         ) : null}
       </View>
 
       <Input
-        label="Duration (optional)"
+        label={t("plans.durationOptional")}
         value={duration}
         onChangeText={setDuration}
-        placeholder="e.g. 2h, all day, weekend"
+        placeholder={t("plans.durationPlaceholder")}
         editable={!submitting}
       />
 
       <View className="gap-2">
         <Input
-          label="Location (optional)"
+          label={t("plans.locationOptional")}
           value={location}
           onChangeText={setLocation}
-          placeholder="Address, place, coords, or a maps link"
+          placeholder={t("plans.locationPlaceholder")}
           autoCapitalize="none"
           editable={!submitting}
         />
@@ -196,14 +201,16 @@ export function PlanForm({
           >
             <View className="flex-row items-center gap-1.5">
               <Icon name="map-pin" size={16} color="#059669" />
-              <Text className="text-brand-700 font-semibold">Open in Maps</Text>
+              <Text className="text-brand-700 font-semibold">
+                {t("plans.openInMaps")}
+              </Text>
             </View>
           </Button>
         ) : null}
       </View>
 
       <Input
-        label="Cost (EUR, optional)"
+        label={t("plans.costOptional")}
         value={cost}
         onChangeText={setCost}
         keyboardType="decimal-pad"
@@ -230,20 +237,20 @@ export function PlanForm({
             ) : null}
           </View>
           <Text className="text-sm text-ink-primary">
-            Count cost as a trip expense
+            {t("plans.countAsExpense")}
           </Text>
         </Pressable>
 
         {countAsExpense ? (
           <View className="gap-2 pl-7">
             <Text className="text-xs text-ink-muted">
-              Booked as a common expense. Pick a category:
+              {t("plans.countAsExpenseHint")}
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {categories.map((c) => (
                 <Pill
                   key={c.code}
-                  label={c.label}
+                  label={categoryLabel(c.code, c.label)}
                   active={c.code === expenseCategory}
                   onPress={() => setExpenseCategory(c.code)}
                   disabled={submitting}
@@ -252,7 +259,7 @@ export function PlanForm({
             </View>
             {costTrimmed === "" ? (
               <Text className="text-xs text-danger-500">
-                Add a cost above for this to take effect.
+                {t("plans.addCostHint")}
               </Text>
             ) : null}
           </View>
@@ -261,7 +268,9 @@ export function PlanForm({
 
       {error ? (
         <Text className="text-sm text-danger-500">
-          Could not save: {String((error as Error).message ?? error)}
+          {t("common.saveError", {
+            error: String((error as Error).message ?? error),
+          })}
         </Text>
       ) : null}
 
@@ -272,7 +281,7 @@ export function PlanForm({
         isLoading={submitting}
         className="mt-2"
       >
-        Save
+        {t("common.save")}
       </Button>
 
       {/* Documentation links — only once the plan exists (needs its id). */}
@@ -282,7 +291,7 @@ export function PlanForm({
         </View>
       ) : (
         <Text className="text-xs text-ink-muted text-center">
-          Save the plan first to attach documentation links.
+          {t("plans.saveFirstForLinks")}
         </Text>
       )}
     </ScrollView>

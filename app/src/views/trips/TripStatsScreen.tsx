@@ -1,9 +1,11 @@
 import { Stack, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "../../components/Avatar";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import type { CategoryStat, DateStat, MemberStat } from "../../domain/stats/types";
 import { useTripStats } from "../../domain/stats/useTripStats";
 import { useTrip } from "../../domain/trips/useTrip";
@@ -25,15 +27,19 @@ function HBar({ pct }: { pct: number }) {
 // ── Section: by category ──────────────────────────────────────────
 
 function CategorySection({ rows }: { rows: CategoryStat[] }) {
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        By category
+        {t("stats.byCategory")}
       </Text>
       {rows.map((r) => (
         <View key={r.category_code} className="gap-1">
           <View className="flex-row justify-between items-center">
-            <Text className="text-sm text-ink-primary">{r.label}</Text>
+            <Text className="text-sm text-ink-primary">
+              {categoryLabel(r.category_code, r.label)}
+            </Text>
             <Text className="text-sm font-semibold text-ink-primary">
               {formatEuros(r.total_cents)}
             </Text>
@@ -53,10 +59,11 @@ function CategorySection({ rows }: { rows: CategoryStat[] }) {
 // ── Section: by member ────────────────────────────────────────────
 
 function MemberSection({ rows }: { rows: MemberStat[] }) {
+  const { t } = useTranslation();
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        By person
+        {t("stats.byPerson")}
       </Text>
       {rows.map((r) => (
         <View key={r.user_id} className="gap-1">
@@ -84,11 +91,12 @@ function MemberSection({ rows }: { rows: MemberStat[] }) {
 // ── Section: by date ──────────────────────────────────────────────
 
 function DateSection({ rows }: { rows: DateStat[] }) {
+  const { t } = useTranslation();
   const max = Math.max(...rows.map((r) => r.total_cents), 1);
   return (
     <Card className="gap-3">
       <Text className="text-xs uppercase tracking-wide text-ink-muted font-semibold">
-        By day
+        {t("stats.byDay")}
       </Text>
       <View className="flex-row items-end gap-1 h-24">
         {rows.map((r) => {
@@ -125,13 +133,20 @@ function tripDays(dates: DateStat[]): number {
 // ── Screen ────────────────────────────────────────────────────────
 
 export function TripStatsScreen() {
+  const { t } = useTranslation();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
   const { data: stats, isLoading, error } = useTripStats(tripId);
 
   return (
     <View className="flex-1 bg-background">
-      <Stack.Screen options={{ title: trip?.name ? `${trip.name} · Stats` : "Stats" }} />
+      <Stack.Screen
+        options={{
+          title: trip?.name
+            ? t("stats.tripTitle", { trip: trip.name })
+            : t("nav.stats"),
+        }}
+      />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
@@ -140,21 +155,23 @@ export function TripStatsScreen() {
       ) : error ? (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-ink-muted text-center">
-            Could not load statistics.
+            {t("stats.loadError")}
           </Text>
         </View>
       ) : !stats || stats.total_cents === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
           <EmptyState
-            title="No expenses yet"
-            description="Add some expenses to see statistics for this trip."
+            title={t("stats.emptyTitle")}
+            description={t("stats.tripEmptyDescription")}
           />
         </View>
       ) : (
         <ScrollView contentContainerClassName="px-4 py-4 gap-4 pb-10">
           {/* Total */}
           <View className="gap-1">
-            <Text className="text-sm text-ink-secondary">Total spent</Text>
+            <Text className="text-sm text-ink-secondary">
+              {t("stats.totalSpent")}
+            </Text>
             <Text className="text-4xl font-bold text-brand-600">
               {formatEuros(stats.total_cents)}
             </Text>
@@ -162,8 +179,10 @@ export function TripStatsScreen() {
               const days = tripDays(stats.by_date);
               return (
                 <Text className="text-sm text-ink-muted">
-                  {formatEuros(Math.round(stats.total_cents / days))}/day ·{" "}
-                  {days} {days === 1 ? "day" : "days"}
+                  {t("stats.dailyPerDay", {
+                    amount: formatEuros(Math.round(stats.total_cents / days)),
+                  })}{" "}
+                  · {t("stats.days", { count: days })}
                 </Text>
               );
             })()}

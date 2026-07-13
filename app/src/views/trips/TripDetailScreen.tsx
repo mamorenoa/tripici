@@ -1,5 +1,6 @@
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
@@ -14,6 +15,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
 import { Pill } from "../../components/Pill";
 import { useCategories } from "../../domain/categories/useCategories";
+import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import type { Expense } from "../../domain/expenses/types";
 import { useExpenses } from "../../domain/expenses/useExpenses";
 import { useMembers } from "../../domain/members/useMembers";
@@ -29,6 +31,8 @@ type Tab = "expenses" | "plans";
 type PlanView = "list" | "calendar";
 
 export function TripDetailScreen() {
+  const { t } = useTranslation();
+  const categoryLabel = useCategoryLabel();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
   const { data: expenses = [], isLoading, error } = useExpenses(tripId);
@@ -51,12 +55,10 @@ export function TripDetailScreen() {
     ? expenses.filter((e) => e.category_code === filter)
     : expenses;
   const total = visible.reduce((sum, e) => sum + e.amount_cents, 0);
-  const categoryLabel = (code: string) =>
-    categories.find((c) => c.code === code)?.label ?? code;
   // null payer == a common expense, split across members in the stats.
   const payerLabel = (userId: string | null | undefined) =>
     userId == null
-      ? "Common"
+      ? t("expenses.common")
       : members.find((m) => m.user_id === userId)?.display_name ?? "—";
 
   return (
@@ -70,7 +72,7 @@ export function TripDetailScreen() {
                 <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                   <Icon name="divide" size={18} color="#059669" />
                   <Text className="text-brand-600 font-semibold text-sm">
-                    Settle
+                    {t("trips.navSettle")}
                   </Text>
                 </Pressable>
               </Link>
@@ -78,14 +80,16 @@ export function TripDetailScreen() {
                 <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                   <Icon name="bar-chart-2" size={18} color="#059669" />
                   <Text className="text-brand-600 font-semibold text-sm">
-                    Stats
+                    {t("trips.navStats")}
                   </Text>
                 </Pressable>
               </Link>
               <Link href={`/trips/${tripId}/members`} asChild>
                 <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                   <Icon name="users" size={18} color="#059669" />
-                  <Text className="text-brand-600 font-semibold">Members</Text>
+                  <Text className="text-brand-600 font-semibold">
+                    {t("trips.navMembers")}
+                  </Text>
                 </Pressable>
               </Link>
             </View>
@@ -95,22 +99,24 @@ export function TripDetailScreen() {
 
       {/* Expenses / Plans toggle */}
       <View className="flex-row mx-4 mt-3 mb-1 bg-slate-100 rounded-2xl p-1">
-        {(["expenses", "plans"] as Tab[]).map((t) => (
+        {(["expenses", "plans"] as Tab[]).map((tabKey) => (
           <Pressable
-            key={t}
-            onPress={() => setTab(t)}
+            key={tabKey}
+            onPress={() => setTab(tabKey)}
             className={`flex-1 py-2 rounded-xl items-center ${
-              tab === t ? "bg-surface shadow-card" : ""
+              tab === tabKey ? "bg-surface shadow-card" : ""
             }`}
           >
             <Text
               className={
-                tab === t
+                tab === tabKey
                   ? "text-ink-primary font-semibold"
                   : "text-ink-muted font-medium"
               }
             >
-              {t === "expenses" ? "Expenses" : "Plans"}
+              {tabKey === "expenses"
+                ? t("trips.tabExpenses")
+                : t("trips.tabPlans")}
             </Text>
           </Pressable>
         ))}
@@ -121,7 +127,9 @@ export function TripDetailScreen() {
           {/* Total summary */}
           <View className="px-4 pt-3 pb-3 gap-1">
             <Text className="text-sm text-ink-secondary">
-              {filter ? `Total · ${categoryLabel(filter)}` : "Total"}
+              {filter
+                ? t("expenses.totalCategory", { category: categoryLabel(filter) })
+                : t("expenses.total")}
             </Text>
             <Text className="text-4xl font-bold text-brand-600">
               {formatEuros(total)}
@@ -136,14 +144,14 @@ export function TripDetailScreen() {
             className="flex-grow-0 flex-shrink-0"
           >
             <Pill
-              label="All"
+              label={t("common.all")}
               active={filter === null}
               onPress={() => setFilter(null)}
             />
             {categories.map((c) => (
               <Pill
                 key={c.code}
-                label={c.label}
+                label={categoryLabel(c.code, c.label)}
                 active={filter === c.code}
                 onPress={() => setFilter(c.code)}
               />
@@ -159,7 +167,7 @@ export function TripDetailScreen() {
             <View className="px-4 pt-2">
               <Card className="bg-danger-50">
                 <Text className="text-danger-500 font-semibold">
-                  Could not load expenses
+                  {t("expenses.loadError")}
                 </Text>
                 <Text className="text-ink-secondary text-sm mt-1">
                   {String(error.message ?? error)}
@@ -169,11 +177,15 @@ export function TripDetailScreen() {
           ) : visible.length === 0 ? (
             <EmptyState
               icon="plus"
-              title={filter ? "No expenses in this category" : "No expenses yet"}
+              title={
+                filter
+                  ? t("expenses.emptyFilteredTitle")
+                  : t("expenses.emptyTitle")
+              }
               description={
                 filter
-                  ? "Pick another category or add one below."
-                  : "Tap the + button to log your first expense."
+                  ? t("expenses.emptyFilteredDescription")
+                  : t("expenses.emptyDescription")
               }
             />
           ) : (
@@ -196,7 +208,7 @@ export function TripDetailScreen() {
                           {categoryLabel(item.category_code)} · {item.expense_date}
                           {" · "}
                           {payerLabel(item.paid_by_user_id)}
-                          {item.plan_id ? " · 📌 Plan" : ""}
+                          {item.plan_id ? ` · 📌 ${t("expenses.fromPlan")}` : ""}
                         </Text>
                       </View>
                       <Text className="text-base font-semibold text-ink-primary">
@@ -219,7 +231,7 @@ export function TripDetailScreen() {
           <View className="px-4 pt-4">
             <Card className="bg-danger-50">
               <Text className="text-danger-500 font-semibold">
-                Could not load plans
+                {t("plans.loadError")}
               </Text>
               <Text className="text-ink-secondary text-sm mt-1">
                 {String(plansError.message ?? plansError)}
@@ -229,22 +241,24 @@ export function TripDetailScreen() {
         ) : plans.length === 0 ? (
           <EmptyState
             icon="plus"
-            title="No plans yet"
-            description="Tap the + button to add a plan for this trip."
+            title={t("plans.emptyTitle")}
+            description={t("plans.emptyDescription")}
           />
         ) : (
           <View className="flex-1">
             <View className="px-4 pt-3 pb-1 flex-row items-center justify-between">
               {planView === "list" ? (
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-xs text-ink-muted">Sort</Text>
+                  <Text className="text-xs text-ink-muted">
+                    {t("plans.sort")}
+                  </Text>
                   <Pill
-                    label="Soonest"
+                    label={t("plans.sortSoonest")}
                     active={planSort === "soonest"}
                     onPress={() => setPlanSort("soonest")}
                   />
                   <Pill
-                    label="Latest"
+                    label={t("plans.sortLatest")}
                     active={planSort === "latest"}
                     onPress={() => setPlanSort("latest")}
                   />
