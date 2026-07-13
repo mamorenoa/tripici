@@ -39,6 +39,10 @@ export default function AppLayout() {
         options={{ title: "New expense", presentation: "modal" }}
       />
       <Stack.Screen
+        name="trips/[id]/expenses/[expenseId]/index"
+        options={{ title: "Expense" }}
+      />
+      <Stack.Screen
         name="trips/[id]/expenses/[expenseId]/edit"
         options={{ title: "Edit expense" }}
       />

@@ -12,7 +12,7 @@ export function PlanCard({ plan, tripId }: { plan: Plan; tripId: string }) {
   const past = planIsPast(plan, todayIso());
 
   return (
-    <Link href={`/trips/${tripId}/plans/${plan.id}/edit`} asChild>
+    <Link href={`/trips/${tripId}/plans/${plan.id}`} asChild>
       <Pressable>
         <Card
           className={`flex-row items-start gap-3 ${past ? "opacity-60" : ""}`}

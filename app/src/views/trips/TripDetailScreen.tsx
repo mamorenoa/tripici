@@ -182,7 +182,7 @@ export function TripDetailScreen() {
               keyExtractor={(e, i) => e.id ?? String(i)}
               contentContainerClassName="px-4 pt-2 pb-24 gap-2"
               renderItem={({ item }: { item: Expense }) => (
-                <Link href={`/trips/${tripId}/expenses/${item.id}/edit`} asChild>
+                <Link href={`/trips/${tripId}/expenses/${item.id}`} asChild>
                   <Pressable>
                     <Card className="flex-row items-center gap-3">
                       <View className="flex-1">
