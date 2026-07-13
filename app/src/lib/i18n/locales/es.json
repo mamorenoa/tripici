@@ -1,0 +1,53 @@
+{
+  "common": {
+    "email": "Correo",
+    "password": "Contraseña",
+    "displayName": "Nombre",
+    "name": "Nombre",
+    "create": "Crear",
+    "retry": "Reintentar",
+    "stats": "Estadísticas"
+  },
+  "nav": {
+    "appName": "Tripinci",
+    "allTrips": "Todos los viajes",
+    "trip": "Viaje",
+    "newTrip": "Nuevo viaje",
+    "newExpense": "Nuevo gasto",
+    "expense": "Gasto",
+    "editExpense": "Editar gasto",
+    "members": "Miembros",
+    "stats": "Estadísticas",
+    "invitation": "Invitación",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta"
+  },
+  "auth": {
+    "tagline": "Controla los gastos de viaje compartidos con los tuyos.",
+    "registerTagline": "Crea tu cuenta para empezar a registrar viajes.",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear cuenta",
+    "signUp": "Registrarse",
+    "passwordHelper": "Al menos 8 caracteres.",
+    "invalidCredentials": "Correo o contraseña incorrectos.",
+    "registerError": "No se pudo crear la cuenta. Puede que el correo ya esté en uso.",
+    "noAccount": "¿Aún no tienes cuenta?",
+    "createOne": "Crea una",
+    "haveAccount": "¿Ya tienes cuenta?"
+  },
+  "trips": {
+    "greeting": "Hola,",
+    "loadError": "No se pudieron cargar los viajes",
+    "emptyTitle": "Aún no hay viajes",
+    "emptyDescription": "Crea tu primer viaje para empezar a registrar gastos.",
+    "sharedBadge": "Compartido",
+    "namePlaceholder": "p. ej. Italia 2026",
+    "createError": "No se pudo crear el viaje: {{error}}"
+  },
+  "language": {
+    "label": "Idioma",
+    "switchTo": "Cambiar a {{language}}",
+    "en": "Inglés",
+    "es": "Español"
+  }
+}

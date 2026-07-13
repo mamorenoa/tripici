@@ -1,5 +1,6 @@
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
@@ -18,6 +19,7 @@ function extractInviteToken(redirect: unknown): string | null {
 }
 
 export function RegisterScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [displayName, setDisplayName] = useState("");
@@ -73,17 +75,17 @@ export function RegisterScreen() {
       <View className="gap-2 items-center mb-6">
         <Text className="text-3xl font-bold text-ink-primary">Tripinci</Text>
         <Text className="text-sm text-ink-secondary">
-          Create your account to start tracking trips.
+          {t("auth.registerTagline")}
         </Text>
       </View>
 
       <Card className="gap-4">
         <Text className="text-xl font-semibold text-ink-primary">
-          Create account
+          {t("auth.createAccount")}
         </Text>
 
         <Input
-          label="Display name"
+          label={t("common.displayName")}
           value={displayName}
           onChangeText={setDisplayName}
           autoFocus
@@ -91,7 +93,7 @@ export function RegisterScreen() {
         />
 
         <Input
-          label="Email"
+          label={t("common.email")}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -101,8 +103,8 @@ export function RegisterScreen() {
         />
 
         <Input
-          label="Password"
-          helperText="At least 8 characters."
+          label={t("common.password")}
+          helperText={t("auth.passwordHelper")}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -112,7 +114,7 @@ export function RegisterScreen() {
 
         {mutation.isError ? (
           <Text className="text-sm text-danger-500">
-            Could not create account. The email may already be in use.
+            {t("auth.registerError")}
           </Text>
         ) : null}
 
@@ -122,12 +124,12 @@ export function RegisterScreen() {
           isLoading={mutation.isPending || acceptMutation.isPending}
           size="lg"
         >
-          Sign up
+          {t("auth.signUp")}
         </Button>
       </Card>
 
       <View className="flex-row gap-1.5 justify-center mt-6">
-        <Text className="text-ink-secondary">Already have an account?</Text>
+        <Text className="text-ink-secondary">{t("auth.haveAccount")}</Text>
         <Link
           href={
             typeof redirect === "string" && redirect.length > 0
@@ -136,7 +138,7 @@ export function RegisterScreen() {
           }
           className="text-brand-600 font-semibold"
         >
-          Sign in
+          {t("auth.signIn")}
         </Link>
       </View>
     </ScrollView>

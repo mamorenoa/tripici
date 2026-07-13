@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,6 +13,7 @@ import {
 import { useCreateTrip } from "../../domain/trips/useCreateTrip";
 
 export function CreateTripScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [name, setName] = useState("");
   const mutation = useCreateTrip();
@@ -30,20 +32,21 @@ export function CreateTripScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Name</Text>
+      <Text style={styles.label}>{t("common.name")}</Text>
       <TextInput
         value={name}
         onChangeText={setName}
         autoFocus
-        placeholder="e.g. Italy 2026"
+        placeholder={t("trips.namePlaceholder")}
         style={styles.input}
         editable={!mutation.isPending}
       />
 
       {mutation.isError && (
         <Text style={styles.error}>
-          Could not create the trip:{" "}
-          {String(mutation.error.message ?? mutation.error)}
+          {t("trips.createError", {
+            error: String(mutation.error.message ?? mutation.error),
+          })}
         </Text>
       )}
 
@@ -55,7 +58,7 @@ export function CreateTripScreen() {
         {mutation.isPending ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Create</Text>
+          <Text style={styles.buttonText}>{t("common.create")}</Text>
         )}
       </Pressable>
     </View>

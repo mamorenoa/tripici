@@ -1,4 +1,7 @@
 import "../global.css";
+// Side-effect import: initialises the shared i18next instance before any
+// screen renders.
+import "../src/lib/i18n";
 
 import {
   Inter_400Regular,
@@ -13,6 +16,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 
+import { useHydrateLanguage } from "../src/domain/settings/useLanguage";
 import { queryClient } from "../src/lib/queryClient";
 
 // Keep the native splash visible until the fonts are loaded so the
@@ -23,6 +27,9 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 export default function RootLayout() {
   const isWeb = Platform.OS === "web";
+
+  // Apply a persisted language preference over the device-locale default.
+  useHydrateLanguage();
 
   // On web, Inter is loaded via CSS @font-face in global.css (Google Fonts
   // CDN). useFonts is native-only: Expo's web export puts font assets at

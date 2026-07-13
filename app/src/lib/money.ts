@@ -1,13 +1,24 @@
-// Format integer cents as a localized EUR string. The locale is fixed
-// to ``en-GB`` for now to keep the rest of the codebase coherent; when
-// we add i18n it will read the active locale instead.
-const formatter = new Intl.NumberFormat("en-GB", {
-  style: "currency",
-  currency: "EUR",
-});
+import { activeLocaleTag } from "./i18n";
+
+// Format integer cents as a localized EUR string, following the active
+// language's locale (e.g. "€42.50" in en-GB, "42,50 €" in es-ES).
+// Formatters are cached per locale tag — building one is not free.
+const formatters = new Map<string, Intl.NumberFormat>();
+
+function formatterFor(localeTag: string): Intl.NumberFormat {
+  let formatter = formatters.get(localeTag);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(localeTag, {
+      style: "currency",
+      currency: "EUR",
+    });
+    formatters.set(localeTag, formatter);
+  }
+  return formatter;
+}
 
 export function formatEuros(cents: number): string {
-  return formatter.format(cents / 100);
+  return formatterFor(activeLocaleTag()).format(cents / 100);
 }
 
 /**

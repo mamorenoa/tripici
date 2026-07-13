@@ -1,4 +1,5 @@
 import { Redirect, Stack, usePathname } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 
 import { useCurrentUser } from "../../src/domain/auth/useCurrentUser";
@@ -8,6 +9,7 @@ import { useCurrentUser } from "../../src/domain/auth/useCurrentUser";
 // intended path as ``redirect`` so the auth screens can come back to
 // the right place after sign-in (needed for the invite-link flow).
 export default function AppLayout() {
+  const { t } = useTranslation();
   const { data: user, isLoading } = useCurrentUser();
   const pathname = usePathname();
 
@@ -26,38 +28,29 @@ export default function AppLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: "Tripinci" }} />
-      <Stack.Screen name="stats" options={{ title: "All trips" }} />
+      <Stack.Screen name="index" options={{ title: t("nav.appName") }} />
+      <Stack.Screen name="stats" options={{ title: t("nav.allTrips") }} />
       <Stack.Screen
         name="trips/new"
-        options={{ title: "New trip", presentation: "modal" }}
+        options={{ title: t("nav.newTrip"), presentation: "modal" }}
       />
       {/* Title set dynamically inside TripDetailScreen via <Stack.Screen options=... /> */}
-      <Stack.Screen name="trips/[id]/index" options={{ title: "Trip" }} />
+      <Stack.Screen name="trips/[id]/index" options={{ title: t("nav.trip") }} />
       <Stack.Screen
         name="trips/[id]/expenses/new"
-        options={{ title: "New expense", presentation: "modal" }}
+        options={{ title: t("nav.newExpense"), presentation: "modal" }}
       />
       <Stack.Screen
         name="trips/[id]/expenses/[expenseId]/index"
-        options={{ title: "Expense" }}
+        options={{ title: t("nav.expense") }}
       />
       <Stack.Screen
         name="trips/[id]/expenses/[expenseId]/edit"
-        options={{ title: "Edit expense" }}
+        options={{ title: t("nav.editExpense") }}
       />
-      <Stack.Screen
-        name="trips/[id]/members"
-        options={{ title: "Members" }}
-      />
-      <Stack.Screen
-        name="trips/[id]/stats"
-        options={{ title: "Stats" }}
-      />
-      <Stack.Screen
-        name="invite/[token]"
-        options={{ title: "Invitation" }}
-      />
+      <Stack.Screen name="trips/[id]/members" options={{ title: t("nav.members") }} />
+      <Stack.Screen name="trips/[id]/stats" options={{ title: t("nav.stats") }} />
+      <Stack.Screen name="invite/[token]" options={{ title: t("nav.invitation") }} />
     </Stack>
   );
 }

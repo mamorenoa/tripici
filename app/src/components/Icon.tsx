@@ -23,6 +23,7 @@ export type IconName =
   | "eye-off"
   | "divide"
   | "map-pin"
+  | "globe"
   | "list";
 
 type Props = {

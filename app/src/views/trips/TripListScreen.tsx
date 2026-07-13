@@ -1,4 +1,5 @@
 import { Link } from "expo-router";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
@@ -12,12 +13,15 @@ import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
 import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useLogout } from "../../domain/auth/useLogout";
 import type { Trip } from "../../domain/trips/types";
 import { useTrips } from "../../domain/trips/useTrips";
+import { activeLocaleTag } from "../../lib/i18n";
 
 export function TripListScreen() {
+  const { t } = useTranslation();
   const { data: user } = useCurrentUser();
   const logout = useLogout();
   const { data, isLoading, error, refetch, isRefetching } = useTrips();
@@ -27,16 +31,21 @@ export function TripListScreen() {
       {/* Header with greeting + logout */}
       <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
         <View>
-          <Text className="text-sm text-ink-secondary">Hi,</Text>
+          <Text className="text-sm text-ink-secondary">
+            {t("trips.greeting")}
+          </Text>
           <Text className="text-xl font-semibold text-ink-primary">
             {user?.display_name ?? ""}
           </Text>
         </View>
         <View className="flex-row items-center gap-1">
+          <LanguageSwitcher />
           <Link href="/stats" asChild>
             <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
               <Icon name="bar-chart-2" size={18} color="#059669" />
-              <Text className="text-brand-600 font-semibold text-sm">Stats</Text>
+              <Text className="text-brand-600 font-semibold text-sm">
+                {t("common.stats")}
+              </Text>
             </Pressable>
           </Link>
           <Button
@@ -58,7 +67,7 @@ export function TripListScreen() {
         <View className="px-4">
           <Card className="bg-danger-50 border border-danger-500/30">
             <Text className="text-danger-500 font-semibold">
-              Could not load trips
+              {t("trips.loadError")}
             </Text>
             <Text className="text-ink-secondary text-sm mt-1">
               {String(error.message ?? error)}
@@ -69,15 +78,15 @@ export function TripListScreen() {
               className="self-start mt-3"
               onPress={() => refetch()}
             >
-              Retry
+              {t("common.retry")}
             </Button>
           </Card>
         </View>
       ) : data && data.length === 0 ? (
         <EmptyState
           icon="compass"
-          title="No trips yet"
-          description="Create your first trip to start tracking expenses."
+          title={t("trips.emptyTitle")}
+          description={t("trips.emptyDescription")}
         />
       ) : (
         <FlatList
@@ -99,12 +108,16 @@ export function TripListScreen() {
                           {item.name}
                         </Text>
                         {isShared ? (
-                          <Badge variant="brand">Shared</Badge>
+                          <Badge variant="brand">
+                            {t("trips.sharedBadge")}
+                          </Badge>
                         ) : null}
                       </View>
                       {item.created_at ? (
                         <Text className="text-xs text-ink-muted mt-0.5">
-                          {new Date(item.created_at).toLocaleDateString()}
+                          {new Date(item.created_at).toLocaleDateString(
+                            activeLocaleTag(),
+                          )}
                         </Text>
                       ) : null}
                     </View>

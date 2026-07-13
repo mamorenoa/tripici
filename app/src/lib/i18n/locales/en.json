@@ -1,0 +1,53 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "name": "Name",
+    "create": "Create",
+    "retry": "Retry",
+    "stats": "Stats"
+  },
+  "nav": {
+    "appName": "Tripinci",
+    "allTrips": "All trips",
+    "trip": "Trip",
+    "newTrip": "New trip",
+    "newExpense": "New expense",
+    "expense": "Expense",
+    "editExpense": "Edit expense",
+    "members": "Members",
+    "stats": "Stats",
+    "invitation": "Invitation",
+    "signIn": "Sign in",
+    "createAccount": "Create account"
+  },
+  "auth": {
+    "tagline": "Track shared trip expenses with your people.",
+    "registerTagline": "Create your account to start tracking trips.",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "signUp": "Sign up",
+    "passwordHelper": "At least 8 characters.",
+    "invalidCredentials": "Invalid email or password.",
+    "registerError": "Could not create account. The email may already be in use.",
+    "noAccount": "No account yet?",
+    "createOne": "Create one",
+    "haveAccount": "Already have an account?"
+  },
+  "trips": {
+    "greeting": "Hi,",
+    "loadError": "Could not load trips",
+    "emptyTitle": "No trips yet",
+    "emptyDescription": "Create your first trip to start tracking expenses.",
+    "sharedBadge": "Shared",
+    "namePlaceholder": "e.g. Italy 2026",
+    "createError": "Could not create the trip: {{error}}"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "Switch to {{language}}",
+    "en": "English",
+    "es": "Spanish"
+  }
+}
