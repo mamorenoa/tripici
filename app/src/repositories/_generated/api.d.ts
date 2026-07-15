@@ -970,6 +970,10 @@ export interface components {
         Trip: {
             /** Name */
             name: string;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
             /**
              * Id
              * Format: uuid
@@ -993,6 +997,10 @@ export interface components {
         TripCreate: {
             /** Name */
             name: string;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
         };
         /**
          * TripMemberRead

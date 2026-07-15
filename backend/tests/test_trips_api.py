@@ -46,6 +46,48 @@ async def test_create_trip_rejects_empty_name(authed_client: AsyncClient) -> Non
     assert response.status_code == 422
 
 
+async def test_create_trip_with_date_range_persists_dates(
+    authed_client: AsyncClient,
+) -> None:
+    response = await authed_client.post(
+        "/trips",
+        json={
+            "name": "Italy 2026",
+            "start_date": "2026-08-01",
+            "end_date": "2026-08-10",
+        },
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["start_date"] == "2026-08-01"
+    assert body["end_date"] == "2026-08-10"
+
+
+async def test_create_trip_without_dates_defaults_to_null(
+    authed_client: AsyncClient,
+) -> None:
+    body = (await authed_client.post("/trips", json={"name": "No dates"})).json()
+
+    assert body["start_date"] is None
+    assert body["end_date"] is None
+
+
+async def test_create_trip_rejects_end_before_start(
+    authed_client: AsyncClient,
+) -> None:
+    response = await authed_client.post(
+        "/trips",
+        json={
+            "name": "Backwards",
+            "start_date": "2026-08-10",
+            "end_date": "2026-08-01",
+        },
+    )
+
+    assert response.status_code == 422
+
+
 async def test_trips_requires_authentication(client: AsyncClient) -> None:
     """Without the override, ``current_active_user`` rejects the call."""
     response = await client.get("/trips")

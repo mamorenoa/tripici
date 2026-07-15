@@ -5,9 +5,10 @@ mapping. The repository layer is the only place that touches sessions
 and SQL — the domain only sees this dataclass-like shape.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from uuid import UUID, uuid4
 
+from pydantic import model_validator
 from sqlmodel import Field, SQLModel
 
 
@@ -15,6 +16,10 @@ class TripBase(SQLModel):
     """Fields shared by the create payload and the persisted entity."""
 
     name: str = Field(min_length=1, max_length=200, index=True)
+    # Optional trip span. Both are independent: a trip can have just a
+    # start, just an end, both, or neither.
+    start_date: date | None = None
+    end_date: date | None = None
 
 
 class Trip(TripBase, table=True):
@@ -31,4 +36,12 @@ class Trip(TripBase, table=True):
 class TripCreate(TripBase):
     """Payload accepted by ``POST /trips``."""
 
-    pass
+    @model_validator(mode="after")
+    def _check_date_range(self) -> "TripCreate":
+        if (
+            self.start_date is not None
+            and self.end_date is not None
+            and self.end_date < self.start_date
+        ):
+            raise ValueError("end_date must be on or after start_date")
+        return self

@@ -47,7 +47,12 @@ async def create_trip(
     user: Annotated[User, Depends(current_active_user)],
     service: Annotated[TripService, Depends(get_trip_service)],
 ) -> Trip:
-    return await service.create_trip(name=payload.name, owner_id=user.id)
+    return await service.create_trip(
+        name=payload.name,
+        owner_id=user.id,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+    )
 
 
 @router.get("", response_model=list[Trip])

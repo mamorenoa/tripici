@@ -21,21 +21,39 @@ function weekdayNames(localeTag: string): string[] {
   );
 }
 
+// Translucent amber wash marking the days the trip spans. Deliberately
+// distinct from the selected day (brand green) and the plan dots.
+const TRIP_RANGE_BG = "rgba(245, 158, 11, 0.15)";
+
 /** Month-grid calendar for a trip's plans. Self-contained: give it the
  * plans and it handles month navigation + a selected-day agenda. The
  * narrow props (plans + tripId) make it swappable for a library-backed
- * implementation later without touching the rest of the screen. */
+ * implementation later without touching the rest of the screen.
+ *
+ * ``tripStart`` / ``tripEnd`` (optional "YYYY-MM-DD") shade the trip's
+ * span. Either bound alone collapses the range to that single day. */
 export function PlanCalendar({
   plans,
   tripId,
+  tripStart,
+  tripEnd,
 }: {
   plans: Plan[];
   tripId: string;
+  tripStart?: string | null;
+  tripEnd?: string | null;
 }) {
   const { t } = useTranslation();
   const localeTag = activeLocaleTag();
   const weekdays = weekdayNames(localeTag);
   const today = todayIso();
+
+  // A missing bound collapses to the other, so a start-only (or end-only)
+  // trip still highlights that single day.
+  const rangeLo = tripStart || tripEnd || null;
+  const rangeHi = tripEnd || tripStart || null;
+  const inTripRange = (iso: string) =>
+    !!rangeLo && !!rangeHi && iso >= rangeLo && iso <= rangeHi;
 
   // Open on the month of the earliest dated plan, else the current month.
   const earliest = plans
@@ -112,6 +130,7 @@ export function PlanCalendar({
               const inMonth = d.getMonth() === view.m;
               const selected = iso === selectedDay;
               const isToday = iso === today;
+              const inRange = inTripRange(iso);
               const dayCellPlans = plans.filter((p) => planOccursOn(p, iso));
               return (
                 <Pressable
@@ -124,6 +143,13 @@ export function PlanCalendar({
                         ? "border border-brand-600"
                         : ""
                   }`}
+                  // Trip-span wash sits under everything; the selected day
+                  // keeps its solid brand background (no inline override).
+                  style={
+                    inRange && !selected
+                      ? { backgroundColor: TRIP_RANGE_BG }
+                      : undefined
+                  }
                 >
                   <Text
                     className={`text-sm ${

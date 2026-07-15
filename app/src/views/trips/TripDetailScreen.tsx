@@ -301,7 +301,12 @@ export function TripDetailScreen() {
                 )}
               />
             ) : (
-              <PlanCalendar plans={plans} tripId={tripId} />
+              <PlanCalendar
+                plans={plans}
+                tripId={tripId}
+                tripStart={trip?.start_date}
+                tripEnd={trip?.end_date}
+              />
             )}
           </View>
         )

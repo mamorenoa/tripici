@@ -5,6 +5,7 @@ The service is framework-agnostic Python. It depends on the
 wires the concrete repositories.
 """
 
+from datetime import date
 from uuid import UUID
 
 from app.domain.memberships.ports import MembershipRepository
@@ -22,10 +23,22 @@ class TripService:
         self._repository = repository
         self._memberships = memberships
 
-    async def create_trip(self, *, name: str, owner_id: UUID) -> Trip:
+    async def create_trip(
+        self,
+        *,
+        name: str,
+        owner_id: UUID,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> Trip:
         # ``id`` and ``created_at`` come from the entity defaults so the
         # domain (not the DB) controls them.
-        trip = Trip(name=name, owner_id=owner_id)
+        trip = Trip(
+            name=name,
+            owner_id=owner_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
         return await self._repository.add(trip)
 
     async def list_trips(self, *, user_id: UUID) -> list[Trip]:
