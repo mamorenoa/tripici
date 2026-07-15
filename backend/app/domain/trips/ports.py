@@ -13,6 +13,10 @@ from app.domain.trips.entity import Trip
 class TripRepository(Protocol):
     async def add(self, trip: Trip) -> Trip: ...
 
+    async def update(self, trip: Trip) -> Trip:
+        """Persist changes to an already-loaded trip and return it."""
+        ...
+
     async def get_by_id(self, trip_id: UUID) -> Trip | None: ...
 
     async def list_for_user(self, user_id: UUID) -> list[Trip]:

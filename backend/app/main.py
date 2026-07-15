@@ -31,7 +31,12 @@ from app.domain.settlements.exceptions import (
     SettlementPaymentInvalid,
     SettlementPaymentNotFound,
 )
-from app.domain.trips.exceptions import CannotRemoveOwner, MemberNotFound, TripNotFound
+from app.domain.trips.exceptions import (
+    CannotRemoveOwner,
+    InvalidTripDates,
+    MemberNotFound,
+    TripNotFound,
+)
 
 app = FastAPI(title="Tripinci API")
 
@@ -124,3 +129,13 @@ async def _cannot_remove_owner_handler(
     _: Request, exc: CannotRemoveOwner
 ) -> JSONResponse:
     return JSONResponse(status_code=400, content={"detail": "Cannot remove the trip owner"})
+
+
+@app.exception_handler(InvalidTripDates)
+async def _invalid_trip_dates_handler(
+    _: Request, exc: InvalidTripDates
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": "end_date must be on or after start_date"},
+    )

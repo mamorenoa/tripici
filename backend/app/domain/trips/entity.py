@@ -45,3 +45,17 @@ class TripCreate(TripBase):
         ):
             raise ValueError("end_date must be on or after start_date")
         return self
+
+
+class TripUpdate(SQLModel):
+    """Payload accepted by ``PATCH /trips/{trip_id}``.
+
+    Every field is optional; clients send only the keys they want to
+    change and the service applies ``model_dump(exclude_unset=True)``.
+    The date-range check happens in the service against the *merged*
+    values, since a partial patch may touch only one of the two bounds.
+    """
+
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    start_date: date | None = None
+    end_date: date | None = None

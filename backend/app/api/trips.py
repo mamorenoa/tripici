@@ -16,7 +16,7 @@ from app.domain.settlements.entity import (
 from app.domain.settlements.service import SettlementService
 from app.domain.stats.entity import TripStats
 from app.domain.stats.service import StatsService
-from app.domain.trips.entity import Trip, TripCreate
+from app.domain.trips.entity import Trip, TripCreate, TripUpdate
 from app.domain.trips.service import TripService
 from app.domain.users.entity import User
 from app.repositories.memberships.sqlmodel_repository import (
@@ -70,6 +70,18 @@ async def get_trip(
     service: Annotated[TripService, Depends(get_trip_service)],
 ) -> Trip:
     return await service.get_for_member(trip_id=trip_id, user_id=user.id)
+
+
+@router.patch("/{trip_id}", response_model=Trip)
+async def update_trip(
+    trip_id: UUID,
+    payload: TripUpdate,
+    user: Annotated[User, Depends(current_active_user)],
+    service: Annotated[TripService, Depends(get_trip_service)],
+) -> Trip:
+    return await service.update_trip(
+        trip_id=trip_id, user_id=user.id, patch=payload
+    )
 
 
 @router.get("/{trip_id}/stats", response_model=TripStats)

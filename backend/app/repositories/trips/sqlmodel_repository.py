@@ -25,6 +25,12 @@ class SQLModelTripRepository:
         await self._session.refresh(trip)
         return trip
 
+    async def update(self, trip: Trip) -> Trip:
+        self._session.add(trip)
+        await self._session.commit()
+        await self._session.refresh(trip)
+        return trip
+
     async def get_by_id(self, trip_id: UUID) -> Trip | None:
         return await self._session.get(Trip, trip_id)
 

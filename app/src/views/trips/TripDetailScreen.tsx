@@ -14,6 +14,7 @@ import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
 import { Pill } from "../../components/Pill";
+import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useCategories } from "../../domain/categories/useCategories";
 import { useCategoryLabel } from "../../domain/categories/useCategoryLabel";
 import type { Expense } from "../../domain/expenses/types";
@@ -35,6 +36,8 @@ export function TripDetailScreen() {
   const categoryLabel = useCategoryLabel();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
+  const { data: currentUser } = useCurrentUser();
+  const isOwner = !!currentUser && !!trip && currentUser.id === trip.owner_id;
   const { data: expenses = [], isLoading, error } = useExpenses(tripId);
   const { data: categories = [] } = useCategories();
   const { data: members = [] } = useMembers(tripId);
@@ -68,6 +71,13 @@ export function TripDetailScreen() {
           title: trip?.name ?? "Trip",
           headerRight: () => (
             <View className="flex-row items-center">
+              {isOwner ? (
+                <Link href={`/trips/${tripId}/edit`} asChild>
+                  <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
+                    <Icon name="edit-2" size={18} color="#059669" />
+                  </Pressable>
+                </Link>
+              ) : null}
               <Link href={`/trips/${tripId}/settle`} asChild>
                 <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
                   <Icon name="divide" size={18} color="#059669" />

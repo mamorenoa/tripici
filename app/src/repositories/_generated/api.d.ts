@@ -158,7 +158,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Trip */
+        patch: operations["update_trip_trips__trip_id__patch"];
         trace?: never;
     };
     "/trips/{trip_id}/stats": {
@@ -1064,6 +1065,23 @@ export interface components {
             /** By Date */
             by_date: components["schemas"]["DateStat"][];
         };
+        /**
+         * TripUpdate
+         * @description Payload accepted by ``PATCH /trips/{trip_id}``.
+         *
+         *     Every field is optional; clients send only the keys they want to
+         *     change and the service applies ``model_dump(exclude_unset=True)``.
+         *     The date-range check happens in the service against the *merged*
+         *     values, since a partial patch may touch only one of the two bounds.
+         */
+        TripUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+        };
         /** UserCreate */
         UserCreate: {
             /**
@@ -1623,6 +1641,41 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Trip"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_trip_trips__trip_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TripUpdate"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

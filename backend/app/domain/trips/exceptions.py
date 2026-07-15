@@ -22,3 +22,7 @@ class MemberNotFound(Exception):
 
 class CannotRemoveOwner(Exception):
     """The trip owner cannot be removed from their own trip."""
+
+
+class InvalidTripDates(Exception):
+    """The resulting trip span is invalid (end date before start date)."""

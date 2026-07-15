@@ -88,6 +88,86 @@ async def test_create_trip_rejects_end_before_start(
     assert response.status_code == 422
 
 
+async def test_update_trip_edits_name_and_dates(
+    authed_client: AsyncClient,
+) -> None:
+    created = (
+        await authed_client.post("/trips", json={"name": "Málaga"})
+    ).json()
+
+    response = await authed_client.patch(
+        f"/trips/{created['id']}",
+        json={
+            "name": "Málaga 2026",
+            "start_date": "2026-07-25",
+            "end_date": "2026-07-31",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "Málaga 2026"
+    assert body["start_date"] == "2026-07-25"
+    assert body["end_date"] == "2026-07-31"
+
+
+async def test_update_trip_partial_patch_leaves_other_fields(
+    authed_client: AsyncClient,
+) -> None:
+    created = (
+        await authed_client.post(
+            "/trips",
+            json={"name": "Keep me", "start_date": "2026-07-01"},
+        )
+    ).json()
+
+    response = await authed_client.patch(
+        f"/trips/{created['id']}", json={"end_date": "2026-07-05"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "Keep me"  # untouched
+    assert body["start_date"] == "2026-07-01"  # untouched
+    assert body["end_date"] == "2026-07-05"
+
+
+async def test_update_trip_rejects_end_before_start(
+    authed_client: AsyncClient,
+) -> None:
+    created = (
+        await authed_client.post(
+            "/trips",
+            json={"name": "Range", "start_date": "2026-07-10"},
+        )
+    ).json()
+
+    response = await authed_client.patch(
+        f"/trips/{created['id']}", json={"end_date": "2026-07-01"}
+    )
+
+    assert response.status_code == 400
+
+
+async def test_update_trip_by_non_owner_returns_404(
+    authed_client: AsyncClient,
+    session,
+    second_user: User,
+) -> None:
+    """A trip you don't own is invisible: editing it 404s, no leak."""
+    from app.domain.trips.entity import Trip
+
+    trip = Trip(name="Not yours", owner_id=second_user.id)
+    session.add(trip)
+    await session.commit()
+    await session.refresh(trip)
+
+    response = await authed_client.patch(
+        f"/trips/{trip.id}", json={"name": "hijacked"}
+    )
+    assert response.status_code == 404
+
+
 async def test_trips_requires_authentication(client: AsyncClient) -> None:
     """Without the override, ``current_active_user`` rejects the call."""
     response = await client.get("/trips")

@@ -5,3 +5,4 @@ import type { components } from "../../repositories/_generated/api";
 
 export type Trip = components["schemas"]["Trip"];
 export type TripCreate = components["schemas"]["TripCreate"];
+export type TripUpdate = components["schemas"]["TripUpdate"];

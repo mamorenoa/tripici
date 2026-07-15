@@ -9,8 +9,13 @@ from datetime import date
 from uuid import UUID
 
 from app.domain.memberships.ports import MembershipRepository
-from app.domain.trips.entity import Trip
-from app.domain.trips.exceptions import CannotRemoveOwner, MemberNotFound, TripNotFound
+from app.domain.trips.entity import Trip, TripUpdate
+from app.domain.trips.exceptions import (
+    CannotRemoveOwner,
+    InvalidTripDates,
+    MemberNotFound,
+    TripNotFound,
+)
 from app.domain.trips.ports import TripRepository
 
 
@@ -40,6 +45,32 @@ class TripService:
             end_date=end_date,
         )
         return await self._repository.add(trip)
+
+    async def update_trip(
+        self, *, trip_id: UUID, user_id: UUID, patch: TripUpdate
+    ) -> Trip:
+        """Edit a trip's name and/or date range. Owner-only.
+
+        We reuse the "not yours → 404" convention so we never leak the
+        existence of someone else's trip. The date range is validated
+        against the *merged* result (a partial patch may touch only one
+        bound).
+        """
+        trip = await self._repository.get_by_id(trip_id)
+        if trip is None or trip.owner_id != user_id:
+            raise TripNotFound(trip_id)
+
+        for key, value in patch.model_dump(exclude_unset=True).items():
+            setattr(trip, key, value)
+
+        if (
+            trip.start_date is not None
+            and trip.end_date is not None
+            and trip.end_date < trip.start_date
+        ):
+            raise InvalidTripDates()
+
+        return await self._repository.update(trip)
 
     async def list_trips(self, *, user_id: UUID) -> list[Trip]:
         """Returns trips the user owns AND trips shared with them."""

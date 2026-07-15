@@ -255,5 +255,18 @@ Slices entregados:
   screens y textos (nav, placeholders, errores, diálogos) usan `t()`.
   Sin cambios de backend.
 
+- **Slice 14** — fechas de viaje + edición de viaje. `trip` gana
+  `start_date`/`end_date` (nullables, migración `d4f9a2c7e1b8`, sin
+  backfill); `TripCreate` valida `end >= start`. `CreateTripScreen`
+  añade dos `DateInput` opcionales y el `PlanCalendar` sombrea el rango
+  del viaje con un ámbar translúcido (`rgba`, distinto del día
+  seleccionado y de los dots). Nuevo `PATCH /trips/{id}` (`TripUpdate`
+  parcial, **solo owner**, 404 si no es tuyo, 400 si `end < start` sobre
+  el resultado mergeado) con `update_trip` en `TripService` y `update`
+  en el repo/port. Frontend: `TripForm` compartido por crear/editar,
+  `EditTripScreen` + ruta `/trips/[id]/edit` (modal), hook
+  `useUpdateTrip`, y lápiz de editar en la cabecera de `TripDetailScreen`
+  visible solo para el owner. 7 nuevos tests backend.
+
 Próximo candidato: **monetización** (Stripe one-time + paywall sobre stats globales),
 **invitaciones por email**, **modo oscuro**, o **EAS Build**.

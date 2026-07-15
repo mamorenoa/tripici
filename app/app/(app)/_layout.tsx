@@ -37,6 +37,10 @@ export default function AppLayout() {
       {/* Title set dynamically inside TripDetailScreen via <Stack.Screen options=... /> */}
       <Stack.Screen name="trips/[id]/index" options={{ title: t("nav.trip") }} />
       <Stack.Screen
+        name="trips/[id]/edit"
+        options={{ title: t("nav.editTrip"), presentation: "modal" }}
+      />
+      <Stack.Screen
         name="trips/[id]/expenses/new"
         options={{ title: t("nav.newExpense"), presentation: "modal" }}
       />
