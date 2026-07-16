@@ -268,5 +268,18 @@ Slices entregados:
   `useUpdateTrip`, y lápiz de editar en la cabecera de `TripDetailScreen`
   visible solo para el owner. 7 nuevos tests backend.
 
-Próximo candidato: **monetización** (Stripe one-time + paywall sobre stats globales),
-**invitaciones por email**, **modo oscuro**, o **EAS Build**.
+- **Slice 15** — portada del viaje (solo frontend, sin backend). Nueva
+  pestaña **Portada** por defecto en `TripDetailScreen` (antes de
+  Gastos/Planes): hero con imagen de fondo por destino + velo oscuro,
+  nombre, rango de fechas (`Intl`) y chips de resumen (duración,
+  miembros, planes, total). La imagen se resuelve tras un puerto
+  `CoverImageProvider` (`domain/cover/`) con impl. `wikipediaCoverProvider`
+  (REST summary, keyless, CORS); el proveedor se cablea en un único punto
+  (`repositories/cover/index.ts`) para poder cambiar a Unsplash sin tocar
+  nada más. `deriveDestination` limpia el nombre (quita año/mes) para la
+  búsqueda; fallback a degradado determinista si no hay imagen. Diseñada
+  para crecer con campos opcionales futuros (presupuesto, modo de viaje…).
+
+Roadmap a 3 meses (producto público pequeño, web-first) en `ROADMAP.md`.
+Próxima slice: **S15 — email transaccional (Resend) + password reset +
+verificación** (desbloquea invitaciones por email en S16).

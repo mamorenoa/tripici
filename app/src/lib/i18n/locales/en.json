@@ -57,8 +57,10 @@
     "endDateOptional": "End date (optional)",
     "dateRangeError": "The end date can't be before the start date.",
     "createError": "Could not create the trip: {{error}}",
+    "tabOverview": "Cover",
     "tabExpenses": "Expenses",
     "tabPlans": "Plans",
+    "imageCredit": "Image · {{source}}",
     "navSettle": "Settle",
     "navStats": "Stats",
     "navMembers": "Members"
