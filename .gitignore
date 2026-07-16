@@ -229,6 +229,12 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# The `cover/` coverage-report pattern above is unanchored and would also
+# swallow these app source folders (feature dirs named "cover"). Re-include
+# them explicitly.
+!app/src/domain/cover/
+!app/src/repositories/cover/
+
 # Translations
 *.mo
 *.pot
