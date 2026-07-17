@@ -7,12 +7,13 @@ import {
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
-import { Icon } from "../../components/Icon";
+import { Icon, type IconName } from "../../components/Icon";
 import { Pill } from "../../components/Pill";
 import { useCurrentUser } from "../../domain/auth/useCurrentUser";
 import { useCategories } from "../../domain/categories/useCategories";
@@ -32,8 +33,44 @@ import { TripCover } from "./TripCover";
 type Tab = "overview" | "expenses" | "plans";
 type PlanView = "list" | "calendar";
 
+// With text labels the four header actions need ~400px on their own,
+// leaving no room for the trip name on a phone (they used to overlap it).
+// Below this width the header drops to icons only.
+const LABELLED_HEADER_MIN_WIDTH = 700;
+
+/** One trip-level action in the header. The label is only rendered when
+ * the header has room for it, but always survives as the a11y name. */
+function HeaderAction({
+  href,
+  icon,
+  label,
+  compact,
+}: {
+  href: React.ComponentProps<typeof Link>["href"];
+  icon: IconName;
+  label: string;
+  compact: boolean;
+}) {
+  return (
+    <Link href={href} asChild>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={label}
+        className={`${compact ? "px-2" : "px-3"} py-2 flex-row items-center gap-1.5`}
+      >
+        <Icon name={icon} size={18} color="#059669" />
+        {compact ? null : (
+          <Text className="text-brand-600 font-semibold text-sm">{label}</Text>
+        )}
+      </Pressable>
+    </Link>
+  );
+}
+
 export function TripDetailScreen() {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const compactHeader = width < LABELLED_HEADER_MIN_WIDTH;
   const categoryLabel = useCategoryLabel();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
@@ -74,36 +111,32 @@ export function TripDetailScreen() {
           headerRight: () => (
             <View className="flex-row items-center">
               {isOwner ? (
-                <Link href={`/trips/${tripId}/edit`} asChild>
-                  <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
-                    <Icon name="edit-2" size={18} color="#059669" />
-                  </Pressable>
-                </Link>
+                <HeaderAction
+                  href={`/trips/${tripId}/edit`}
+                  icon="edit-2"
+                  label={t("common.edit")}
+                  // The pencil is icon-only at every width.
+                  compact
+                />
               ) : null}
-              <Link href={`/trips/${tripId}/settle`} asChild>
-                <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
-                  <Icon name="divide" size={18} color="#059669" />
-                  <Text className="text-brand-600 font-semibold text-sm">
-                    {t("trips.navSettle")}
-                  </Text>
-                </Pressable>
-              </Link>
-              <Link href={`/trips/${tripId}/stats`} asChild>
-                <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
-                  <Icon name="bar-chart-2" size={18} color="#059669" />
-                  <Text className="text-brand-600 font-semibold text-sm">
-                    {t("trips.navStats")}
-                  </Text>
-                </Pressable>
-              </Link>
-              <Link href={`/trips/${tripId}/members`} asChild>
-                <Pressable className="px-3 py-2 flex-row items-center gap-1.5">
-                  <Icon name="users" size={18} color="#059669" />
-                  <Text className="text-brand-600 font-semibold">
-                    {t("trips.navMembers")}
-                  </Text>
-                </Pressable>
-              </Link>
+              <HeaderAction
+                href={`/trips/${tripId}/settle`}
+                icon="divide"
+                label={t("trips.navSettle")}
+                compact={compactHeader}
+              />
+              <HeaderAction
+                href={`/trips/${tripId}/stats`}
+                icon="bar-chart-2"
+                label={t("trips.navStats")}
+                compact={compactHeader}
+              />
+              <HeaderAction
+                href={`/trips/${tripId}/members`}
+                icon="users"
+                label={t("trips.navMembers")}
+                compact={compactHeader}
+              />
             </View>
           ),
         }}
