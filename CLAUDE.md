@@ -184,7 +184,11 @@ Slices entregados:
   → uvicorn) en **Fly.io** con Postgres unmanaged en `mad`. Web
   estática (`expo export -p web`) en **Cloudflare Pages**. CI/CD vía
   GitHub Actions: `backend.yml` (pytest + flyctl deploy en push a
-  main) y `frontend.yml` (type-check guard; CF Pages despliega solo).
+  main) y `frontend.yml` (type-check + build `expo export` + subida a
+  CF Pages con `wrangler` en **Direct Upload**). Ojo: Cloudflare **no
+  construye**, solo sirve el `dist` que le subimos — las variables de
+  entorno se inyectan en el paso *Build web* del workflow (las de CF
+  Pages no tienen efecto).
   `release_command` corre Alembic antes de promocionar. Config
   ajustado para normalizar el URL de Postgres (`postgres://` →
   `postgresql+psycopg://`) y leer `CORS_ORIGINS` como CSV con
@@ -279,6 +283,21 @@ Slices entregados:
   nada más. `deriveDestination` limpia el nombre (quita año/mes) para la
   búsqueda; fallback a degradado determinista si no hay imagen. Diseñada
   para crecer con campos opcionales futuros (presupuesto, modo de viaje…).
+
+- **Slice 16** — imágenes de portada vía **proxy en backend**. Nuevo
+  `GET /cover?destination=` (**requiere auth**: si no, sería un relay
+  abierto para quemar la cuota del proveedor) con capas
+  `domain/cover/` (entity + port `CoverImageProvider` + `CoverService`)
+  y `repositories/cover/unsplash_repository.py` (httpx). El
+  `CoverService` cachea 24h en memoria — motivo principal del proxy
+  junto a ocultar la key: Unsplash demo son 50 req/hora. La instancia es
+  **singleton** (`lru_cache` en `get_cover_service`) para que la caché
+  sobreviva entre peticiones. La key pasa a `UNSPLASH_ACCESS_KEY`
+  (secreto de Fly, ver `DEPLOY.md`); vacía = portadas en degradado, así
+  que el dev local funciona sin secretos. Frontend: nuevo
+  `backendCoverProvider` (habla con nuestra API) sustituye al proveedor
+  Unsplash client-side, **eliminado** porque incrustaba la key en el
+  bundle público. 5 nuevos tests backend.
 
 Roadmap a 3 meses (producto público pequeño, web-first) en `ROADMAP.md`.
 Próxima slice: **S15 — email transaccional (Resend) + password reset +

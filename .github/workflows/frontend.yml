@@ -59,6 +59,13 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Build web
+        # EXPO_PUBLIC_* vars are inlined into the bundle at build time, so
+        # they must be present *here*. Cloudflare Pages env vars do nothing
+        # for us: we upload a prebuilt dist (Direct Upload), CF never builds.
+        #
+        # Cover-image credentials deliberately live on the backend
+        # (UNSPLASH_ACCESS_KEY as a Fly secret) — anything inlined here is
+        # publicly readable in the bundle.
         run: npx expo export --platform web
         env:
           EXPO_PUBLIC_API_URL: https://tripinci-api.fly.dev

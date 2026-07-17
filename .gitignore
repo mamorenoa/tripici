@@ -227,13 +227,13 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
-cover/
-
-# The `cover/` coverage-report pattern above is unanchored and would also
-# swallow these app source folders (feature dirs named "cover"). Re-include
-# them explicitly.
-!app/src/domain/cover/
-!app/src/repositories/cover/
+# coverage.py's HTML output dir. ANCHORED on purpose: as a bare `cover/`
+# this pattern matches any directory named "cover" at any depth, which
+# silently swallowed our `cover` feature folders (app/src/domain/cover,
+# backend/app/domain/cover, …) — they never reached CI and the build broke
+# with "module not found". Coverage only ever writes it where it's run.
+/cover/
+/backend/cover/
 
 # Translations
 *.mo

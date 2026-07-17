@@ -7,6 +7,8 @@ dependencies = [
     "alembic>=1.18.4",
     "fastapi>=0.115",
     "fastapi-users[sqlalchemy]>=15.0.5",
+    # Async HTTP client — used to call the cover image provider.
+    "httpx>=0.28.1",
     "psycopg[binary]>=3.3.4",
     "pydantic-settings>=2.14.1",
     "sqlmodel>=0.0.38",

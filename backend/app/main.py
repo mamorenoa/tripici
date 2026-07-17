@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from app.api import (
     auth,
     categories,
+    cover,
     expenses,
     health,
     invitations,
@@ -51,6 +52,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(categories.router)
+app.include_router(cover.router)
 app.include_router(trips.router)
 app.include_router(expenses.router)
 app.include_router(invitations.router)

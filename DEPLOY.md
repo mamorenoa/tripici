@@ -51,6 +51,11 @@ fly secrets set \
   AUTH_SECRET="$(openssl rand -hex 32)" \
   CORS_ORIGINS="https://tripinci.pages.dev" \
   --app tripinci-api
+
+# Unsplash key for trip cover images (GET /cover). Optional: without it
+# covers just fall back to a gradient. It MUST live here and not in the
+# frontend — EXPO_PUBLIC_* vars are inlined into the public web bundle.
+fly secrets set UNSPLASH_ACCESS_KEY="<your-unsplash-access-key>" --app tripinci-api
 ```
 
 First deploy:

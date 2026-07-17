@@ -126,6 +126,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cover
+         * @description Returns a cover image for the destination, or ``null`` if there is
+         *     none (the app then renders its gradient fallback).
+         */
+        get: operations["get_cover_cover_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/trips": {
         parameters: {
             query?: never;
@@ -508,6 +529,15 @@ export interface components {
             total_cents: number;
             /** Pct */
             pct: number;
+        };
+        /** CoverImage */
+        CoverImage: {
+            /** Image Url */
+            image_url: string;
+            /** Attribution */
+            attribution?: string | null;
+            /** Source Url */
+            source_url?: string | null;
         };
         /** DateStat */
         DateStat: {
@@ -1574,6 +1604,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Category"][];
+                };
+            };
+        };
+    };
+    get_cover_cover_get: {
+        parameters: {
+            query: {
+                destination: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverImage"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

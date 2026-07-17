@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     # introduce refresh tokens if/when this hurts.
     auth_token_lifetime_seconds: int = 60 * 60 * 24
 
+    # Unsplash access key for trip cover images (see app/api/cover.py).
+    # Lives here — not in the app bundle — so it isn't publicly readable.
+    # Set it in production with `fly secrets set UNSPLASH_ACCESS_KEY=...`.
+    # Empty (the default) simply disables covers: the app falls back to a
+    # gradient, so local dev works without any secret.
+    unsplash_access_key: str = ""
+
     # Whitelist for CORSMiddleware. Defaults match the Expo dev server.
     # In production the env var ``CORS_ORIGINS`` is a comma-separated
     # list (e.g. ``https://tripinci.pages.dev,https://app.tripinci.com``).
