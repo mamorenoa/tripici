@@ -189,17 +189,17 @@ class PlanService:
                     trip_id=plan.trip_id,
                     created_by_user_id=user_id,
                     paid_by_user_id=None,  # common
+                    name=plan.name,
                     amount_cents=plan.cost_cents,
                     category_code=plan.expense_category_code,
                     expense_date=expense_date,
-                    description=plan.name,
                     plan_id=plan.id,
                 )
             )
         else:
+            existing.name = plan.name
             existing.amount_cents = plan.cost_cents
             existing.category_code = plan.expense_category_code
             existing.expense_date = expense_date
-            existing.description = plan.name
             existing.updated_at = datetime.now(timezone.utc)
             await self._expenses.update(existing)

@@ -299,6 +299,17 @@ Slices entregados:
   Unsplash client-side, **eliminado** porque incrustaba la key en el
   bundle público. 5 nuevos tests backend.
 
+- **Slice 17** — nombre de gasto. `expense` gana `name` (**NOT NULL**,
+  migración `e7a1b93c5d24`): título corto que encabeza la lista;
+  `description` se queda como el detalle largo opcional. Backfill:
+  `name = description` y, donde no había (es nullable), la **etiqueta de
+  su categoría** vía JOIN — si no, el `NOT NULL` no habría podido
+  entrar. Los gastos derivados de un plan pasan a llevar
+  `name = plan.name` (antes iba en `description`, que ya no se duplica).
+  Frontend: campo Nombre (obligatorio) al inicio de `ExpenseForm`, y el
+  título de la fila/detalle pasa a `expense.name` sin fallbacks.
+  3 nuevos tests backend (+ ajustados los que creaban gastos).
+
 Roadmap a 3 meses (producto público pequeño, web-first) en `ROADMAP.md`.
 Próxima slice: **S15 — email transaccional (Resend) + password reset +
 verificación** (desbloquea invitaciones por email en S16).

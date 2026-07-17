@@ -83,6 +83,7 @@
     "emptyFilteredTitle": "No expenses in this category",
     "emptyFilteredDescription": "Pick another category or add one below.",
     "fromPlan": "Plan",
+    "namePlaceholder": "e.g. Dinner at the harbor",
     "amount": "Amount (EUR)",
     "category": "Category",
     "paidBy": "Paid by",

@@ -227,7 +227,8 @@ async def test_plan_cost_mirrors_into_common_expense(
     assert e["category_code"] == "ACTIVITIES"
     assert e["paid_by_user_id"] is None  # common
     assert e["expense_date"] == "2026-06-12"
-    assert e["description"] == "Teleférico"
+    # The plan's name is the derived expense's title.
+    assert e["name"] == "Teleférico"
     assert e["plan_id"] == plan["id"]
 
 

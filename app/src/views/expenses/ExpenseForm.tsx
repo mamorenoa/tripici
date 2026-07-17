@@ -50,6 +50,7 @@ export function ExpenseForm({
   const { data: members = [] } = useMembers(tripId);
   const { data: currentUser } = useCurrentUser();
 
+  const [name, setName] = useState(initialValue?.name ?? "");
   const [amount, setAmount] = useState(
     initialValue ? (initialValue.amount_cents / 100).toFixed(2) : "",
   );
@@ -74,6 +75,7 @@ export function ExpenseForm({
   const amountCents = parseEurosToCents(amount);
   const dateValid = /^\d{4}-\d{2}-\d{2}$/.test(date);
   const canSubmit =
+    name.trim().length > 0 &&
     amountCents !== null &&
     amountCents > 0 &&
     categoryCode.length > 0 &&
@@ -84,6 +86,7 @@ export function ExpenseForm({
     if (!canSubmit || amountCents === null) return;
     const trimmedDescription = description.trim();
     onSubmit({
+      name: name.trim(),
       amount_cents: amountCents,
       category_code: categoryCode,
       expense_date: date,
@@ -99,6 +102,15 @@ export function ExpenseForm({
       contentContainerClassName="px-4 py-4 gap-4"
       keyboardShouldPersistTaps="handled"
     >
+      <Input
+        label={t("common.name")}
+        value={name}
+        onChangeText={setName}
+        placeholder={t("expenses.namePlaceholder")}
+        autoFocus={!initialValue}
+        editable={!submitting}
+      />
+
       <Input
         label={t("expenses.amount")}
         value={amount}

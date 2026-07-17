@@ -36,6 +36,7 @@ async def _expense(
         Expense(
             trip_id=trip_id,
             created_by_user_id=user_id,
+            name="Test expense",
             amount_cents=amount_cents,
             category_code=category_code,
             expense_date=expense_date,

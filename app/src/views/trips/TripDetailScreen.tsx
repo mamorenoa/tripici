@@ -262,7 +262,7 @@ export function TripDetailScreen() {
                           className="text-base text-ink-primary"
                           numberOfLines={1}
                         >
-                          {item.description ?? categoryLabel(item.category_code)}
+                          {item.name}
                         </Text>
                         <Text className="text-xs text-ink-muted mt-0.5">
                           {categoryLabel(item.category_code)} · {item.expense_date}

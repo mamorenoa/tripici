@@ -83,6 +83,7 @@
     "emptyFilteredTitle": "No hay gastos en esta categoría",
     "emptyFilteredDescription": "Elige otra categoría o añade uno abajo.",
     "fromPlan": "Plan",
+    "namePlaceholder": "p. ej. Cena en el puerto",
     "amount": "Importe (EUR)",
     "category": "Categoría",
     "paidBy": "Pagado por",

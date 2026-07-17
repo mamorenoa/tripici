@@ -65,9 +65,14 @@ export function ExpenseDetailScreen() {
       />
       <ScrollView contentContainerClassName="px-4 py-4 gap-4">
         <Card className="gap-4">
-          <Text className="text-3xl font-bold text-brand-600">
-            {formatEuros(expense.amount_cents)}
-          </Text>
+          <View className="gap-1">
+            <Text className="text-xl font-semibold text-ink-primary">
+              {expense.name}
+            </Text>
+            <Text className="text-3xl font-bold text-brand-600">
+              {formatEuros(expense.amount_cents)}
+            </Text>
+          </View>
           <Field
             label={t("expenses.category")}
             value={categoryLabel(expense.category_code)}

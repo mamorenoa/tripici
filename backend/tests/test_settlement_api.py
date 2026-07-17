@@ -49,6 +49,7 @@ async def _add_expense(
         Expense(
             trip_id=trip_id,
             created_by_user_id=user_id,
+            name="Test expense",
             amount_cents=amount_cents,
             category_code="OTHER",
             paid_by_user_id=user_id if paid_by is _CREATOR else paid_by,

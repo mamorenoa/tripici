@@ -33,6 +33,7 @@ async def test_create_expense_returns_201_and_payload(
     response = await authed_client.post(
         f"/trips/{trip_id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 1250,
             "category_code": "RESTAURANTS",
             "expense_date": "2026-06-10",
@@ -42,6 +43,7 @@ async def test_create_expense_returns_201_and_payload(
 
     assert response.status_code == 201, response.text
     body = response.json()
+    assert body["name"] == "Test expense"
     assert body["amount_cents"] == 1250
     assert body["category_code"] == "RESTAURANTS"
     assert body["expense_date"] == "2026-06-10"
@@ -49,6 +51,53 @@ async def test_create_expense_returns_201_and_payload(
     assert body["trip_id"] == trip_id
     assert body["created_by_user_id"] == str(test_user.id)
     UUID(body["id"])
+
+
+async def test_create_expense_requires_a_name(authed_client: AsyncClient) -> None:
+    """``name`` is the list headline — an expense without one is invalid."""
+    trip_id = await _create_trip_via_api(authed_client)
+
+    response = await authed_client.post(
+        f"/trips/{trip_id}/expenses",
+        json={"amount_cents": 500, "category_code": "OTHER"},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_create_expense_rejects_blank_name(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+
+    response = await authed_client.post(
+        f"/trips/{trip_id}/expenses",
+        json={"name": "", "amount_cents": 500, "category_code": "OTHER"},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_update_expense_can_rename_it(authed_client: AsyncClient) -> None:
+    trip_id = await _create_trip_via_api(authed_client)
+    created = (
+        await authed_client.post(
+            f"/trips/{trip_id}/expenses",
+            json={
+                "name": "Cena",
+                "amount_cents": 500,
+                "category_code": "RESTAURANTS",
+            },
+        )
+    ).json()
+
+    response = await authed_client.patch(
+        f"/trips/{trip_id}/expenses/{created['id']}",
+        json={"name": "Cena en el puerto"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "Cena en el puerto"
+    # Untouched by the partial patch.
+    assert response.json()["amount_cents"] == 500
 
 
 async def test_list_expenses_is_empty_initially(authed_client: AsyncClient) -> None:
@@ -67,6 +116,7 @@ async def test_create_then_list_returns_expenses_newest_date_first(
     await authed_client.post(
         f"/trips/{trip_id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 1000,
             "category_code": "FUEL",
             "expense_date": "2026-06-09",
@@ -75,6 +125,7 @@ async def test_create_then_list_returns_expenses_newest_date_first(
     await authed_client.post(
         f"/trips/{trip_id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 2000,
             "category_code": "ACCOMMODATION",
             "expense_date": "2026-06-11",
@@ -96,6 +147,7 @@ async def test_update_expense_returns_updated_payload(
         await authed_client.post(
             f"/trips/{trip_id}/expenses",
             json={
+                "name": "Test expense",
                 "amount_cents": 1000,
                 "category_code": "RESTAURANTS",
                 "expense_date": "2026-06-10",
@@ -123,6 +175,7 @@ async def test_delete_expense_removes_it(authed_client: AsyncClient) -> None:
         await authed_client.post(
             f"/trips/{trip_id}/expenses",
             json={
+                "name": "Test expense",
                 "amount_cents": 1000,
                 "category_code": "OTHER",
                 "expense_date": "2026-06-10",
@@ -147,6 +200,7 @@ async def test_create_expense_rejects_negative_amount(
     response = await authed_client.post(
         f"/trips/{trip_id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": -100,
             "category_code": "OTHER",
             "expense_date": "2026-06-10",
@@ -170,6 +224,7 @@ async def test_other_users_trip_returns_404(
     response = await authed_client.post(
         f"/trips/{other_trip.id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 100,
             "category_code": "OTHER",
             "expense_date": "2026-06-10",
@@ -192,6 +247,7 @@ async def test_create_expense_defaults_to_no_payer(
     response = await authed_client.post(
         f"/trips/{trip_id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 1000,
             "category_code": "OTHER",
             "expense_date": "2026-06-10",
@@ -220,6 +276,7 @@ async def test_create_expense_attributed_to_another_member(
     response = await client.post(
         f"/trips/{trip.id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 1000,
             "category_code": "OTHER",
             "expense_date": "2026-06-10",
@@ -243,6 +300,7 @@ async def test_create_expense_payer_not_member_returns_400(
     response = await authed_client.post(
         f"/trips/{trip_id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 1000,
             "category_code": "OTHER",
             "expense_date": "2026-06-10",
@@ -260,6 +318,7 @@ async def test_update_expense_to_common(authed_client: AsyncClient, test_user: U
         await authed_client.post(
             f"/trips/{trip_id}/expenses",
             json={
+                "name": "Test expense",
                 "amount_cents": 1000,
                 "category_code": "OTHER",
                 "expense_date": "2026-06-10",
@@ -297,6 +356,7 @@ async def test_collaborator_can_crud_expenses(
     created = await client.post(
         f"/trips/{trip.id}/expenses",
         json={
+            "name": "Test expense",
             "amount_cents": 1500,
             "category_code": "RESTAURANTS",
             "expense_date": "2026-06-10",

@@ -27,6 +27,10 @@ def _now() -> datetime:
 class ExpenseBase(SQLModel):
     """Fields shared by create payload and persisted entity."""
 
+    # Short title, shown as the headline in the expense list. Required:
+    # every expense has a name. ``description`` stays optional for the
+    # longer detail.
+    name: str = Field(min_length=1, max_length=200)
     amount_cents: int = Field(ge=0)
     category_code: str = Field(max_length=40, foreign_key="category.code")
     expense_date: date = Field(default_factory=_today)
@@ -67,6 +71,7 @@ class ExpenseUpdate(SQLModel):
     change. The service applies ``model_dump(exclude_unset=True)``.
     """
 
+    name: str | None = Field(default=None, min_length=1, max_length=200)
     amount_cents: int | None = Field(default=None, ge=0)
     category_code: str | None = Field(default=None, max_length=40)
     expense_date: date | None = None

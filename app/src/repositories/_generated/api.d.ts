@@ -558,6 +558,8 @@ export interface components {
         };
         /** Expense */
         Expense: {
+            /** Name */
+            name: string;
             /** Amount Cents */
             amount_cents: number;
             /** Category Code */
@@ -604,6 +606,8 @@ export interface components {
          * @description Payload accepted by ``POST /trips/{trip_id}/expenses``.
          */
         ExpenseCreate: {
+            /** Name */
+            name: string;
             /** Amount Cents */
             amount_cents: number;
             /** Category Code */
@@ -626,6 +630,8 @@ export interface components {
          *     change. The service applies ``model_dump(exclude_unset=True)``.
          */
         ExpenseUpdate: {
+            /** Name */
+            name?: string | null;
             /** Amount Cents */
             amount_cents?: number | null;
             /** Category Code */
