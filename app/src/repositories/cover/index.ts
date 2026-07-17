@@ -1,9 +1,12 @@
 import type { CoverImageProvider } from "../../domain/cover/types";
-import { wikipediaCoverProvider } from "./wikipediaCoverProvider";
+import { unsplashCoverProvider } from "./unsplashCoverProvider";
+// import { wikipediaCoverProvider } from "./wikipediaCoverProvider";
 
 /**
  * The active cover-image source. This single line is the only place the
- * app commits to a provider — swap it for an Unsplash implementation
- * (same `CoverImageProvider` interface) and the whole app follows.
+ * app commits to a provider — every other file talks to the
+ * `CoverImageProvider` interface. Swap the assignment to change source:
+ *   - `unsplashCoverProvider`  → travel photography (needs an API key)
+ *   - `wikipediaCoverProvider` → keyless encyclopedic images
  */
-export const coverImageProvider: CoverImageProvider = wikipediaCoverProvider;
+export const coverImageProvider: CoverImageProvider = unsplashCoverProvider;
