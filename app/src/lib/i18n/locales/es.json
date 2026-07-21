@@ -51,6 +51,8 @@
   },
   "trips": {
     "greeting": "Hola,",
+    "homeTitle": "Tus aventuras",
+    "homeSubtitle": "Gestiona tus planes y gastos compartidos con facilidad",
     "loadError": "No se pudieron cargar los viajes",
     "emptyTitle": "Aún no hay viajes",
     "emptyDescription": "Crea tu primer viaje para empezar a registrar gastos.",

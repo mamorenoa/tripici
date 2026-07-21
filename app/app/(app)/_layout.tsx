@@ -28,7 +28,8 @@ export default function AppLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: t("nav.appName") }} />
+      {/* Home renders its own branded top bar (redesign R2). */}
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="stats" options={{ title: t("nav.allTrips") }} />
       <Stack.Screen
         name="trips/new"

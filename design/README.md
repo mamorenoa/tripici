@@ -186,6 +186,12 @@ only the values change):
 
 - **NativeWind ≠ Tailwind**: no CSS grid, `space-x/y-*`, `backdrop-blur`,
   filters, exotic pseudo-selectors. `gap-*` is fine.
+- **`max-w-*` named sizes don't reliably generate** in NativeWind (e.g.
+  `max-w-2xl` produced no rule). For a max-width container use an inline
+  `style={{ maxWidth: N }}` instead.
+- **Focus outline** on web inputs: the browser's default ring is removed
+  via `outlineStyle:"none"` inline in `Input` (raw CSS in `global.css` is
+  NOT picked up by the bundler).
 - **Gradients/blur** need `expo-linear-gradient` (not a dependency) — that's why
   the prompt forbids them.
 - **Date/time inputs** on web are native `<input>` with inline styles — no

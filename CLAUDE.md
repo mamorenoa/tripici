@@ -338,3 +338,16 @@ método y prompts en `design/README.md` y en el plan.
   de desktop (pospuesto). i18n: taglines nuevas + i18n del ojo de
   contraseña. Verificado en móvil (375) y desktop (1280), login
   end-to-end OK, consola limpia.
+
+- **R2** — home (lista de viajes). Barra superior propia (avatar de
+  iniciales + "Hola, {nombre}" + iconos stats/idioma/logout); header
+  nativo del index oculto (`headerShown:false`) y **`SafeAreaProvider`
+  añadido al root** para el margen de estado. Cabecera de sección "Tus
+  aventuras" + subtítulo. Tarjetas con **tile de color determinista por
+  viaje** (hash → tinte claro + brújula) + badge "Compartido" en píldora
+  pequeña. En desktop, la app se centra en **columna de 672px** (patrón
+  mobile-app-en-columna) vía `maxWidth` inline — NativeWind **no genera
+  `max-w-2xl`** (usar estilo inline para max-width). Se **descartó** la
+  barra de navegación inferior que propuso Stitch (sería cambio
+  estructural, no re-skin). Colores de la screen encaminados por
+  `theme.ts`. Verificado móvil+desktop, navegación y consola OK.

@@ -51,6 +51,8 @@
   },
   "trips": {
     "greeting": "Hi,",
+    "homeTitle": "Your adventures",
+    "homeSubtitle": "Manage your shared plans and expenses with ease",
     "loadError": "Could not load trips",
     "emptyTitle": "No trips yet",
     "emptyDescription": "Create your first trip to start tracking expenses.",
