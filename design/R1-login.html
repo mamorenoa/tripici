@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tripinci - Sign In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-primary": "#6bd8cb",
+                      "tertiary-fixed": "#ffdbce",
+                      "inverse-on-surface": "#edf2f0",
+                      "background": "#f5faf8",
+                      "surface-bright": "#f5faf8",
+                      "surface-container-highest": "#dee4e1",
+                      "surface-tint": "#006a61",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#f4fffc",
+                      "secondary-container": "#e0e3e5",
+                      "on-primary-fixed": "#00201d",
+                      "surface-variant": "#dee4e1",
+                      "on-tertiary-fixed-variant": "#773215",
+                      "tertiary-fixed-dim": "#ffb59a",
+                      "on-primary-fixed-variant": "#005049",
+                      "inverse-surface": "#2c3130",
+                      "surface": "#f5faf8",
+                      "secondary-fixed-dim": "#c4c7c9",
+                      "outline": "#6d7a77",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#fffbff",
+                      "on-background": "#171d1c",
+                      "on-tertiary-fixed": "#370e00",
+                      "outline-variant": "#bcc9c6",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#171d1c",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#f0f5f2",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#6bd8cb",
+                      "on-secondary-fixed": "#191c1e",
+                      "surface-container": "#eaefed",
+                      "primary-container": "#008378",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary": "#924628",
+                      "surface-dim": "#d6dbd9",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#444749",
+                      "surface-container-high": "#e4e9e7",
+                      "secondary-fixed": "#e0e3e5",
+                      "primary": "#00685f",
+                      "primary-fixed": "#89f5e7",
+                      "on-secondary-container": "#626567",
+                      "tertiary-container": "#b05e3d",
+                      "on-surface-variant": "#3d4947",
+                      "secondary": "#5c5f61"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-gap": "1rem",
+                      "edge-margin": "1.25rem",
+                      "section-gap": "2rem",
+                      "inline-gap": "0.75rem",
+                      "container-max": "640px"
+              },
+              "fontFamily": {
+                      "title": ["Inter"],
+                      "label": ["Inter"],
+                      "heading": ["Inter"],
+                      "caption": ["Inter"],
+                      "body": ["Inter"]
+              },
+              "fontSize": {
+                      "title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "heading": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "caption": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "body": ["16px", {"lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #f5faf8; /* bg-background */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .mobile-container {
+            max-width: 390px;
+            width: 100%;
+            min-height: 100vh;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col items-center justify-center font-body text-on-surface">
+<!-- Top Navigation Shell (Hidden as per Transactional Rule, but used for Toggle) -->
+<div class="fixed top-0 left-0 right-0 z-50 flex justify-end px-edge-margin h-16 w-full max-w-[640px] mx-auto items-center">
+<button class="flex items-center gap-1 font-label text-label text-on-surface-variant hover:opacity-80 transition-opacity">
+<span>EN</span>
+<span class="text-outline-variant">|</span>
+<span class="text-outline">ES</span>
+</button>
+</div>
+<!-- Main Canvas -->
+<main class="mobile-container flex flex-col px-edge-margin py-12 gap-section-gap">
+<!-- Top Section: Brand Identity -->
+<header class="flex flex-col items-center gap-4 text-center mt-8">
+<div class="flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-sm">
+<span class="material-symbols-outlined text-on-primary text-4xl" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<div class="flex flex-col gap-1">
+<h1 class="font-title text-title text-primary">Tripinci</h1>
+<p class="font-caption text-caption text-on-surface-variant">Travel together, track together.</p>
+</div>
+</header>
+<!-- Main Form Card -->
+<section class="flex flex-col gap-stack-gap">
+<div class="bg-surface-container-lowest border border-surface-container-highest rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+<!-- Email Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label text-label text-on-surface-variant" for="email">EMAIL ADDRESS</label>
+<div class="relative flex items-center">
+<input class="w-full bg-white border border-surface-container-highest rounded-lg h-11 px-4 text-body font-body focus:border-primary focus:ring-0 transition-colors placeholder:text-outline-variant" id="email" placeholder="alex@example.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label text-label text-on-surface-variant" for="password">PASSWORD</label>
+<div class="relative flex items-center">
+<input class="w-full bg-white border border-surface-container-highest rounded-lg h-11 px-4 text-body font-body focus:border-primary focus:ring-0 transition-colors pr-12" id="password" type="password" value="password123"/>
+<button class="absolute right-3 flex items-center justify-center text-outline-variant hover:text-on-surface-variant transition-colors" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" data-icon="visibility" id="passIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Validation Error Area -->
+<div class="flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-error text-[16px]" data-icon="error">error</span>
+<span class="font-label text-label text-error">The password you entered is incorrect.</span>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-primary text-on-primary font-heading text-heading h-12 rounded-2xl shadow-sm hover:opacity-90 active:scale-95 transition-all mt-2">
+                    Sign in
+                </button>
+</div>
+<!-- Social Login / Divider (Optional but adds to modern UI patterns) -->
+<div class="flex items-center gap-4 py-2">
+<div class="h-[1px] flex-1 bg-surface-container-highest"></div>
+<span class="font-label text-label text-outline-variant">OR</span>
+<div class="h-[1px] flex-1 bg-surface-container-highest"></div>
+</div>
+<button class="w-full bg-white border border-surface-container-highest text-on-surface font-caption text-caption h-12 rounded-2xl flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors">
+<div class="w-5 h-5 flex items-center justify-center">
+<svg height="20" viewbox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 1.2-4.53z" fill="#EA4335"></path>
+</svg>
+</div>
+                Continue with Google
+            </button>
+</section>
+<!-- Footer -->
+<footer class="flex items-center justify-center gap-2 mt-4">
+<span class="font-body text-caption text-on-surface-variant">No account yet?</span>
+<a class="font-heading text-caption text-primary hover:underline decoration-primary/30 underline-offset-4 transition-all" href="#">Create one</a>
+</footer>
+</main>
+<!-- Visual Polish: Content Image -->
+<div class="hidden lg:flex fixed left-0 top-0 bottom-0 w-[calc(50%-195px)] bg-surface-container-low overflow-hidden items-center justify-center p-edge-margin">
+<div class="relative w-full max-w-lg aspect-square rounded-full overflow-hidden shadow-sm border-8 border-white/50">
+<div class="w-full h-full bg-cover bg-center" data-alt="A tranquil and professional photograph of a minimalist travel workspace. On a clean light slate surface, there is a metallic travel journal, a premium sleek smartphone displaying a budgeting app with teal interface elements, and a pair of white noise-cancelling headphones. The lighting is soft morning sun from a side window, creating a serene and organized atmosphere that feels reliable and calm. The overall color palette consists of soft whites, teals, and subtle slate greys." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARidltkIy7wA03y1a54avsnvwp_HwGRc4zH1s_RULO-aVTJFGu6CGVS3JPkO9rUaGwnhA3554q6cvDtWIvJOrmrgmrwnGInsbJ81h03cf2d2Ecg1V5p-iech7AXEuwX3KtNEbr2Kd7j1009A53foQ7CKxVVkaAx9vv0MnZHcUMSyieQPOQk5vWoj1_-HzbS_ulnhkxzv2ASy-AHWUFmB6VKUcwETUs8fqaTBu7NpWFYxOxrMQpFYzoga1ihP0O6da4rtCUY51kBE5c')"></div>
+</div>
+</div>
+<script>
+        function togglePassword() {
+            const passInput = document.getElementById('password');
+            const passIcon = document.getElementById('passIcon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                passIcon.textContent = 'visibility_off';
+            } else {
+                passInput.type = 'password';
+                passIcon.textContent = 'visibility';
+            }
+        }
+    </script>
+</body></html>

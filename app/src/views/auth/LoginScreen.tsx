@@ -5,8 +5,11 @@ import { Text, View } from "react-native";
 
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { Icon } from "../../components/Icon";
 import { Input } from "../../components/Input";
 import { useLogin } from "../../domain/auth/useLogin";
+import { colors } from "../../lib/theme";
+import { AuthShell } from "./AuthShell";
 
 export function LoginScreen() {
   const { t } = useTranslation();
@@ -34,66 +37,64 @@ export function LoginScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background justify-center px-4">
-      <View className="gap-2 items-center mb-6">
-        <Text className="text-3xl font-bold text-ink-primary">Tripinci</Text>
-        <Text className="text-sm text-ink-secondary">{t("auth.tagline")}</Text>
+    <AuthShell tagline={t("auth.tagline")}>
+      <View className="gap-6">
+        <Card className="gap-4 p-6 border border-border">
+          <Input
+            label={t("common.email")}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            placeholder="alex@example.com"
+            autoFocus
+            editable={!mutation.isPending}
+          />
+
+          <Input
+            label={t("common.password")}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+            editable={!mutation.isPending}
+          />
+
+          {mutation.isError ? (
+            <View className="flex-row items-center gap-1.5">
+              <Icon name="alert-circle" size={16} color={colors.danger[500]} />
+              <Text className="text-sm text-danger-500 flex-1">
+                {t("auth.invalidCredentials")}
+              </Text>
+            </View>
+          ) : null}
+
+          <Button
+            onPress={onSubmit}
+            disabled={!canSubmit}
+            isLoading={mutation.isPending}
+            size="lg"
+            className="w-full"
+          >
+            {t("auth.signIn")}
+          </Button>
+        </Card>
+
+        <View className="flex-row gap-1.5 justify-center">
+          <Text className="text-ink-secondary">{t("auth.noAccount")}</Text>
+          <Link
+            href={
+              typeof redirect === "string" && redirect.length > 0
+                ? `/register?redirect=${encodeURIComponent(redirect)}`
+                : "/register"
+            }
+            className="text-brand-600 font-semibold"
+          >
+            {t("auth.createOne")}
+          </Link>
+        </View>
       </View>
-
-      <Card className="gap-4">
-        <Text className="text-xl font-semibold text-ink-primary">
-          {t("auth.signIn")}
-        </Text>
-
-        <Input
-          label={t("common.email")}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-          autoFocus
-          editable={!mutation.isPending}
-        />
-
-        <Input
-          label={t("common.password")}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-          editable={!mutation.isPending}
-        />
-
-        {mutation.isError ? (
-          <Text className="text-sm text-danger-500">
-            {t("auth.invalidCredentials")}
-          </Text>
-        ) : null}
-
-        <Button
-          onPress={onSubmit}
-          disabled={!canSubmit}
-          isLoading={mutation.isPending}
-          size="lg"
-        >
-          {t("auth.signIn")}
-        </Button>
-      </Card>
-
-      <View className="flex-row gap-1.5 justify-center mt-6">
-        <Text className="text-ink-secondary">{t("auth.noAccount")}</Text>
-        <Link
-          href={
-            typeof redirect === "string" && redirect.length > 0
-              ? `/register?redirect=${encodeURIComponent(redirect)}`
-              : "/register"
-          }
-          className="text-brand-600 font-semibold"
-        >
-          {t("auth.createOne")}
-        </Link>
-      </View>
-    </View>
+    </AuthShell>
   );
 }

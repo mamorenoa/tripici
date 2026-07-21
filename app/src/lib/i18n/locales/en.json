@@ -15,6 +15,8 @@
     "all": "All",
     "clear": "Clear",
     "edit": "Edit",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "saveError": "Could not save: {{error}}",
     "nameYou": "{{name}} (you)"
   },
@@ -34,8 +36,9 @@
     "createAccount": "Create account"
   },
   "auth": {
-    "tagline": "Track shared trip expenses with your people.",
-    "registerTagline": "Create your account to start tracking trips.",
+    "tagline": "Travel together, track together.",
+    "registerTagline": "Simplify shared expenses, multiply the fun.",
+    "createAccountSubtitle": "Join your travel partners today.",
     "signIn": "Sign in",
     "createAccount": "Create account",
     "signUp": "Sign up",

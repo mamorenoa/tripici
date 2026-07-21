@@ -313,3 +313,28 @@ Slices entregados:
 Roadmap a 3 meses (producto público pequeño, web-first) en `ROADMAP.md`.
 Próxima slice: **S15 — email transaccional (Resend) + password reset +
 verificación** (desbloquea invitaciones por email en S16).
+
+## Track de rediseño (Stitch → NativeWind)
+
+Pista paralela de re-skin con namespace propio **R1, R2…** (no choca con
+"Slice N" ni "S15–S26"). Diseños de Stitch en `design/` (HTML+PNG);
+método y prompts en `design/README.md` y en el plan.
+
+- **R1** — auth + fundación de tokens. Paleta **esmeralda → teal**
+  (`brand.600 = #0d9488`), `danger` rosa → rojo, `background` a slate
+  `#f8fafc`, nuevo rol `success`. Como todas las screens usan tokens, el
+  cambio **propaga a toda la app** (verificado en pantallas no tocadas).
+  Nuevo `src/lib/theme.ts`: fuente única de los colores en usos
+  imperativos (spinner de `Button`, `placeholderTextColor`/icono de
+  `Input`, `Icon` default, `EmptyState`, `LanguageSwitcher`,
+  `DateInput`/`TimeInput`) — se acabaron los hex sueltos que duplicaban
+  tokens. Inputs a `rounded-lg` (8px) con **labels en mayúsculas**; foco
+  indicado por borde teal y se suprime el outline naranja del navegador
+  vía `outlineStyle:"none"` inline en `Input` (react-native-web).
+  Login/registro re-maquetados con `AuthShell` compartido (marca +
+  toggle EN|ES + centrado con `max-w` en desktop + `KeyboardAvoiding`);
+  header nativo oculto en `(auth)`. Se **descartó** el "Continue with
+  Google" que propuso Stitch (no hay OAuth) y el panel de imagen lateral
+  de desktop (pospuesto). i18n: taglines nuevas + i18n del ojo de
+  contraseña. Verificado en móvil (375) y desktop (1280), login
+  end-to-end OK, consola limpia.

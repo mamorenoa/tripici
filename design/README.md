@@ -76,8 +76,50 @@ A Figma link is not usable directly — export HTML or an image.
 > per role: title, heading, body, caption), border-radius scale, shadow
 > definitions. This token block is the deliverable I port.
 
-**From R2 onward:** also paste the DESIGN TOKENS block **locked in R1**, with
-*"Reuse EXACTLY these tokens; do not invent new colours or sizes."*
+**From R2 onward:** also paste the **Locked design tokens** block below, so
+every screen is designed in the same language (no per-generation drift).
+
+## Locked design tokens (from R1)
+
+Paste this whole block after the base prompt on R2+ generations:
+
+> **Reuse EXACTLY these design tokens — do not invent new colours, sizes, radii
+> or shadows.**
+>
+> Colour palette:
+> - Accent / primary: `#0d9488` (buttons, links, active states)
+> - Text high: `#0f172a` (headings, titles) · Text med: `#475569` (labels,
+>   body) · Text low: `#94a3b8` (placeholders, muted)
+> - Background: `#f8fafc` · Surface: `#ffffff` · Border: `#e2e8f0`
+> - Danger: `#dc2626` · Success: `#16a34a`
+>
+> Typography — **Inter**, single family:
+> - Title 24px / Bold / 32 leading · Heading 20px / Semi-Bold / 28 leading ·
+>   Body 16px / Regular / 24 leading · Caption 14px / Regular / 20 leading
+>
+> Radius & elevation:
+> - `rounded-lg` (8px) for inputs, `rounded-2xl` (16px) for cards · Shadow:
+>   `shadow-sm`
+
+**How these map to the app's tokens** (for porting — the semantic names stay,
+only the values change):
+
+| Token (`tailwind.config.js`) | New value | Was | Note |
+|---|---|---|---|
+| `brand.600` (accent) | `#0d9488` | `#059669` | emerald → **teal** (main shift) |
+| `ink.primary` | `#0f172a` | `#0f172a` | same |
+| `ink.secondary` | `#475569` | `#475569` | same |
+| `ink.muted` | `#94a3b8` | `#94a3b8` | same |
+| `background` | `#f8fafc` | `#fafaf9` | stone → cooler slate |
+| `surface` | `#ffffff` | `#ffffff` | same |
+| `border` | `#e2e8f0` | `#e2e8f0` | same |
+| `danger.500` | `#dc2626` | `#e11d48` | rose → red |
+| `success.600` | `#16a34a` | — | **new** role |
+| input radius | `rounded-lg` 8px | `rounded-2xl` 16px | inputs get tighter corners |
+
+`brand.{50,100,500,700}` get regenerated around the new teal `600`; a
+`success` scale is added. Type scale (24/20/16/14) maps to Tailwind
+`text-2xl/xl/base/sm`.
 
 ## Per-slice specs (append to the base prompt)
 

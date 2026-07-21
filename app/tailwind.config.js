@@ -14,29 +14,38 @@ module.exports = {
     extend: {
       colors: {
         // Refinement of the previous #0a6b2e brand colour. Emerald-600
-        // sits in the same hue cluster but with better contrast on
-        // white and a friendlier "travel" feel.
+        // R1 redesign: brand shifts emerald → teal (Stitch design language).
+        // teal-600 is the accent; the scale is teal-50…700 around it.
+        // Keep the SEMANTIC name `brand` so all screens inherit the change.
         brand: {
-          50: "#ecfdf5",
-          100: "#d1fae5",
-          500: "#10b981",
-          600: "#059669",
-          700: "#047857",
+          50: "#f0fdfa",
+          100: "#ccfbf1",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
         },
-        // Surfaces & backgrounds: stone-50 is a warm off-white that's
-        // easier on the eyes than pure white for long-scroll lists.
+        // Surfaces & backgrounds: slate-50, a cool off-white matching the
+        // teal palette.
         surface: "#ffffff",
-        background: "#fafaf9",
+        background: "#f8fafc",
         // Three semantic text levels cover ~95% of needs.
         ink: {
           primary: "#0f172a",
           secondary: "#475569",
           muted: "#94a3b8",
         },
+        // Danger: rose → red (design language).
         danger: {
-          50: "#fff1f2",
-          500: "#e11d48",
-          600: "#be123c",
+          50: "#fef2f2",
+          500: "#dc2626",
+          600: "#b91c1c",
+        },
+        // New semantic role introduced by the redesign (e.g. "gets back"
+        // in Settle, positive states).
+        success: {
+          50: "#f0fdf4",
+          500: "#22c55e",
+          600: "#16a34a",
         },
         border: "#e2e8f0",
       },

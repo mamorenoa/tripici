@@ -1,5 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 
+import { colors } from "../lib/theme";
+
 // Names we use anywhere in the app. Constraining the type means
 // IntelliSense surfaces only valid icons and a typo at the call site
 // is caught at type-check rather than at render time.
@@ -24,6 +26,9 @@ export type IconName =
   | "divide"
   | "map-pin"
   | "globe"
+  | "credit-card"
+  | "alert-circle"
+  | "info"
   | "list";
 
 type Props = {
@@ -33,6 +38,11 @@ type Props = {
   className?: string;
 };
 
-export function Icon({ name, size = 20, color = "#0f172a", className }: Props) {
+export function Icon({
+  name,
+  size = 20,
+  color = colors.ink.primary,
+  className,
+}: Props) {
   return <Feather name={name} size={size} color={color} className={className} />;
 }

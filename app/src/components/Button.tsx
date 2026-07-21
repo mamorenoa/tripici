@@ -6,6 +6,8 @@ import {
   type PressableProps,
 } from "react-native";
 
+import { colors } from "../lib/theme";
+
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 type Size = "sm" | "md" | "lg";
 
@@ -44,10 +46,10 @@ const sizeText: Record<Size, string> = {
 };
 
 const SPINNER_COLOR: Record<Variant, string> = {
-  primary: "#ffffff",
-  secondary: "#0f172a",
-  danger: "#e11d48",
-  ghost: "#059669",
+  primary: colors.white,
+  secondary: colors.ink.primary,
+  danger: colors.danger[500],
+  ghost: colors.brand[600],
 };
 
 export function Button({

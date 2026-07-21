@@ -2,6 +2,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { createElement, useState } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 
+import { colors } from "../lib/theme";
+
 type Props = {
   label?: string;
   value: string; // HH:MM
@@ -44,7 +46,9 @@ export function TimeInput({
   return (
     <View className="gap-1.5">
       {label ? (
-        <Text className="text-sm text-ink-secondary font-medium">{label}</Text>
+        <Text className="text-xs text-ink-secondary font-semibold uppercase tracking-wide">
+          {label}
+        </Text>
       ) : null}
 
       {Platform.OS === "web" ? (
@@ -55,13 +59,13 @@ export function TimeInput({
           onChange: (e: { target: { value: string } }) =>
             onChange(e.target.value),
           style: {
-            border: `1px solid ${error ? "#e11d48" : "#e2e8f0"}`,
-            borderRadius: 16,
-            padding: "12px 14px",
+            border: `1px solid ${error ? colors.danger[500] : colors.border}`,
+            borderRadius: 8,
+            padding: "12px 16px",
             fontSize: 16,
             fontFamily: "Inter_400Regular, system-ui",
-            color: "#0f172a",
-            backgroundColor: "#ffffff",
+            color: colors.ink.primary,
+            backgroundColor: colors.surface,
             opacity: editable ? 1 : 0.6,
             outline: "none",
           },
@@ -71,7 +75,7 @@ export function TimeInput({
           <Pressable
             onPress={() => editable && setPickerOpen(true)}
             disabled={!editable}
-            className={`border ${borderColor} rounded-2xl px-3.5 py-3 bg-surface ${
+            className={`border ${borderColor} rounded-lg px-4 py-3 bg-surface ${
               !editable ? "opacity-60" : ""
             }`}
           >
