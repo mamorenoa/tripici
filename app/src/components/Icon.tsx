@@ -29,7 +29,15 @@ export type IconName =
   | "credit-card"
   | "alert-circle"
   | "info"
-  | "list";
+  | "list"
+  // Expense-category glyphs (redesign R3).
+  | "coffee"
+  | "home"
+  | "truck"
+  | "droplet"
+  | "shopping-cart"
+  | "activity"
+  | "tag";
 
 type Props = {
   name: IconName;

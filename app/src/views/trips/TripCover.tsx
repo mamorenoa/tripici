@@ -14,6 +14,7 @@ import { useCoverImage } from "../../domain/cover/useCoverImage";
 import type { Trip } from "../../domain/trips/types";
 import { activeLocaleTag } from "../../lib/i18n";
 import { formatEuros } from "../../lib/money";
+import { colors } from "../../lib/theme";
 
 // Deep, saturated backgrounds that read well under white text — used
 // when there's no photo (or while it loads). Picked deterministically
@@ -44,9 +45,9 @@ function openUrl(url: string) {
 
 function Fact({ icon, label }: { icon: IconName; label: string }) {
   return (
-    <View className="flex-row items-center gap-1.5 bg-surface rounded-full px-3 py-1.5 shadow-card">
-      <Icon name={icon} size={15} color="#059669" />
-      <Text className="text-sm font-medium text-ink-primary">{label}</Text>
+    <View className="flex-row items-center gap-2 bg-surface border border-border rounded-full px-4 py-2 shadow-card shrink-0">
+      <Icon name={icon} size={16} color={colors.brand[600]} />
+      <Text className="text-xs font-semibold text-ink-primary">{label}</Text>
     </View>
   );
 }
@@ -90,7 +91,7 @@ export function TripCover({ trip, totalCents, planCount, memberCount }: Props) {
     >
       {/* Hero: photo (or fallback colour) with a dark scrim + title. */}
       <View
-        className="h-64 justify-end"
+        className="h-72 justify-end"
         style={{ backgroundColor: fallbackColor(trip.name) }}
       >
         {cover?.imageUrl ? (
@@ -100,14 +101,14 @@ export function TripCover({ trip, totalCents, planCount, memberCount }: Props) {
             resizeMode="cover"
           />
         ) : null}
-        <View className="absolute inset-0 bg-black/35" />
+        <View className="absolute inset-0 bg-black/40" />
 
         <View className="p-5 gap-1">
           <Text className="text-white text-3xl font-bold" numberOfLines={2}>
             {trip.name}
           </Text>
           {dateRange ? (
-            <Text className="text-white/90 text-base">{dateRange}</Text>
+            <Text className="text-white/80 text-base">{dateRange}</Text>
           ) : null}
         </View>
 
@@ -125,15 +126,19 @@ export function TripCover({ trip, totalCents, planCount, memberCount }: Props) {
         ) : null}
       </View>
 
-      {/* At-a-glance facts. Grows as the trip gains optional fields. */}
-      <View className="px-4 pt-4 flex-row flex-wrap gap-2">
+      {/* At-a-glance facts. Horizontal scroll; grows with future fields. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerClassName="px-4 py-4 gap-3 items-center"
+      >
         {days ? (
           <Fact icon="calendar" label={t("stats.days", { count: days })} />
         ) : null}
         <Fact icon="users" label={String(memberCount)} />
         <Fact icon="list" label={String(planCount)} />
         <Fact icon="bar-chart-2" label={formatEuros(totalCents)} />
-      </View>
+      </ScrollView>
     </ScrollView>
   );
 }

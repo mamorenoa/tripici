@@ -351,3 +351,17 @@ método y prompts en `design/README.md` y en el plan.
   barra de navegación inferior que propuso Stitch (sería cambio
   estructural, no re-skin). Colores de la screen encaminados por
   `theme.ts`. Verificado móvil+desktop, navegación y consola OK.
+
+- **R3** — detalle del viaje (`TripDetailScreen` + `TripCover` +
+  `PlanCard`). Pestañas pasan de toggle segmentado a **subrayado**
+  (COVER/PLANS/EXPENSES en mayúsculas, activa en teal + línea inferior).
+  Cabecera de acciones **icon-only** siempre (edit/credit-card/stats/
+  users, color `ink.secondary`). Cover a `h-72`, velo `/40`, chips con
+  borde en scroll horizontal. **Gastos**: total "TOTAL GASTADO" +
+  importe, y filas **sin tarjeta** con **tile de icono por categoría**
+  (`categoryIcon` → coffee/home/truck/droplet/shopping-cart/activity/tag,
+  añadidos a `Icon`) + divisores. **Planes**: cabecera "Tu itinerario" +
+  toggle segmentado list/calendar; `PlanCard` con **barra de acento**
+  lateral por color de plan, cost, ubicación con icono, y pasado en
+  tachado + "✓ Pasado". Desktop centrado en columna de 672px
+  (`maxWidth` inline). Verificado móvil+desktop, consola limpia.

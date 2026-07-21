@@ -1,0 +1,304 @@
+<!DOCTYPE html><html lang="en" class="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d6dbd9",
+                        "tertiary": "#924628",
+                        "secondary-fixed": "#e0e3e5",
+                        "tertiary-fixed": "#ffdbce",
+                        "inverse-primary": "#6bd8cb",
+                        "primary-fixed-dim": "#6bd8cb",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2c3130",
+                        "surface-container-high": "#e4e9e7",
+                        "tertiary-container": "#b05e3d",
+                        "secondary-fixed-dim": "#c4c7c9",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eaefed",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-background": "#171d1c",
+                        "on-primary-fixed-variant": "#005049",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f5faf8",
+                        "on-primary-container": "#f4fffc",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f0f5f2",
+                        "secondary-container": "#e0e3e5",
+                        "surface-bright": "#f5faf8",
+                        "secondary": "#5c5f61",
+                        "primary": "#00685f",
+                        "inverse-on-surface": "#edf2f0",
+                        "on-surface-variant": "#3d4947",
+                        "surface-container-highest": "#dee4e1",
+                        "on-tertiary-fixed": "#370e00",
+                        "on-surface": "#171d1c",
+                        "surface": "#f5faf8",
+                        "on-secondary-fixed": "#191c1e",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "on-tertiary-fixed-variant": "#773215",
+                        "surface-tint": "#006a61",
+                        "primary-fixed": "#89f5e7",
+                        "on-secondary-fixed-variant": "#444749",
+                        "surface-variant": "#dee4e1",
+                        "primary-container": "#008378",
+                        "outline": "#6d7a77",
+                        "on-primary-fixed": "#00201d",
+                        "on-secondary-container": "#626567",
+                        "outline-variant": "#bcc9c6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "inline-gap": "0.75rem",
+                        "edge-margin": "1.25rem",
+                        "stack-gap": "1rem",
+                        "section-gap": "2rem",
+                        "container-max": "640px"
+                    },
+                    "fontFamily": {
+                        "heading": ["Inter"],
+                        "title": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "heading": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body": ["16px", {"lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "caption": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script><meta charset="utf-8"></head><body class="bg-[#f8fafc] font-body text-on-surface">
+<!-- Header / Top Bar -->
+<header class="bg-surface sticky top-0 z-40 border-b border-secondary-container">
+<div class="flex items-center justify-between px-edge-margin h-16 max-w-container-max mx-auto">
+<h1 class="font-title text-heading text-on-surface truncate">Euro Summer 2024</h1>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">insights</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded-full">
+<span class="material-symbols-outlined">group</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto pb-24">
+<!-- Segmented Tab Bar -->
+<nav class="flex bg-surface border-b border-secondary-container sticky top-16 z-30">
+<button onclick="switchView('cover')" id="tab-cover" class="flex-1 py-4 font-label text-label uppercase tracking-widest text-primary relative">
+                Cover
+                <div id="indicator-cover" class="active-tab-indicator w-full"></div>
+</button>
+<button onclick="switchView('plans')" id="tab-plans" class="flex-1 py-4 font-label text-label uppercase tracking-widest text-on-surface-variant relative">
+                Plans
+                <div id="indicator-plans" class="active-tab-indicator w-0"></div>
+</button>
+<button onclick="switchView('expenses')" id="tab-expenses" class="flex-1 py-4 font-label text-label uppercase tracking-widest text-on-surface-variant relative">
+                Expenses
+                <div id="indicator-expenses" class="active-tab-indicator w-0"></div>
+</button>
+</nav>
+<!-- View: Cover -->
+<section id="view-cover" class="flex flex-col gap-stack-gap">
+<div class="relative h-72 w-full overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A cinematic, wide-angle shot of a European cobblestone street at sunset, with golden light reflecting off historic stone buildings and café tables lined with wine glasses. The mood is idyllic and serene, capturing the essence of a premium summer getaway with soft, warm lighting and a high-end travel aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCbGidRsjWdZTlREO3-INOsuHwE2OoyXHov3-Oo27poPUknP1H1G2UvxyoCxoVcXugSiKRKXhrKCMMl7OkwQSawJc_1HYm6aBnYOaLMIrr81GFNhxghmpqXp5YxsixlRPV8ZGyQdL3ce_bGIx3S7yDouOsmzYXbSZsYdSOn980d5gXlvNOCti7s0Li7hX0p8UH62TCSa6rNp9A1WhWrYNuCqELCmNKyRH7PRpJa-ZIOHb5LeIAF6Dr0bRgQPO25UerXl1cqhlULR_NG')"></div>
+<div class="absolute inset-0 bg-black/40"></div>
+<div class="absolute bottom-6 left-edge-margin right-edge-margin flex flex-col gap-1">
+<h2 class="text-white font-title text-title">Euro Summer 2024</h2>
+<p class="text-white/80 font-body text-caption">Jun 12 - Jul 05</p>
+</div>
+</div>
+<div class="px-edge-margin py-4">
+<div class="flex overflow-x-auto gap-3 no-scrollbar pb-2">
+<div class="flex items-center gap-2 bg-white border border-secondary-container rounded-full px-4 py-2 shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+<span class="font-label text-label text-on-surface">23 Days</span>
+</div>
+<div class="flex items-center gap-2 bg-white border border-secondary-container rounded-full px-4 py-2 shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">group</span>
+<span class="font-label text-label text-on-surface">4 Members</span>
+</div>
+<div class="flex items-center gap-2 bg-white border border-secondary-container rounded-full px-4 py-2 shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">event_note</span>
+<span class="font-label text-label text-on-surface">12 Plans</span>
+</div>
+<div class="flex items-center gap-2 bg-white border border-secondary-container rounded-full px-4 py-2 shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">payments</span>
+<span class="font-label text-label text-on-surface">€4,280.50 Spent</span>
+</div>
+</div>
+</div>
+
+</section>
+<!-- View: Plans -->
+<section class="hidden flex flex-col gap-stack-gap px-edge-margin pt-6" id="view-plans">
+<div class="flex items-center justify-between">
+<h2 class="font-heading text-heading">Your Itinerary</h2>
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="bg-white text-primary p-1.5 rounded shadow-sm">
+<span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+</button>
+<button class="text-on-surface-variant p-1.5 rounded">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Plan Card -->
+<div class="bg-white border border-secondary-container rounded-2xl p-4 shadow-sm flex gap-4 transition-transform active:scale-[0.98]">
+<div class="w-1 bg-primary rounded-full"></div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h4 class="font-heading text-body font-semibold">Visit Louvre</h4>
+<span class="font-label text-label text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">10:00 AM</span>
+</div>
+<p class="font-body text-caption text-on-surface-variant">Pre-booked tickets for 10 AM. Don't forget the entrance near the pyramid.</p>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span>
+<span class="font-body text-caption text-on-surface-variant">Paris</span>
+</div>
+</div>
+</div>
+<!-- Plan Card -->
+<div class="bg-white border border-secondary-container rounded-2xl p-4 shadow-sm flex gap-4 transition-transform active:scale-[0.98]">
+<div class="w-1 bg-primary rounded-full"></div>
+<div class="flex-1 flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<h4 class="font-heading text-body font-semibold">Seine Dinner Cruise</h4>
+<span class="font-label text-label text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">07:30 PM</span>
+</div>
+<p class="font-body text-caption text-on-surface-variant">Romantic dinner cruise starting from Pont Neuf. Formal dress code.</p>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span>
+<span class="font-body text-caption text-on-surface-variant">River Seine, Paris</span>
+</div>
+</div>
+</div>
+<!-- Plan Card -->
+<div class="bg-white border border-secondary-container rounded-2xl p-4 shadow-sm flex gap-4 transition-transform active:scale-[0.98]">
+<div class="w-1 bg-primary opacity-30 rounded-full"></div>
+<div class="flex-1 flex flex-col gap-1 opacity-70">
+<div class="flex justify-between items-start">
+<h4 class="font-heading text-body font-semibold line-through">Morning Croissants</h4>
+<span class="font-label text-label text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">08:00 AM</span>
+</div>
+<p class="font-body text-caption text-on-surface-variant">Quick stop at Du Pain et des Idées.</p>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">done</span>
+<span class="font-body text-caption text-on-surface-variant text-primary">Completed</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- View: Expenses -->
+<section class="hidden flex flex-col gap-stack-gap pt-6" id="view-expenses">
+<div class="px-edge-margin flex flex-col gap-2">
+<span class="font-label text-label text-on-surface-variant uppercase tracking-widest">Total Spent</span>
+<h2 class="font-title text-[32px] text-on-surface">€4,280.50</h2>
+</div>
+<!-- Horizontal Filter Pills -->
+<div class="flex overflow-x-auto gap-2 no-scrollbar px-edge-margin">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-full font-label text-label whitespace-nowrap">All</button>
+<button class="bg-white border border-secondary-container text-on-surface-variant px-4 py-2 rounded-full font-label text-label whitespace-nowrap hover:bg-surface-container transition-colors">Food</button>
+<button class="bg-white border border-secondary-container text-on-surface-variant px-4 py-2 rounded-full font-label text-label whitespace-nowrap hover:bg-surface-container transition-colors">Transport</button>
+<button class="bg-white border border-secondary-container text-on-surface-variant px-4 py-2 rounded-full font-label text-label whitespace-nowrap hover:bg-surface-container transition-colors">Stay</button>
+<button class="bg-white border border-secondary-container text-on-surface-variant px-4 py-2 rounded-full font-label text-label whitespace-nowrap hover:bg-surface-container transition-colors">Activities</button>
+</div>
+<div class="flex flex-col px-edge-margin gap-1 mt-2">
+<!-- Expense Item -->
+<div class="flex flex-row items-center justify-between py-4 border-b border-secondary-container">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-heading text-body font-semibold">Dinner at Le Marais</h4>
+<p class="font-body text-caption text-on-surface-variant">Dining · Oct 24 · Alex Rivera</p>
+</div>
+</div>
+<span class="font-title text-body text-on-surface">€142.50</span>
+</div>
+<!-- Expense Item -->
+<div class="flex flex-row items-center justify-between py-4 border-b border-secondary-container">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-heading text-body font-semibold">Uber to Eiffel Tower</h4>
+<p class="font-body text-caption text-on-surface-variant">Transport · Oct 24 · Sofia Chen</p>
+</div>
+</div>
+<span class="font-title text-body text-on-surface">€24.80</span>
+</div>
+<!-- Expense Item -->
+<div class="flex flex-row items-center justify-between py-4 border-b border-secondary-container">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">hotel</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-heading text-body font-semibold">Hôtel des Arts</h4>
+<p class="font-body text-caption text-on-surface-variant">Stay · Oct 23 · Marco Rossi</p>
+</div>
+</div>
+<span class="font-title text-body text-on-surface">€840.00</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (from JSON) -->
+
+<script>
+        function switchView(viewName) {
+            // Views
+            const views = ['cover', 'plans', 'expenses'];
+            views.forEach(v => {
+                const element = document.getElementById('view-' + v);
+                const tab = document.getElementById('tab-' + v);
+                const indicator = document.getElementById('indicator-' + v);
+                
+                if (v === viewName) {
+                    element.classList.remove('hidden');
+                    tab.classList.remove('text-on-surface-variant');
+                    tab.classList.add('text-primary');
+                    indicator.style.width = '100%';
+                } else {
+                    element.classList.add('hidden');
+                    tab.classList.remove('text-primary');
+                    tab.classList.add('text-on-surface-variant');
+                    indicator.style.width = '0';
+                }
+            });
+            window.scrollTo(0, 0);
+        }
+
+        // Initialize with cover view
+        document.addEventListener('DOMContentLoaded', () => {
+            switchView('cover');
+        });
+    </script>
+
+</body></html>

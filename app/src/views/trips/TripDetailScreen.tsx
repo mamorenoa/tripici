@@ -7,7 +7,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -25,6 +24,8 @@ import type { Plan } from "../../domain/plans/types";
 import { usePlans } from "../../domain/plans/usePlans";
 import { useTrip } from "../../domain/trips/useTrip";
 import { formatEuros } from "../../lib/money";
+import { colors } from "../../lib/theme";
+import { categoryIcon } from "../expenses/categoryIcon";
 import { PlanCalendar } from "../plans/PlanCalendar";
 import { PlanCard } from "../plans/PlanCard";
 import { sortPlans, type PlanSort } from "../plans/planUtils";
@@ -33,35 +34,24 @@ import { TripCover } from "./TripCover";
 type Tab = "overview" | "expenses" | "plans";
 type PlanView = "list" | "calendar";
 
-// With text labels the four header actions need ~400px on their own,
-// leaving no room for the trip name on a phone (they used to overlap it).
-// Below this width the header drops to icons only.
-const LABELLED_HEADER_MIN_WIDTH = 700;
-
-/** One trip-level action in the header. The label is only rendered when
- * the header has room for it, but always survives as the a11y name. */
+/** Icon-only trip-level action in the native header (redesign R3). */
 function HeaderAction({
   href,
   icon,
   label,
-  compact,
 }: {
   href: React.ComponentProps<typeof Link>["href"];
   icon: IconName;
   label: string;
-  compact: boolean;
 }) {
   return (
     <Link href={href} asChild>
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={label}
-        className={`${compact ? "px-2" : "px-3"} py-2 flex-row items-center gap-1.5`}
+        className="px-2 py-2"
       >
-        <Icon name={icon} size={18} color="#059669" />
-        {compact ? null : (
-          <Text className="text-brand-600 font-semibold text-sm">{label}</Text>
-        )}
+        <Icon name={icon} size={20} color={colors.ink.secondary} />
       </Pressable>
     </Link>
   );
@@ -69,8 +59,6 @@ function HeaderAction({
 
 export function TripDetailScreen() {
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
-  const compactHeader = width < LABELLED_HEADER_MIN_WIDTH;
   const categoryLabel = useCategoryLabel();
   const { id: tripId } = useLocalSearchParams<{ id: string }>();
   const { data: trip } = useTrip(tripId);
@@ -104,7 +92,8 @@ export function TripDetailScreen() {
       : members.find((m) => m.user_id === userId)?.display_name ?? "—";
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background items-center">
+     <View className="flex-1 w-full" style={{ maxWidth: 672 }}>
       <Stack.Screen
         options={{
           title: trip?.name ?? "Trip",
@@ -115,58 +104,54 @@ export function TripDetailScreen() {
                   href={`/trips/${tripId}/edit`}
                   icon="edit-2"
                   label={t("common.edit")}
-                  // The pencil is icon-only at every width.
-                  compact
                 />
               ) : null}
               <HeaderAction
                 href={`/trips/${tripId}/settle`}
-                icon="divide"
+                icon="credit-card"
                 label={t("trips.navSettle")}
-                compact={compactHeader}
               />
               <HeaderAction
                 href={`/trips/${tripId}/stats`}
                 icon="bar-chart-2"
                 label={t("trips.navStats")}
-                compact={compactHeader}
               />
               <HeaderAction
                 href={`/trips/${tripId}/members`}
                 icon="users"
                 label={t("trips.navMembers")}
-                compact={compactHeader}
               />
             </View>
           ),
         }}
       />
 
-      {/* Overview / Expenses / Plans toggle */}
-      <View className="flex-row mx-4 mt-3 mb-1 bg-slate-100 rounded-2xl p-1">
-        {(["overview", "plans", "expenses"] as Tab[]).map((tabKey) => (
-          <Pressable
-            key={tabKey}
-            onPress={() => setTab(tabKey)}
-            className={`flex-1 py-2 rounded-xl items-center ${
-              tab === tabKey ? "bg-surface shadow-card" : ""
-            }`}
-          >
-            <Text
-              className={
-                tab === tabKey
-                  ? "text-ink-primary font-semibold"
-                  : "text-ink-muted font-medium"
-              }
+      {/* Underline tab bar (Cover / Plans / Expenses) */}
+      <View className="flex-row bg-surface border-b border-border">
+        {(["overview", "plans", "expenses"] as Tab[]).map((tabKey) => {
+          const active = tab === tabKey;
+          return (
+            <Pressable
+              key={tabKey}
+              onPress={() => setTab(tabKey)}
+              className={`flex-1 py-4 items-center border-b-2 ${
+                active ? "border-brand-600" : "border-transparent"
+              }`}
             >
-              {tabKey === "overview"
-                ? t("trips.tabOverview")
-                : tabKey === "expenses"
-                  ? t("trips.tabExpenses")
-                  : t("trips.tabPlans")}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                className={`text-xs font-semibold uppercase tracking-widest ${
+                  active ? "text-brand-600" : "text-ink-secondary"
+                }`}
+              >
+                {tabKey === "overview"
+                  ? t("trips.tabOverview")
+                  : tabKey === "expenses"
+                    ? t("trips.tabExpenses")
+                    : t("trips.tabPlans")}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {tab === "overview" ? (
@@ -185,13 +170,13 @@ export function TripDetailScreen() {
       ) : tab === "expenses" ? (
         <>
           {/* Total summary */}
-          <View className="px-4 pt-3 pb-3 gap-1">
-            <Text className="text-sm text-ink-secondary">
+          <View className="px-4 pt-4 pb-3 gap-1">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-ink-secondary">
               {filter
                 ? t("expenses.totalCategory", { category: categoryLabel(filter) })
-                : t("expenses.total")}
+                : t("stats.totalSpent")}
             </Text>
-            <Text className="text-4xl font-bold text-brand-600">
+            <Text className="text-3xl font-bold text-ink-primary">
               {formatEuros(total)}
             </Text>
           </View>
@@ -252,29 +237,39 @@ export function TripDetailScreen() {
             <FlatList
               data={visible}
               keyExtractor={(e, i) => e.id ?? String(i)}
-              contentContainerClassName="px-4 pt-2 pb-24 gap-2"
+              contentContainerClassName="px-4 pt-1 pb-24"
               renderItem={({ item }: { item: Expense }) => (
                 <Link href={`/trips/${tripId}/expenses/${item.id}`} asChild>
-                  <Pressable>
-                    <Card className="flex-row items-center gap-3">
+                  <Pressable className="flex-row items-center justify-between py-4 border-b border-border">
+                    <View className="flex-row items-center gap-3 flex-1">
+                      <View className="w-12 h-12 rounded-2xl bg-background items-center justify-center">
+                        <Icon
+                          name={categoryIcon(item.category_code)}
+                          size={22}
+                          color={colors.brand[600]}
+                        />
+                      </View>
                       <View className="flex-1">
                         <Text
-                          className="text-base text-ink-primary"
+                          className="text-base font-semibold text-ink-primary"
                           numberOfLines={1}
                         >
                           {item.name}
                         </Text>
-                        <Text className="text-xs text-ink-muted mt-0.5">
+                        <Text
+                          className="text-xs text-ink-muted mt-0.5"
+                          numberOfLines={1}
+                        >
                           {categoryLabel(item.category_code)} · {item.expense_date}
                           {" · "}
                           {payerLabel(item.paid_by_user_id)}
                           {item.plan_id ? ` · 📌 ${t("expenses.fromPlan")}` : ""}
                         </Text>
                       </View>
-                      <Text className="text-base font-semibold text-ink-primary">
-                        {formatEuros(item.amount_cents)}
-                      </Text>
-                    </Card>
+                    </View>
+                    <Text className="text-base font-semibold text-ink-primary ml-3">
+                      {formatEuros(item.amount_cents)}
+                    </Text>
                   </Pressable>
                 </Link>
               )}
@@ -306,51 +301,57 @@ export function TripDetailScreen() {
           />
         ) : (
           <View className="flex-1">
-            <View className="px-4 pt-3 pb-1 flex-row items-center justify-between">
-              {planView === "list" ? (
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-xs text-ink-muted">
-                    {t("plans.sort")}
-                  </Text>
-                  <Pill
-                    label={t("plans.sortSoonest")}
-                    active={planSort === "soonest"}
-                    onPress={() => setPlanSort("soonest")}
-                  />
-                  <Pill
-                    label={t("plans.sortLatest")}
-                    active={planSort === "latest"}
-                    onPress={() => setPlanSort("latest")}
-                  />
-                </View>
-              ) : (
-                <View />
-              )}
-              <View className="flex-row items-center gap-1">
+            <View className="px-4 pt-4 pb-1 flex-row items-center justify-between">
+              <Text className="text-lg font-semibold text-ink-primary">
+                {t("plans.itinerary")}
+              </Text>
+              <View className="flex-row items-center bg-background rounded-lg p-1">
                 <Pressable
                   onPress={() => setPlanView("list")}
-                  hitSlop={6}
-                  className="p-1.5"
+                  className={`p-1.5 rounded ${
+                    planView === "list" ? "bg-surface shadow-card" : ""
+                  }`}
                 >
                   <Icon
                     name="list"
-                    size={20}
-                    color={planView === "list" ? "#059669" : "#94a3b8"}
+                    size={18}
+                    color={
+                      planView === "list" ? colors.brand[600] : colors.ink.muted
+                    }
                   />
                 </Pressable>
                 <Pressable
                   onPress={() => setPlanView("calendar")}
-                  hitSlop={6}
-                  className="p-1.5"
+                  className={`p-1.5 rounded ${
+                    planView === "calendar" ? "bg-surface shadow-card" : ""
+                  }`}
                 >
                   <Icon
                     name="calendar"
-                    size={20}
-                    color={planView === "calendar" ? "#059669" : "#94a3b8"}
+                    size={18}
+                    color={
+                      planView === "calendar"
+                        ? colors.brand[600]
+                        : colors.ink.muted
+                    }
                   />
                 </Pressable>
               </View>
             </View>
+            {planView === "list" ? (
+              <View className="px-4 pb-1 flex-row items-center gap-2">
+                <Pill
+                  label={t("plans.sortSoonest")}
+                  active={planSort === "soonest"}
+                  onPress={() => setPlanSort("soonest")}
+                />
+                <Pill
+                  label={t("plans.sortLatest")}
+                  active={planSort === "latest"}
+                  onPress={() => setPlanSort("latest")}
+                />
+              </View>
+            ) : null}
             {planView === "list" ? (
               <FlatList
                 data={orderedPlans}
@@ -382,10 +383,11 @@ export function TripDetailScreen() {
           asChild
         >
           <Pressable className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-brand-600 items-center justify-center shadow-card active:bg-brand-700">
-            <Icon name="plus" size={26} color="#ffffff" />
+            <Icon name="plus" size={26} color={colors.white} />
           </Pressable>
         </Link>
       ) : null}
+     </View>
     </View>
   );
 }
