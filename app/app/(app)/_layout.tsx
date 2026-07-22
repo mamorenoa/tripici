@@ -4,6 +4,14 @@ import { ActivityIndicator, View } from "react-native";
 
 import { useCurrentUser } from "../../src/domain/auth/useCurrentUser";
 
+// Anchor every route in this group to the trips list. Without this, opening
+// a shared link (e.g. /trips/<id>) or reloading a deep page starts with an
+// empty history: the stack header renders no back arrow and the user is
+// stranded with no way to reach the trip list.
+export const unstable_settings = {
+  initialRouteName: "index",
+};
+
 // Gate for authenticated routes. While we're checking auth, show a
 // spinner. If there's no user, send the user to /login — passing the
 // intended path as ``redirect`` so the auth screens can come back to
