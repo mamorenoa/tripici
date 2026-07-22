@@ -3,38 +3,54 @@
 @tailwind utilities;
 
 /*
- * Web font loading via Google Fonts CDN.
+ * Web font loading.
  *
  * Expo's `expo export --platform web` places @expo-google-fonts assets at
  * `assets/node_modules/...`, but wrangler pages deploy excludes any path
  * containing `node_modules` when uploading. The fonts are never uploaded and
  * the browser fails to decode the 404 HTML it receives instead of a TTF.
  *
- * Fix: load Inter from Google Fonts CDN on web and register @font-face
- * aliases that match the names NativeWind's Tailwind config expects
- * (Inter_400Regular etc.), so no changes to tailwind.config.js are needed.
+ * Fix: register @font-face aliases whose family names match what the
+ * Tailwind config / NativeWind expect (Inter_400Regular … Inter_700Bold),
+ * each pointing at the real Inter webfont. Inter on Google Fonts is a single
+ * VARIABLE woff2 (latin subset — covers Spanish accents á/ñ/¿), so every
+ * weight shares the same file and the browser renders the declared weight.
+ *
+ * NOTE: an earlier version used only `src: local('Inter')` with no url(),
+ * which silently fell back to a serif on any machine without Inter installed.
+ * The url() below is what actually loads the font on web.
  *
  * On native these rules are ignored; useFonts() in _layout.tsx handles it.
  */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @font-face {
   font-family: 'Inter_400Regular';
   font-weight: 400;
-  src: local('Inter'), local('Inter-Regular');
+  font-display: swap;
+  src: local('Inter'),
+    url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2')
+      format('woff2');
 }
 @font-face {
   font-family: 'Inter_500Medium';
   font-weight: 500;
-  src: local('Inter Medium'), local('Inter-Medium'), local('Inter');
+  font-display: swap;
+  src: local('Inter Medium'), local('Inter'),
+    url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2')
+      format('woff2');
 }
 @font-face {
   font-family: 'Inter_600SemiBold';
   font-weight: 600;
-  src: local('Inter SemiBold'), local('Inter-SemiBold'), local('Inter');
+  font-display: swap;
+  src: local('Inter SemiBold'), local('Inter'),
+    url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2')
+      format('woff2');
 }
 @font-face {
   font-family: 'Inter_700Bold';
   font-weight: 700;
-  src: local('Inter Bold'), local('Inter-Bold'), local('Inter');
+  font-display: swap;
+  src: local('Inter Bold'), local('Inter'),
+    url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2')
+      format('woff2');
 }
