@@ -21,6 +21,7 @@ from app.api import (
     invitations,
     members,
     plans,
+    share,
     stats,
     trips,
 )
@@ -58,6 +59,7 @@ app.include_router(expenses.router)
 app.include_router(invitations.router)
 app.include_router(members.router)
 app.include_router(plans.router)
+app.include_router(share.router)
 app.include_router(stats.router)
 
 

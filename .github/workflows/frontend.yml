@@ -83,6 +83,17 @@ jobs:
             -exec sed -i 's|assets/node_modules|assets/pkg|g' {} +
           sed -i 's|assets/node_modules|assets/pkg|g' dist/index.html
 
+      - name: Add edge worker (rich link previews)
+        # Cloudflare does NOT build anything — we upload a prebuilt dist. So
+        # the worker only exists in production if it is copied in here.
+        # Placed after the asset-path fix on purpose: that step rewrites
+        # dist/index.html and the JS bundle, and must not touch the worker.
+        # A _worker.js makes Pages serve every request through it; the worker
+        # falls back to env.ASSETS for anything it doesn't handle.
+        run: |
+          cp web/_worker.js dist/_worker.js
+          test -s dist/_worker.js
+
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy dist --project-name tripinci
         env:

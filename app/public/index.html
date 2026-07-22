@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<!--
+  Root HTML document for the web build.
+
+  With `web.output: "single"` (app.json) the export produces ONE index.html
+  for every route, and Expo builds it from this file when it exists —
+  falling back to its own template otherwise. It is NOT built from
+  app/+html.tsx: that file only participates in static rendering.
+
+  This is where the BASELINE link-preview metadata lives; without it every
+  shared URL previewed as a bare app name with no image. Per-link previews
+  (an invitation showing its trip and photo) cannot be done here — one file
+  serves all routes and crawlers don't run JS — so the Cloudflare edge
+  worker (web/_worker.js) rewrites these same tags per URL.
+
+  Keep the structure below (%LANG_ISO_CODE%, the reset style, #root) in sync
+  with Expo's template on upgrades.
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>Tripinci — Gastos de viaje compartidos</title>
+    <meta
+      name="description"
+      content="Organiza los gastos y los planes de vuestros viajes en grupo. Sin cuentas pendientes ni hojas de cálculo."
+    />
+    <meta name="theme-color" content="#0d9488" />
+
+    <!-- Open Graph — WhatsApp, Gmail, Slack, Telegram… -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tripinci" />
+    <!-- og:url is a placeholder the edge worker rewrites per link. -->
+    <meta property="og:url" content="https://tripinci.pages.dev" />
+    <meta property="og:title" content="Tripinci — Gastos de viaje compartidos" />
+    <meta
+      property="og:description"
+      content="Organiza los gastos y los planes de vuestros viajes en grupo. Sin cuentas pendientes ni hojas de cálculo."
+    />
+    <!-- Absolute: some crawlers refuse to resolve a relative og:image. -->
+    <meta property="og:image" content="https://tripinci.pages.dev/og-default.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tripinci — Gastos de viaje compartidos" />
+    <meta
+      name="twitter:description"
+      content="Organiza los gastos y los planes de vuestros viajes en grupo. Sin cuentas pendientes ni hojas de cálculo."
+    />
+    <meta name="twitter:image" content="https://tripinci.pages.dev/og-default.png" />
+
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  </body>
+</html>

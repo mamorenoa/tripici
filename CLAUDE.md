@@ -310,6 +310,29 @@ Slices entregados:
   título de la fila/detalle pasa a `expense.name` sin fallbacks.
   3 nuevos tests backend (+ ajustados los que creaban gastos).
 
+- **Slice 18** — previews enriquecidas al compartir invitaciones. Nuevo
+  endpoint **público** `GET /share/invitations/{token}` (capa
+  `domain/share/`) que devuelve `{title, description, image_url}`: título
+  "{quien invita} te invita a {viaje}", fechas en castellano y la **misma
+  foto de portada** que ve la app (mismo `derive_destination`, ahora
+  también en Python, más `CoverService` — con su caché de 24h, así que
+  los crawlers no queman cuota de Unsplash). Es público a propósito
+  (los bots no hacen login) y por eso expone **solo** esas tres cadenas;
+  token muerto → 404, sin preview y sin filtrar nada. La imagen se pide
+  a 1200×630 **sustituyendo** los parámetros del proveedor, no
+  concatenando (si no, `w`/`fit` salían duplicados y decide el CDN).
+  Frontend: la metadata base vive en **`app/public/index.html`** — con
+  `web.output: "single"` Expo construye el HTML desde ahí, **no** desde
+  `app/+html.tsx` (eso es solo para render estático; se comprobó en el
+  código de `@expo/cli`). Como todas las rutas comparten ese HTML y los
+  crawlers no ejecutan JS, la preview por enlace la hace un **worker de
+  Cloudflare Pages** (`app/web/_worker.js`) que reescribe las etiquetas
+  con `HTMLRewriter` solo si la ruta es `/invite/<token>` **y** el
+  User-Agent es un bot; cualquier fallo (404, timeout de 2s, API caída)
+  sirve el HTML intacto. Ojo: CF **no construye**, así que el worker
+  solo existe en producción porque `frontend.yml` lo copia a `dist/`.
+  Verificado de punta a punta con `wrangler pages dev`. 5 tests nuevos.
+
 Roadmap a 3 meses (producto público pequeño, web-first) en `ROADMAP.md`.
 Próxima slice: **S15 — email transaccional (Resend) + password reset +
 verificación** (desbloquea invitaciones por email en S16).
