@@ -84,6 +84,17 @@ async def update_trip(
     )
 
 
+@router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_trip(
+    trip_id: UUID,
+    user: Annotated[User, Depends(current_active_user)],
+    service: Annotated[TripService, Depends(get_trip_service)],
+) -> None:
+    """Delete a trip and everything hanging off it. Owner-only; anyone
+    else (collaborator included) gets a 404."""
+    await service.delete_trip(trip_id=trip_id, user_id=user.id)
+
+
 @router.get("/{trip_id}/stats", response_model=TripStats)
 async def get_trip_stats(
     trip_id: UUID,

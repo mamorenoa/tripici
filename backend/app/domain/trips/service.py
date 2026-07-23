@@ -72,6 +72,24 @@ class TripService:
 
         return await self._repository.update(trip)
 
+    async def delete_trip(self, *, trip_id: UUID, user_id: UUID) -> None:
+        """Delete a trip for good. Owner-only.
+
+        Same "not yours → 404" convention as ``update_trip``: a
+        collaborator gets the same answer as a stranger, so we never leak
+        that the trip exists.
+
+        The deletion is a hard one, on purpose: expenses, plans,
+        memberships, invitations and settlement payments are removed with
+        it by the database's cascade, and the trip disappears from every
+        collaborator's list.
+        """
+        trip = await self._repository.get_by_id(trip_id)
+        if trip is None or trip.owner_id != user_id:
+            raise TripNotFound(trip_id)
+
+        await self._repository.delete(trip)
+
     async def list_trips(self, *, user_id: UUID) -> list[Trip]:
         """Returns trips the user owns AND trips shared with them."""
         return await self._repository.list_for_user(user_id)

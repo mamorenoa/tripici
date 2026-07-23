@@ -333,6 +333,32 @@ Slices entregados:
   solo existe en producción porque `frontend.yml` lo copia a `dist/`.
   Verificado de punta a punta con `wrangler pages dev`. 5 tests nuevos.
 
+- **Slice 19** — eliminar viaje (solo propietario). `DELETE /trips/{id}`
+  → 204; `delete_trip` en `TripService` con la convención de siempre
+  ("no es tuyo" → 404, así un colaborador recibe lo mismo que un
+  extraño). **Sin migración**: las cinco tablas que cuelgan de `trip`
+  (`expense`, `plan`, `trip_membership`, `trip_invitation`,
+  `settlement_payment`) ya tenían `ON DELETE CASCADE` en sus
+  migraciones, así que basta un `DELETE FROM trip`. **Las estadísticas
+  no se recalculan**: todas son agregados en vivo (`GROUP BY` sobre
+  `expense` + CTE `user_trips`), no hay ningún total denormalizado —
+  el único trabajo es invalidar la caché de TanStack Query.
+  Dos derivas latentes arregladas de paso, ambas descubiertas porque el
+  primer test de cascada falló: (1) las entidades declaraban las FKs
+  **sin** `ondelete`, así que el esquema de los tests
+  (`SQLModel.metadata.create_all` en `conftest.py`, no Alembic) no
+  cascadeaba — añadido `ondelete="CASCADE"` a las 9 FKs que las
+  migraciones declaran así; (2) `alembic/env.py` no importaba las
+  entidades de `plans` ni `settlements`, con lo que un autogenerate
+  habría propuesto **borrar** `plan`, `plan_link` y
+  `settlement_payment`. Frontend: zona de peligro al final de
+  `EditTripScreen` (oculta si no eres el propietario, porque a `/edit`
+  se puede llegar por enlace directo) con diálogo que nombra el viaje y
+  cuenta lo que se pierde; `useDeleteTrip` hace `removeQueries` de las
+  queries del viaje (invalidarlas solo daría 404) e invalida lista y
+  `["global-stats"]`; al terminar `router.replace("/")`, nunca
+  `back()`. 7 tests nuevos backend.
+
 Roadmap a 3 meses (producto público pequeño, web-first) en `ROADMAP.md`.
 Próxima slice: **S15 — email transaccional (Resend) + password reset +
 verificación** (desbloquea invitaciones por email en S16).

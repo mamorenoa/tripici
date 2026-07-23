@@ -68,7 +68,16 @@
     "imageCredit": "Image · {{source}}",
     "navSettle": "Settle",
     "navStats": "Stats",
-    "navMembers": "Members"
+    "navMembers": "Members",
+    "dangerZone": "Danger zone",
+    "deleteAction": "Delete trip",
+    "deleteTitle": "Delete trip",
+    "deleteConfirm": "This will delete “{{name}}” with {{expenses}} and {{plans}}, for your collaborators too. This cannot be undone.",
+    "deleteCountExpenses_one": "{{count}} expense",
+    "deleteCountExpenses_other": "{{count}} expenses",
+    "deleteCountPlans_one": "{{count}} plan",
+    "deleteCountPlans_other": "{{count}} plans",
+    "deleteError": "Could not delete the trip: {{error}}"
   },
   "categories": {
     "RESTAURANTS": "Restaurants",

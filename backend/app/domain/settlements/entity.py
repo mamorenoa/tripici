@@ -23,7 +23,7 @@ class SettlementPayment(SQLModel, table=True):
     __tablename__ = "settlement_payment"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    trip_id: UUID = Field(foreign_key="trip.id", index=True)
+    trip_id: UUID = Field(foreign_key="trip.id", index=True, ondelete="CASCADE")
     from_user_id: UUID = Field(foreign_key="user.id")
     to_user_id: UUID = Field(foreign_key="user.id")
     amount_cents: int = Field(gt=0)

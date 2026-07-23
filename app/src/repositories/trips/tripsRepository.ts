@@ -17,4 +17,8 @@ export const tripsRepository = {
 
   update: (tripId: string, patch: TripUpdate): Promise<Trip> =>
     apiRequest<Trip>(`/trips/${tripId}`, { method: "PATCH", body: patch }),
+
+  // Owner-only on the backend; 204 with no body.
+  remove: (tripId: string): Promise<void> =>
+    apiRequest<void>(`/trips/${tripId}`, { method: "DELETE" }),
 };

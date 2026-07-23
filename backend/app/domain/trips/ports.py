@@ -17,6 +17,12 @@ class TripRepository(Protocol):
         """Persist changes to an already-loaded trip and return it."""
         ...
 
+    async def delete(self, trip: Trip) -> None:
+        """Remove the trip. Rows that hang off it (expenses, plans,
+        memberships, invitations, settlement payments) go with it via
+        ``ON DELETE CASCADE`` in the schema."""
+        ...
+
     async def get_by_id(self, trip_id: UUID) -> Trip | None: ...
 
     async def list_for_user(self, user_id: UUID) -> list[Trip]:

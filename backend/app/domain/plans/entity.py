@@ -49,7 +49,7 @@ class PlanBase(SQLModel):
 
 class Plan(PlanBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    trip_id: UUID = Field(foreign_key="trip.id", index=True)
+    trip_id: UUID = Field(foreign_key="trip.id", index=True, ondelete="CASCADE")
     created_by_user_id: UUID = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=_now)
     updated_at: datetime = Field(default_factory=_now)
@@ -87,7 +87,7 @@ class PlanLink(SQLModel, table=True):
     __tablename__ = "plan_link"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    plan_id: UUID = Field(foreign_key="plan.id", index=True)
+    plan_id: UUID = Field(foreign_key="plan.id", index=True, ondelete="CASCADE")
     url: str = Field(max_length=2000)
     label: str | None = Field(default=None, max_length=100)
     created_at: datetime = Field(default_factory=_now)

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -21,6 +21,9 @@ type Props = {
   /** Label for the submit button (e.g. "Create" vs "Save"). */
   submitLabel: string;
   onSubmit: (values: TripFormValues) => void;
+  /** Rendered inside the scroll view, below the submit button. Used by
+   * the edit screen for its danger zone; empty when creating. */
+  footer?: ReactNode;
 };
 
 /** Optional date field with a Clear affordance (native pickers can't
@@ -60,6 +63,7 @@ export function TripForm({
   error,
   submitLabel,
   onSubmit,
+  footer,
 }: Props) {
   const { t } = useTranslation();
   const [name, setName] = useState(initialValue?.name ?? "");
@@ -137,6 +141,8 @@ export function TripForm({
       >
         {submitLabel}
       </Button>
+
+      {footer}
     </ScrollView>
   );
 }

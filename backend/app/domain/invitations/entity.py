@@ -25,7 +25,7 @@ class TripInvitation(SQLModel, table=True):
     __tablename__ = "trip_invitation"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    trip_id: UUID = Field(foreign_key="trip.id", index=True)
+    trip_id: UUID = Field(foreign_key="trip.id", index=True, ondelete="CASCADE")
     token: str = Field(max_length=64, unique=True, index=True)
     created_by_user_id: UUID = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=_now)

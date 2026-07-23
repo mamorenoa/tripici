@@ -31,6 +31,13 @@ class SQLModelTripRepository:
         await self._session.refresh(trip)
         return trip
 
+    async def delete(self, trip: Trip) -> None:
+        # A plain DELETE: no ORM relationships are declared, so nothing is
+        # cascaded in Python. Postgres removes the children through the
+        # ``ON DELETE CASCADE`` constraints defined in the migrations.
+        await self._session.delete(trip)
+        await self._session.commit()
+
     async def get_by_id(self, trip_id: UUID) -> Trip | None:
         return await self._session.get(Trip, trip_id)
 

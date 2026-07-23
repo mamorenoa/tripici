@@ -68,7 +68,16 @@
     "imageCredit": "Imagen · {{source}}",
     "navSettle": "Cuentas",
     "navStats": "Estadísticas",
-    "navMembers": "Miembros"
+    "navMembers": "Miembros",
+    "dangerZone": "Zona de peligro",
+    "deleteAction": "Eliminar viaje",
+    "deleteTitle": "Eliminar viaje",
+    "deleteConfirm": "Se eliminará «{{name}}» con {{expenses}} y {{plans}}, también para los colaboradores. Esta acción no se puede deshacer.",
+    "deleteCountExpenses_one": "{{count}} gasto",
+    "deleteCountExpenses_other": "{{count}} gastos",
+    "deleteCountPlans_one": "{{count}} plan",
+    "deleteCountPlans_other": "{{count}} planes",
+    "deleteError": "No se pudo eliminar el viaje: {{error}}"
   },
   "categories": {
     "RESTAURANTS": "Restaurantes",

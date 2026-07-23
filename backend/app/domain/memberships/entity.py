@@ -19,8 +19,12 @@ def _now() -> datetime:
 class TripMembership(SQLModel, table=True):
     __tablename__ = "trip_membership"
 
-    trip_id: UUID = Field(foreign_key="trip.id", primary_key=True)
-    user_id: UUID = Field(foreign_key="user.id", primary_key=True)
+    trip_id: UUID = Field(
+        foreign_key="trip.id", primary_key=True, ondelete="CASCADE"
+    )
+    user_id: UUID = Field(
+        foreign_key="user.id", primary_key=True, ondelete="CASCADE"
+    )
     joined_at: datetime = Field(default_factory=_now)
 
 
