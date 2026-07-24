@@ -33,7 +33,9 @@
     "stats": "Estadísticas",
     "invitation": "Invitación",
     "signIn": "Iniciar sesión",
-    "createAccount": "Crear cuenta"
+    "createAccount": "Crear cuenta",
+    "newPlan": "Nuevo plan",
+    "editPlan": "Editar plan"
   },
   "auth": {
     "tagline": "Viaja en compañía, cuadra las cuentas juntos.",

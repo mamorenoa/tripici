@@ -33,7 +33,9 @@
     "stats": "Stats",
     "invitation": "Invitation",
     "signIn": "Sign in",
-    "createAccount": "Create account"
+    "createAccount": "Create account",
+    "newPlan": "New plan",
+    "editPlan": "Edit plan"
   },
   "auth": {
     "tagline": "Travel together, track together.",

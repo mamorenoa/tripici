@@ -61,6 +61,15 @@ export default function AppLayout() {
         name="trips/[id]/expenses/[expenseId]/edit"
         options={{ title: t("nav.editExpense") }}
       />
+      <Stack.Screen
+        name="trips/[id]/plans/new"
+        options={{ title: t("nav.newPlan"), presentation: "modal" }}
+      />
+      {/* Title set dynamically inside PlanDetailScreen via <Stack.Screen options=... /> */}
+      <Stack.Screen
+        name="trips/[id]/plans/[planId]/edit"
+        options={{ title: t("nav.editPlan") }}
+      />
       <Stack.Screen name="trips/[id]/members" options={{ title: t("nav.members") }} />
       <Stack.Screen name="trips/[id]/stats" options={{ title: t("nav.stats") }} />
       <Stack.Screen name="invite/[token]" options={{ title: t("nav.invitation") }} />
